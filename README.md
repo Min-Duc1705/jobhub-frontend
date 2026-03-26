@@ -5,7 +5,7 @@
   [![React](https://img.shields.io/badge/React-18.0+-61DAFB.svg?style=for-the-badge&logo=react)](https://reactjs.org/)
   [![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF.svg?style=for-the-badge&logo=vite)](https://vitejs.dev/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0+-38B2AC.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+  [![Ant Design](https://img.shields.io/badge/-AntDesign-0170FE?style=for-the-badge&logo=ant-design&logoColor=white)](https://ant.design/)
 </div>
 
 ---
@@ -34,7 +34,7 @@ Frontend này đóng vai trò là phần mặt tiền (Client-Facing), giao ti�
 | :--- | :--- |
 | **Core Framework** | React 18 (Bootstrapped by Vite JS) |
 | **Ngôn ngữ** | TypeScript (Đảm bảo Type-safety Strict) |
-| **Styling & UI Components** | Tailwind CSS (Utility-First), Material UI (MUI) / Ant Design |
+| **Styling & UI Components** | Ant Design (Enterprise UI Framework) |
 | **State Management** | Zustand (hoặc Redux Toolkit) |
 | **API Client** | Axios, kết hợp React Query (TanStack) quản lý Cache Data |
 | **Routing** | React Router DOM v6 |
