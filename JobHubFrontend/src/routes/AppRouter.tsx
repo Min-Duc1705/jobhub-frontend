@@ -84,8 +84,22 @@ const router = createBrowserRouter([
       { path: '/candidate/profile', element: <ProfileSettings /> },
       { path: '/candidate/resume', element: <ResumeManagerPage /> },
       { path: '/candidate/resume/builder/:id', element: <ResumeBuilderPage /> },
-      { path: '/candidate/applied-jobs', element: <AppliedJobsPage /> },
-      { path: '/candidate/saved-jobs', element: <AppliedJobsPage /> },
+      {
+        path: '/candidate/applied-jobs',
+        element: (
+          <RoleBasedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <AppliedJobsPage />
+          </RoleBasedRoute>
+        )
+      },
+      {
+        path: '/candidate/saved-jobs',
+        element: (
+          <RoleBasedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <AppliedJobsPage />
+          </RoleBasedRoute>
+        )
+      },
       { path: '/company/register', element: <CompanyRegisterPage /> },
       // ── HR routes (dùng layout client) ────────────────────────────
       {
