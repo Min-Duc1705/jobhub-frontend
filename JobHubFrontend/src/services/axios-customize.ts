@@ -77,12 +77,46 @@ instance.interceptors.request.use(
   }
 );
 
+// Tự động thay thế localhost:9000 bằng URL public của Backend qua Ngrok
+const replaceLocalhostMinio = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj;
+
+  if (typeof obj === "string") {
+    if (obj.startsWith("http://localhost:9000")) {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+      const cleanBackendUrl = backendUrl.endsWith("/") ? backendUrl.slice(0, -1) : backendUrl;
+      return obj.replace("http://localhost:9000", cleanBackendUrl);
+    }
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => replaceLocalhostMinio(item));
+  }
+
+  if (typeof obj === "object") {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        obj[key] = replaceLocalhostMinio(obj[key]);
+      }
+    }
+    return obj;
+  }
+
+  return obj;
+};
+
 // ── Response interceptor ─────────────────────────────────────────────────────
 instance.interceptors.response.use(
   function (response) {
     // Unwrap backend envelope: { data: ..., message: ..., statusCode: ... }
     if (response.data && response.data.data !== undefined) {
-      return response.data;
+      const unwrapped = response.data;
+      unwrapped.data = replaceLocalhostMinio(unwrapped.data);
+      return unwrapped;
+    }
+    if (response.data) {
+      response.data = replaceLocalhostMinio(response.data);
     }
     return response;
   },
