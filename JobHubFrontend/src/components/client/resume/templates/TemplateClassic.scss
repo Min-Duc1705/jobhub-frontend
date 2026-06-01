@@ -1,0 +1,323 @@
+// TemplateClassic.scss — 2-column classic CV template
+// BEM prefix: "tc-"
+
+.tc-wrap {
+  font-family: 'Inter', sans-serif;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 1120px;
+  background: #fff;
+  color: #1a1a2e;
+  font-size: 14px;
+
+  @media print { font-size: 12px; }
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+.tc-sidebar {
+  background: #1a1a2e;
+  color: #e8e8f4;
+  padding: 40px 24px;
+
+  &__avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  &__avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,0.2);
+
+    &--placeholder {
+      background: linear-gradient(135deg, #3a3a6e, #1a1a2e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 40px;
+      font-weight: 700;
+      border: 3px solid rgba(255,255,255,0.2);
+    }
+  }
+
+  &__open-to-work {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(46,125,50,0.3);
+    border: 1px solid rgba(46,125,50,0.5);
+    border-radius: 99px;
+    padding: 4px 10px;
+    margin-bottom: 24px;
+    color: #a5d6a7;
+  }
+
+  &__section {
+    margin-bottom: 28px;
+  }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8888aa;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+
+  &__contact {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: #c8c8e4;
+    margin-bottom: 8px;
+    word-break: break-all;
+
+    .material-symbols-outlined { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  }
+
+  &__skill-group {
+    margin-bottom: 12px;
+  }
+
+  &__skill-cat {
+    font-size: 11px;
+    color: #8888aa;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  &__skill-chip {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e8e8f4;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin: 2px 3px 2px 0;
+  }
+
+  &__cert {
+    margin-bottom: 10px;
+  }
+
+  &__cert-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #c8c8e4;
+  }
+
+  &__cert-issuer {
+    font-size: 11px;
+    color: #8888aa;
+  }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+.tc-main {
+  padding: 40px 36px;
+  overflow: hidden;
+
+  &__header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #1a1a2e;
+  }
+
+  &__name {
+    font-size: 34px;
+    font-weight: 800;
+    color: #1a1a2e;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #555577;
+    margin-bottom: 12px;
+  }
+
+  &__summary {
+    font-size: 14px;
+    color: #555577;
+    line-height: 1.7;
+  }
+}
+
+// ─── Section ──────────────────────────────────────────────────────────────────
+.tc-section {
+  margin-bottom: 28px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+  }
+
+  &__title-bar {
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background: #1a1a2e;
+    border-radius: 2px;
+  }
+}
+
+// ─── Experience ───────────────────────────────────────────────────────────────
+.tc-exp {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8f4;
+  &:last-child { border-bottom: none; }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__position {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  &__company {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555577;
+  }
+
+  &__period {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8888aa;
+    white-space: nowrap;
+    background: #f0f0f8;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: #555577;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  &__bullets {
+    list-style: disc;
+    padding-left: 18px;
+    font-size: 13px;
+    color: #555577;
+    li { margin-bottom: 3px; }
+    li::marker { color: #1a1a2e; }
+  }
+}
+
+// ─── Education ────────────────────────────────────────────────────────────────
+.tc-edu {
+  margin-bottom: 16px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  &__school {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  &__years {
+    font-size: 12px;
+    color: #8888aa;
+    font-weight: 600;
+  }
+
+  &__degree {
+    font-size: 13px;
+    color: #555577;
+    margin-top: 2px;
+  }
+
+  &__gpa {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-top: 3px;
+  }
+}
+
+// ─── Projects ────────────────────────────────────────────────────────────────
+.tc-project {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e8e8f4;
+  border-radius: 8px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  &__links {
+    display: flex;
+    gap: 8px;
+    a {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1a1a2e;
+      text-decoration: underline;
+    }
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: #555577;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  &__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  &__tag {
+    background: #f0f0f8;
+    color: #555577;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+}

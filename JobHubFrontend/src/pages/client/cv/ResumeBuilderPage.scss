@@ -1,0 +1,335 @@
+@use '../../../styles/global' as *;
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.rb-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+}
+
+// ─── Builder wrapper ──────────────────────────────────────────────────────────
+.rb {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px); // subtract header
+  overflow: hidden;
+
+  // ── Toolbar ───────────────────────────────────────────────────────────────
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: $surface;
+    border-bottom: 1px solid $outline-variant;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    flex-shrink: 0;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    &-left, &-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  &__title-input {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: $on-surface !important;
+    width: 240px;
+    padding: 0 8px !important;
+  }
+
+  &__saving-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: $on-surface-variant;
+  }
+
+  &__saved-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: $success;
+
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  // ── Mobile tab switcher ───────────────────────────────────────────────────
+  &__mobile-tabs {
+    display: none;
+    flex-shrink: 0;
+    border-bottom: 1px solid $outline-variant;
+
+    @media (max-width: 768px) { display: flex; }
+  }
+
+  &__mobile-tab {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: $on-surface-variant;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+
+    &--active {
+      color: $primary;
+      border-bottom-color: $primary;
+      background: rgba($primary, 0.04);
+    }
+
+    .material-symbols-outlined { font-size: 18px; }
+  }
+
+  // ── Body ──────────────────────────────────────────────────────────────────
+  &__body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    overflow: hidden;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 320px 1fr;
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Form panel ────────────────────────────────────────────────────────────
+  &__form-panel {
+    overflow-y: auto;
+    border-right: 1px solid $outline-variant;
+    background: $surface-container-low;
+    padding: 16px;
+
+    @media (max-width: 768px) {
+      &--hidden-mobile { display: none; }
+    }
+  }
+
+  // ── Preview panel ─────────────────────────────────────────────────────────
+  &__preview-panel {
+    overflow-y: auto;
+    background: $surface-container-high;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+
+    @media (max-width: 768px) {
+      &--hidden-mobile { display: none; }
+    }
+
+    @media print {
+      padding: 0;
+      background: #fff;
+      overflow: visible;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+    }
+  }
+
+  &__preview-inner {
+    background: #fff;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.12);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 860px;
+    min-height: 1120px;
+
+    @media print {
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+      min-height: auto;
+    }
+  }
+}
+
+// ─── Collapse ─────────────────────────────────────────────────────────────────
+.rb-collapse {
+  &.ant-collapse {
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .ant-collapse-item {
+    background: #fff !important;
+    border: 1px solid $outline-variant !important;
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
+    overflow: hidden;
+  }
+
+  .ant-collapse-header {
+    font-weight: 600 !important;
+    color: $on-surface !important;
+    font-size: 14px !important;
+  }
+
+  .ant-collapse-content-box {
+    padding: 0 !important;
+  }
+}
+
+// ─── Form section ─────────────────────────────────────────────────────────────
+.rb-form-section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rb-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $on-surface-variant;
+  }
+
+  &--inline {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.rb-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+// ─── List item ────────────────────────────────────────────────────────────────
+.rb-list-item {
+  border: 1px solid $outline-variant;
+  border-radius: 10px;
+  padding: 14px;
+  background: $surface-container-low;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__index {
+    font-size: 11px;
+    font-weight: 700;
+    color: $on-surface-variant;
+    background: $surface-container;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+}
+
+// ─── Print overrides ──────────────────────────────────────────────────────────
+@media print {
+  .rb__toolbar,
+  .rb__form-panel,
+  .rb__mobile-tabs {
+    display: none !important;
+  }
+
+  .rb__body {
+    display: block;
+  }
+
+  .rb__preview-panel {
+    display: block !important;
+    padding: 0 !important;
+  }
+}
+
+// ─── Avatar upload ─────────────────────────────────────────────────────────────
+.rb-avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &__trigger {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px dashed $outline-variant;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: $primary;
+
+      .rb-avatar-upload__overlay {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: $surface-container;
+    color: $on-surface-variant;
+    font-size: 11px;
+    font-weight: 500;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+      color: $on-surface-variant;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+      color: #fff;
+    }
+  }
+}

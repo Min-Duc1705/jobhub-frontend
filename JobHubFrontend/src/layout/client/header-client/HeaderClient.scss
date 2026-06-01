@@ -1,0 +1,529 @@
+@use '../../../styles/global' as *;
+
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: $surface;
+  border-bottom: 1px solid $outline-variant;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  &__inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+
+    @media (min-width: 768px) { padding: 0 48px; }
+  }
+
+  // Brand column (left)
+  &__brand-wrap {
+    display: flex;
+    align-items: center;
+  }
+
+  // Center column — nav links
+  &__links {
+    display: none;
+    align-items: center;
+    gap: 4px;
+
+    @media (min-width: 768px) { display: flex; }
+  }
+
+  // Right column — auth actions
+  &__right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  // Brand
+  &__brand {
+    font-family: $font-body;
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+    color: $primary;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+
+
+  // Nav link item
+  &__link {
+    position: relative;
+    font-family: $font-mono;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: $on-surface-variant;
+    text-decoration: none;
+    padding: 6px 12px 8px;   // extra bottom padding for the line
+    border-radius: 8px 8px 0 0;
+    transition: color 0.18s, background 0.18s;
+    white-space: nowrap;
+
+    // Bottom indicator line (hidden by default)
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: calc(100% - 16px);  // respects the 8px side padding
+      height: 2.5px;
+      border-radius: 2px 2px 0 0;
+      background: $primary;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    &:hover {
+      color: $primary;
+      background: rgba($primary, 0.06);
+
+      &::after {
+        transform: translateX(-50%) scaleX(0.5);
+        opacity: 0.4;
+      }
+    }
+
+    &--active {
+      color: $primary;
+      background: rgba($primary, 0.07);
+      font-weight: 600;
+
+      &::after {
+        transform: translateX(-50%) scaleX(1);
+        opacity: 1;
+      }
+    }
+  }
+
+  // Right actions
+
+  &__login {
+    display: none;
+    font-family: $font-mono;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+    color: $on-surface-variant;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    @media (min-width: 768px) { display: block; }
+
+    &:hover { color: $secondary; }
+  }
+
+  // Sign Up button override
+  .ant-btn.btn-signup {
+    background: $primary-container !important;
+    border-color: $primary-container !important;
+    color: $on-primary !important;
+    border-radius: 6px !important;
+    height: auto !important;
+    padding: 8px 16px !important;
+    font-family: $font-mono !important;
+    font-size: 14px !important;
+    letter-spacing: 0.02em !important;
+    font-weight: 500 !important;
+
+    &:hover {
+      background: $primary !important;
+      border-color: $primary !important;
+      color: $on-primary !important;
+    }
+  }
+
+  // ── Avatar button (logged-in state) ──────────────────────────────
+  .nav-avatar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1.5px solid $outline-variant;
+    border-radius: 99px;
+    padding: 4px 10px 4px 4px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+
+    &:hover {
+      background: $surface-container-low;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+
+  .nav-avatar {
+    background: linear-gradient(135deg, $primary-container, $primary) !important;
+    color: $on-primary !important;
+    font-family: $font-mono !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-avatar-name {
+    display: none;
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 500;
+    color: $on-surface;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @media (min-width: 768px) { display: block; }
+  }
+
+  .nav-avatar-chevron {
+    font-size: 20px;
+    color: $on-surface-variant;
+    display: none;
+    transition: transform 0.2s;
+
+    @media (min-width: 768px) { display: block; }
+  }
+}
+
+// ── Dropdown overlay (global scope) ────────────────────────────────
+.nav-dropdown {
+  .ant-dropdown-menu {
+    border: 1px solid $outline-variant;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    padding: 6px !important;
+    min-width: 220px;
+    overflow: hidden;
+  }
+
+  .ant-dropdown-menu-item {
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+
+    &:hover:not(.ant-dropdown-menu-item-disabled) {
+      background: $surface-container-low !important;
+    }
+  }
+
+  // Fix: disabled item (user info header) phải không có hover effect
+  .ant-dropdown-menu-item-disabled {
+    cursor: default !important;
+    background: transparent !important;
+
+    &:hover { background: transparent !important; }
+  }
+
+  .nav-dropdown-divider {
+    height: 1px;
+    background-color: $outline-variant;
+    margin: 4px 0;
+  }
+}
+
+// Dropdown user info block — phải dùng block thay flex để tránh bị merge
+.nav-dropdown-info {
+  display: block;
+  padding: 2px 0;
+  line-height: 1;
+
+  .nav-dropdown-name {
+    display: block;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $on-surface;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    line-height: 1.5;
+  }
+
+  .nav-dropdown-email {
+    display: block;
+    font-family: $font-mono;
+    font-size: 12px;
+    color: $on-surface-variant;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+}
+
+// Dropdown icon
+.nav-menu-icon {
+  font-size: 18px !important;
+  vertical-align: middle;
+  color: $on-surface-variant;
+
+  &--danger { color: $error !important; }
+}
+
+// Logout menu item text
+.nav-menu-danger { color: $error; font-weight: 500; }
+
+// ── Notification Button & Badge ──
+.nav-notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: $on-surface-variant;
+  transition: background 0.18s, color 0.18s;
+  margin-right: 4px;
+
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  &:hover {
+    background: $surface-container-low;
+    color: $primary;
+  }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: $error;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid $surface;
+}
+
+// ── Notification Dropdown Wrapper ──
+.nav-notification-dropdown-wrap {
+  .ant-dropdown-menu {
+    border: 1px solid $outline-variant;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    padding: 0 !important;
+    width: 320px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.nav-notification-dropdown {
+  display: flex;
+  flex-direction: column;
+  background: $surface;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: $surface;
+  }
+
+  &__title {
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $on-surface;
+  }
+
+  &__readall {
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: $primary;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
+
+  &__list {
+    overflow-y: auto;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    color: $on-surface-variant;
+
+    p {
+      margin: 8px 0 0;
+      font-size: 13px;
+    }
+  }
+
+  &__item {
+    padding: 12px 16px;
+    border-bottom: 1px solid $outline-variant;
+    cursor: pointer;
+    transition: background 0.18s;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: $surface-container-low;
+    }
+
+    &--unread {
+      background: rgba($primary, 0.02);
+
+      &:hover {
+        background: rgba($primary, 0.04);
+      }
+
+      .nav-notification-dropdown__item-subject {
+        font-weight: 600;
+        color: #0f172a;
+      }
+    }
+  }
+
+  &__item-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  &__item-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__item-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #005daa;
+    flex-shrink: 0;
+  }
+
+  &__item-subject {
+    font-size: 13.5px;
+    color: #1e293b;
+    line-height: 1.4;
+  }
+
+  &__item-time {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  &__item-message {
+    font-size: 12px;
+    color: $on-surface-variant;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  &__footer {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $primary;
+    cursor: pointer;
+    background: $surface;
+    transition: background 0.18s;
+
+    &:hover {
+      background: $surface-container-low;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Keyframes and animation classes for notification alerts
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(15deg); }
+  30% { transform: rotate(-15deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-10deg); }
+  75% { transform: rotate(4deg); }
+  90% { transform: rotate(-4deg); }
+}
+
+@keyframes badgeBump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.nav-notification-btn--ring {
+  animation: bellRing 0.6s ease-in-out;
+  color: #005daa !important; // Highlight color
+
+  .notification-badge {
+    animation: badgeBump 0.6s ease-in-out;
+  }
+}
+

@@ -1,0 +1,201 @@
+@use '../../../styles/global' as *;
+
+// ─── Root Page ────────────────────────────────────────────────────
+.login-page {
+  background-color: $surface-container-low;
+  background-image: radial-gradient($outline-variant 1px, transparent 1px);
+  background-size: 24px 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 0;
+  font-family: $font-body;
+  color: $on-surface;
+  -webkit-font-smoothing: antialiased;
+
+  @media (min-width: 640px)  { padding: 48px 24px; }
+  @media (min-width: 1024px) { padding: 48px 32px; }
+}
+
+// ─── Header / Brand ───────────────────────────────────────────────
+.login-header {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 448px;
+
+  .brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    .brand-icon {
+      color: $primary-container;
+      font-size: 40px;
+      font-variation-settings: 'FILL' 1;
+    }
+
+    .brand-name {
+      font-size: 48px;
+      line-height: 56px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: $primary;
+    }
+  }
+
+  .welcome-text {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: $on-surface;
+  }
+}
+
+// ─── Card ─────────────────────────────────────────────────────────
+.login-card-wrapper {
+  margin: 32px auto 0;
+  width: 100%;
+  max-width: 448px;
+}
+
+.login-card {
+  background: $surface-container-lowest;
+  padding: 32px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba($outline-variant, 0.3);
+
+  @media (min-width: 640px) {
+    border-radius: 12px;
+    padding: 32px 40px;
+  }
+
+  // ── Ant Design Overrides (scoped) ──────────────────────────────
+  @include antd-form-overrides;
+
+  // Login Button
+  .ant-btn.btn-login {
+    @include btn-base;
+    background: $primary-container !important;
+    border-color: $primary-container !important;
+    color: $on-primary-container !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
+
+    .btn-icon { font-size: 20px; line-height: 1; }
+
+    &:hover {
+      background: $primary !important;
+      border-color: $primary !important;
+      color: $on-primary-container !important;
+    }
+
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: 0 0 0 2px $surface-container-lowest, 0 0 0 4px $primary !important;
+    }
+  }
+
+  // Social Buttons
+  .ant-btn.btn-social {
+    @include btn-base;
+    border: 1px solid $outline-variant !important;
+    background: $surface-container-lowest !important;
+    color: $on-surface !important;
+    padding: 8px 16px !important;
+    gap: 8px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+
+    .google-g    { font-weight: 700; }
+    .social-icon { font-size: 20px; line-height: 1; }
+
+    &:hover {
+      background: $surface-container-low !important;
+      border-color: $outline-variant !important;
+      color: $on-surface !important;
+    }
+
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: 0 0 0 2px $surface-container-lowest, 0 0 0 4px $secondary-container !important;
+    }
+  }
+
+  // Checkbox
+  .ant-checkbox-wrapper.remember-me-checkbox {
+    font-family: $font-body !important;
+    font-size: 14px !important;
+    line-height: 22px !important;
+    color: $on-surface !important;
+
+    .ant-checkbox-inner {
+      border-color: $outline-variant !important;
+      border-radius: 4px !important;
+    }
+
+    .ant-checkbox-checked .ant-checkbox-inner {
+      background-color: $primary-container !important;
+      border-color: $primary-container !important;
+    }
+  }
+}
+
+// ─── Remember Me Row ──────────────────────────────────────────────
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .forgot-password {
+    @include link-mono;
+    color: $secondary-container;
+    &:hover { color: $primary; }
+  }
+}
+
+// ─── Divider ──────────────────────────────────────────────────────
+.divider {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid $outline-variant;
+  }
+
+  span {
+    font-family: $font-body;
+    font-size: 14px;
+    line-height: 22px;
+    color: $on-surface-variant;
+    white-space: nowrap;
+  }
+}
+
+// ─── Social Buttons Grid ──────────────────────────────────────────
+.social-buttons {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+// ─── Register Link ────────────────────────────────────────────────
+.register-link {
+  margin-top: 32px;
+  text-align: center;
+  font-family: $font-body;
+  font-size: 14px;
+  line-height: 22px;
+  color: $on-surface-variant;
+
+  a { @include link-mono; }
+}

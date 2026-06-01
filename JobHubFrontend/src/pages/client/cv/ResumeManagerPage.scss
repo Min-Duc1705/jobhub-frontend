@@ -1,0 +1,371 @@
+@use '../../../styles/global' as *;
+
+// ─── Page wrapper ──────────────────────────────────────────────────────────────
+.rmp {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+
+  &-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+  }
+
+  // ── Header ──────────────────────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 26px;
+    font-weight: 800;
+    color: $on-surface;
+    margin-bottom: 4px;
+  }
+
+  &__subtitle {
+    color: $on-surface-variant;
+    font-size: 14px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  // ── Empty ────────────────────────────────────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 420px;
+    background: $surface-container-low;
+    border: 2px dashed $outline-variant;
+    border-radius: 20px;
+    padding: 48px;
+  }
+
+  &__empty-icon {
+    font-size: 80px;
+    color: $outline;
+    display: block;
+  }
+
+  // ── Grid ─────────────────────────────────────────────────────────────────────
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 240px));
+    gap: 24px;
+  }
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+.rmp-card {
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  border: 1.5px solid rgba(0,0,0,0.07);
+  transition: box-shadow 0.22s, transform 0.18s, border-color 0.22s;
+  overflow: hidden;
+  position: relative;
+
+  &:hover:not(&--add) {
+    box-shadow: 0 8px 36px rgba(0, 93, 170, 0.16);
+    transform: translateY(-4px);
+    border-color: rgba($primary, 0.25);
+
+    .rmp-card__thumb-overlay { opacity: 1; }
+  }
+
+  &--default {
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.18), 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  // ── Thumbnail ────────────────────────────────────────────────────────────────
+  &__thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 210 / 297;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f8f9fa;
+  }
+
+  &__thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    background: #fff;
+  }
+
+  // CSS mini-document placeholder ────────────────────────────────────────────
+  &__thumb-doc {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &__doc-header {
+    height: 28%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px 12px 10px;
+    gap: 8px;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+    }
+  }
+
+  &__doc-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.5);
+  }
+
+  &__doc-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__doc-line {
+    border-radius: 3px;
+    background: rgba(255,255,255,0.7);
+
+    &--name  { width: 68px; height: 6px; }
+    &--title { width: 48px; height: 4px; background: rgba(255,255,255,0.45); }
+  }
+
+  &__doc-body {
+    flex: 1;
+    background: #fff;
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  &__doc-section {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__doc-section-title {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+  }
+
+  &__doc-text-line {
+    height: 3px;
+    border-radius: 2px;
+    background: #e8e8e8;
+
+    &--full  { width: 100%; }
+    &--long  { width: 85%; }
+    &--med   { width: 68%; }
+    &--short { width: 50%; }
+  }
+
+  // Hover overlay ─────────────────────────────────────────────────────────────
+  &__thumb-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.52);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.22s;
+    backdrop-filter: blur(3px);
+  }
+
+  &__overlay-btn {
+    min-width: 120px;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+
+  // Badge "Mặc định" ──────────────────────────────────────────────────────────
+  &__badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.6);
+    color: #FFD700;
+    backdrop-filter: blur(6px);
+    letter-spacing: 0.2px;
+
+    .material-symbols-outlined { font-size: 12px; }
+  }
+
+  // ── Info ──────────────────────────────────────────────────────────────────────
+  &__info {
+    padding: 12px 14px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $on-surface;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: text;
+    border-radius: 6px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    transition: background 0.15s;
+
+    &:hover { background: rgba($primary, 0.06); }
+  }
+
+  &__name-input {
+    width: 100%;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $on-surface;
+    border: 1.5px solid $primary;
+    border-radius: 6px;
+    padding: 2px 6px;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    font-family: inherit;
+
+    &:focus { box-shadow: 0 0 0 3px rgba($primary, 0.15); }
+  }
+
+  &__meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  &__type-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1.5px solid;
+  }
+
+  &__date {
+    font-size: 11px;
+    color: $on-surface-variant;
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────────────────
+  &__footer {
+    padding: 0 10px 10px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    // Full-width primary action
+    .rmp-card__primary-btn {
+      flex: 1;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      height: 34px !important;
+    }
+
+    .rmp-card__icon-btn {
+      width: 34px !important;
+      height: 34px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      flex-shrink: 0;
+
+      .material-symbols-outlined { font-size: 16px; }
+    }
+  }
+
+  // ── Add card ──────────────────────────────────────────────────────────────────
+  &--add {
+    border: 2px dashed rgba($on-surface-variant, 0.3);
+    background: $surface-container-low;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: none;
+    transition: border-color 0.2s, background 0.2s, transform 0.18s;
+    min-height: 300px;
+
+    .rmp-card__add-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: $on-surface-variant;
+    }
+
+    &:hover {
+      border-color: $primary;
+      background: rgba($primary, 0.04);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba($primary, 0.1);
+
+      .rmp-card__add-icon, .rmp-card__add-label { color: $primary; }
+    }
+  }
+
+  &__add-icon {
+    font-size: 38px;
+    color: $on-surface-variant;
+    transition: color 0.2s;
+  }
+}

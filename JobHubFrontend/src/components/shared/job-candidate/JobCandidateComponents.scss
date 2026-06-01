@@ -1,0 +1,210 @@
+@use '../../../styles/global' as *;
+
+// ── Applied / Saved Job Cards ────────────────────────────────────────────────
+.cjp-job-card {
+  background: $surface-container-lowest;
+  border: 1px solid $outline-variant;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-left-color: $secondary;
+  }
+
+  &-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  &-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: $surface-container-low;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $outline-variant;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .material-symbols-outlined {
+      font-size: 32px;
+      color: $outline;
+    }
+  }
+
+  &-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    @media (min-width: 576px) {
+      flex-wrap: nowrap;
+    }
+
+    h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: $primary;
+      margin: 0;
+      transition: color 0.2s ease;
+    }
+  }
+
+  &:hover &-title-row h4 {
+    color: $secondary;
+  }
+
+  &-company {
+    font-size: 14px;
+    color: $on-surface-variant;
+    font-weight: 500;
+    margin: 4px 0 12px 0;
+  }
+
+  &-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    font-size: 12px;
+    color: $on-surface-variant;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: center;
+  }
+}
+
+// ── AI Salary Predictor Widget ───────────────────────────────────────────────
+.cjp-ai-salary-widget {
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid rgba($secondary, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 246, 251, 0.9) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .material-symbols-outlined {
+      color: $secondary;
+    }
+
+    h5 {
+      font-size: 14px;
+      font-weight: 700;
+      color: $primary;
+      margin: 0;
+    }
+  }
+
+  &-desc {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+  }
+}
+
+// ── Job Recommendations Widget ───────────────────────────────────────────────
+.cjp-recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cjp-recommendation-item {
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  align-items: center;
+  
+  &:hover {
+    .cjp-rec-title {
+      color: $secondary;
+    }
+  }
+}
+
+.cjp-rec-logo-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid $outline-variant;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 4px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .material-symbols-outlined {
+    font-size: 24px;
+    color: $outline;
+  }
+}
+
+.cjp-rec-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cjp-rec-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.cjp-rec-company {
+  font-size: 11px;
+  color: $on-surface-variant;
+  margin: 2px 0 0 0;
+}

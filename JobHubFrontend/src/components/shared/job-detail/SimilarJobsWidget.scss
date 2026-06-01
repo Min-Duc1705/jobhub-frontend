@@ -1,0 +1,119 @@
+.jd-similar-widget {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  box-sizing: border-box;
+
+  .jd-similar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #002660;
+    margin-bottom: 16px;
+    border-left: 4px solid #005daa;
+    padding-left: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .jd-similar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .jd-similar-card-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+
+    &:hover {
+      background: #ffffff;
+      border-color: #005daa;
+      box-shadow: 0 6px 16px rgba(0, 38, 96, 0.08);
+      transform: translateY(-2px);
+
+      .jd-similar-card-jobname {
+        color: #005daa;
+      }
+    }
+
+    .jd-similar-card-logo-wrapper {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e8e8e8;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+
+      .jd-similar-card-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .jd-similar-card-info {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      .jd-similar-card-jobname {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1b1c1c;
+        margin: 0;
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.2s ease;
+      }
+
+      .jd-similar-card-company {
+        font-size: 11px;
+        color: #747783;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .jd-similar-card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 3px;
+      }
+
+      .jd-similar-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+
+        .salary-text {
+          font-size: 12px;
+          font-weight: 700;
+          color: #005daa;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,995 @@
+@use '../../../styles/global' as *;
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.cd-loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+
+  .cd-btn-back {
+    background: none;
+    border: none;
+    color: $primary;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+.company-detail-page {
+  background: $surface;
+  min-height: 100vh;
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────
+.cd-hero {
+  position: relative;
+  height: 240px;
+  overflow: hidden;
+
+  .cd-hero-bg {
+    position: absolute;
+    inset: 0;
+    // Default gradient (shown when no coverImage)
+    background:
+      radial-gradient(ellipse at 20% 60%, rgba(51, 91, 174, 0.6) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(84, 0, 173, 0.4) 0%, transparent 50%),
+      linear-gradient(135deg, #003a8c 0%, #002060 40%, #1a0050 100%);
+    // When coverImage is passed via inline style, add cover properties
+    background-size: cover;
+    background-position: center;
+    transition: background 0.3s;
+  }
+
+  .cd-hero-overlay {
+    position: absolute;
+    inset: 0;
+    // Darker overlay when there is a real photo so text is still readable
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 32, 96, 0.45) 0%,
+      rgba(0, 16, 60, 0.65) 100%
+    );
+    // Subtle dot pattern on top
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+  }
+}
+
+// ─── Brand Band (overlaps hero) ───────────────────────────────────────────────
+.cd-brand-band {
+  max-width: 1280px;
+  margin: -60px auto 0;
+  padding: 0 32px 24px;
+  position: relative;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 0 16px 24px;
+    margin-top: -40px;
+  }
+}
+
+// ─── Brand Card ─────────────────────────────────────────────────────────────────
+.cd-brand-card {
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13);
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+}
+
+// ─── Logo ──────────────────────────────────────────────────────────────────────────
+.cd-logo-wrap {
+  flex-shrink: 0;
+  align-self: center;  // luôn căn giữa theo chiều dọc của card
+  width: 88px;
+  height: 88px;
+  background: #fff;
+  border-radius: 14px;
+  border: 2px solid $outline-variant;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 8px;
+
+  .cd-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+// ─── Brand Info ───────────────────────────────────────────────────────────────
+.cd-brand-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+.cd-brand-main { flex: 1; min-width: 0; }
+
+.cd-company-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0 0 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 768px) { font-size: 20px; }
+}
+
+.cd-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.cd-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: $on-surface-variant;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .material-symbols-outlined {
+    font-size: 17px;
+    color: $secondary;
+    flex-shrink: 0;
+  }
+}
+
+.cd-verified-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #52c41a;
+  margin-top: 8px;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+    font-variation-settings: 'FILL' 1;
+  }
+}
+
+// ─── Actions ─────────────────────────────────────────────────────────────────
+.cd-brand-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  align-items: center;
+
+  @media (max-width: 900px) {
+    flex-wrap: wrap;
+  }
+}
+
+.cd-btn-outline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: 2px solid $secondary;
+  border-radius: 10px;
+  color: $secondary;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  .material-symbols-outlined { font-size: 17px; }
+  &:hover { background: rgba(0, 93, 170, 0.06); }
+}
+
+.cd-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: $primary-container;
+  color: $on-primary;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 58, 140, 0.3);
+  transition: all 0.2s;
+
+  .material-symbols-outlined { font-size: 17px; }
+  &:hover { opacity: 0.9; }
+}
+
+// ─── Sticky Sub-Nav ──────────────────────────────────────────────────────────
+.cd-sub-nav {
+  position: sticky;
+  top: 64px;
+  z-index: 30;
+  background: rgba(250, 249, 249, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid $outline-variant;
+  margin-bottom: 8px;
+
+  .cd-sub-nav-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    height: 50px;
+    align-items: center;
+    overflow-x: auto;
+
+    @media (max-width: 768px) { padding: 0 16px; }
+  }
+
+  .cd-nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: $on-surface-variant;
+    text-decoration: none;
+    white-space: nowrap;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover {
+      color: $primary;
+      border-bottom-color: $primary;
+    }
+  }
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.cd-body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 32px 60px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 32px;
+
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+  @media (max-width: 768px)  { padding: 24px 16px; }
+}
+
+.cd-main { display: flex; flex-direction: column; gap: 40px; }
+
+// ─── Section ─────────────────────────────────────────────────────────────────
+.cd-section { scroll-margin-top: 120px; }
+
+.cd-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, rgba(0, 58, 140, 0.2), transparent);
+    border-radius: 2px;
+  }
+}
+
+.cd-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+
+  .cd-section-title { margin: 0; }
+
+  .cd-job-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: $secondary;
+    background: rgba(0, 93, 170, 0.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+}
+
+.cd-description-text {
+  font-size: 15px;
+  line-height: 26px;
+  color: $on-surface-variant;
+
+  &.cd-no-data { font-style: italic; color: $outline; }
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+.cd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+
+  @media (max-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.cd-stat-card {
+  background: $surface-container-low;
+  border: 1px solid $outline-variant;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 58, 140, 0.08);
+    border-color: rgba(0, 58, 140, 0.2);
+  }
+
+  .cd-stat-icon {
+    font-size: 26px;
+    color: $primary;
+    font-variation-settings: 'FILL' 1;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .cd-stat-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: $primary;
+    margin-bottom: 4px;
+  }
+
+  .cd-stat-label {
+    font-size: 11px;
+    color: $on-surface-variant;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// ─── Job List ─────────────────────────────────────────────────────────────────
+.cd-job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cd-job-card {
+  background: #fff;
+  border: 1px solid $outline-variant;
+  border-radius: 12px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: box-shadow 0.2s, border-left-width 0.1s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+    border-left: 4px solid $primary;
+  }
+
+  @media (max-width: 640px) { flex-direction: column; align-items: flex-start; }
+}
+
+.cd-job-main { flex: 1; min-width: 0; }
+
+.cd-job-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $primary;
+  margin: 0 0 6px;
+}
+
+.cd-job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cd-job-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  color: $on-surface-variant;
+
+  .material-symbols-outlined { font-size: 15px; color: $outline; }
+}
+
+.cd-job-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.cd-skill-tag {
+  font-size: 12px;
+  background: rgba(0, 58, 140, 0.06);
+  color: $primary;
+  border: 1px solid rgba(0, 58, 140, 0.12);
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-weight: 500;
+
+  &.cd-skill-more {
+    background: $surface-container;
+    color: $on-surface-variant;
+    border-color: $outline-variant;
+  }
+}
+
+.cd-job-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cd-salary {
+  font-size: 15px;
+  font-weight: 700;
+  color: $secondary;
+  white-space: nowrap;
+}
+
+.cd-btn-apply {
+  background: $surface-container;
+  color: $primary;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $primary-container;
+    color: $on-primary;
+  }
+}
+
+// ─── Culture ─────────────────────────────────────────────────────────────────
+.cd-culture-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.cd-culture-card {
+  background: $surface-container-low;
+  border: 1px solid $outline-variant;
+  border-radius: 14px;
+  padding: 22px;
+  text-align: center;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); }
+
+  .cd-culture-icon {
+    font-size: 32px;
+    color: $primary;
+    font-variation-settings: 'FILL' 1;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: $primary;
+    margin: 0 0 6px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $on-surface-variant;
+    line-height: 20px;
+    margin: 0;
+  }
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+.cd-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-self: start;
+  position: sticky;
+  top: 120px;
+}
+
+.cd-sidebar-card {
+  background: #fff;
+  border: 1px solid $outline-variant;
+  border-radius: 14px;
+  padding: 22px;
+  scroll-margin-top: 120px;
+}
+
+.cd-sidebar-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0 0 16px;
+}
+
+// ── AI Card ──────────────────────────────────────────────────────────────────
+.cd-ai-card {
+  background: linear-gradient(135deg, #002060, #003a8c);
+  border-radius: 14px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 28px rgba(0, 58, 140, 0.28);
+
+  .cd-ai-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 60%, rgba(51, 91, 174, 0.5) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(84, 0, 173, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}
+
+.cd-ai-content { position: relative; z-index: 1; }
+
+.cd-ai-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .cd-ai-icon {
+    font-size: 18px;
+    color: #a5c8ff;
+    font-variation-settings: 'FILL' 1;
+  }
+
+  .cd-ai-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+.cd-ai-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.cd-ai-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  line-height: 20px;
+  margin: 0 0 14px;
+}
+
+.cd-salary-preview {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+
+  .cd-salary-label { font-size: 11px; color: rgba(255,255,255,0.55); }
+  .cd-salary-range { font-size: 16px; font-weight: 700; color: #a5c8ff; }
+}
+
+.cd-btn-ai {
+  width: 100%;
+  background: #fff;
+  color: $primary;
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s;
+
+  .material-symbols-outlined { font-size: 17px; }
+  &:hover { background: #d4e3ff; }
+}
+
+// ── Benefits ─────────────────────────────────────────────────────────────────
+.cd-benefits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cd-benefit-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  .cd-benefit-icon {
+    font-size: 20px;
+    color: $secondary;
+    background: rgba(0, 93, 170, 0.08);
+    padding: 7px;
+    border-radius: 9px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  &:hover .cd-benefit-icon {
+    background: $secondary;
+    color: #fff;
+  }
+
+  .cd-benefit-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: $primary;
+    margin: 0 0 3px;
+  }
+
+  .cd-benefit-desc {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0;
+    line-height: 18px;
+  }
+}
+
+// ── Contact ──────────────────────────────────────────────────────────────────
+.cd-contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cd-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: $on-surface-variant;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: $secondary;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  a {
+    color: $secondary;
+    text-decoration: none;
+    word-break: break-all;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// ── Gallery Slideshow — mỗi ảnh là 1 card riêng ─────────────────────────────
+.cd-gallery {
+  // Wrapper không cần border/overflow vì mỗi card tự style
+}
+
+.cd-gallery-slides {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.cd-gallery-card {
+  flex: 1;
+  max-width: 480px;          // 1 ảnh không rộng quá
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+  border: 1px solid $outline-variant;
+  background: $surface-container;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+
+    &:hover { transform: scale(1.04); }
+  }
+
+  @media (max-width: 640px) {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+.cd-gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 0 4px;
+}
+
+.cd-gallery-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid $outline-variant;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  .material-symbols-outlined { font-size: 18px; color: $on-surface-variant; }
+
+  &:hover {
+    background: $primary;
+    border-color: $primary;
+    .material-symbols-outlined { color: #fff; }
+  }
+}
+
+.cd-gallery-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cd-gallery-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: $outline-variant;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+
+  &.active {
+    background: $primary;
+    width: 18px;
+    border-radius: 4px;
+  }
+
+  &:hover:not(.active) { background: $outline; }
+}
+
+// ── Gallery card hover overlay (zoom icon) ───────────────────────────────────
+.cd-gallery-card {
+  position: relative;
+  cursor: pointer;
+
+  .cd-gallery-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 32, 96, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: background 0.25s;
+    pointer-events: none;
+
+    .material-symbols-outlined {
+      font-size: 36px;
+      color: #fff;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.25s, transform 0.25s;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    }
+  }
+
+  &:hover .cd-gallery-card-overlay {
+    background: rgba(0, 32, 96, 0.45);
+
+    .material-symbols-outlined {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+// ── YouTube Embed ─────────────────────────────────────────────────────────────
+.cd-youtube-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; // 16:9
+  height: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14);
+  border: 1px solid $outline-variant;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+.cd-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cd-lb-fadein 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes cd-lb-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cd-lightbox-content {
+  max-width: min(90vw, 1100px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cd-lightbox-img {
+  max-width: 100%;
+  max-height: calc(90vh - 60px);
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  animation: cd-lb-zoomin 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cd-lb-zoomin {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.cd-lightbox-counter {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.05em;
+}
+
+.cd-lightbox-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 10000;
+
+  .material-symbols-outlined {
+    font-size: 28px;
+    color: #fff;
+  }
+
+  &:hover { background: rgba(255, 255, 255, 0.22); }
+
+  &--prev { left: 24px;  }
+  &--next { right: 24px; }
+
+  @media (max-width: 640px) {
+    width: 40px;
+    height: 40px;
+    &--prev { left: 10px; }
+    &--next { right: 10px; }
+    .material-symbols-outlined { font-size: 22px; }
+  }
+}
+
+.cd-lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  transition: background 0.2s;
+
+  .material-symbols-outlined { font-size: 22px; color: #fff; }
+  &:hover { background: rgba(255, 255, 255, 0.25); }
+}
+

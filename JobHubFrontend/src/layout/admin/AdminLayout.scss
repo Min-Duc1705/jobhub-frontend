@@ -1,0 +1,805 @@
+@use '../../styles/global' as *;
+
+.admin-layout-wrapper {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: $font-body;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  // 1. Top App Bar Styles
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: $surface-container-lowest;
+    border-bottom: 1px solid $outline-variant;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 40;
+    box-sizing: border-box;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .sidebar-toggle-btn {
+        background: none;
+        border: none;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $on-surface-variant;
+        transition: background-color 0.2s, color 0.2s, transform 0.1s;
+
+        &:hover {
+          background-color: $surface-container-low;
+          color: $primary;
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+
+        .material-symbols-outlined {
+          font-size: 24px;
+        }
+      }
+
+      .admin-logo-text {
+        font-size: 24px;
+        font-weight: 700;
+        color: $primary;
+        margin: 0;
+        cursor: pointer;
+        user-select: none;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      .admin-search-box {
+        display: flex;
+        align-items: center;
+        background-color: $surface-container-low;
+        border: 1px solid rgba($outline-variant, 0.5);
+        border-radius: 8px;
+        padding: 6px 12px;
+        width: 280px;
+        transition: all 0.2s;
+
+        @media (max-width: 900px) {
+          display: none;
+        }
+
+        .search-icon {
+          color: $outline;
+          font-size: 20px;
+          line-height: 1;
+        }
+
+        input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: $on-surface;
+          font-size: 14px;
+          margin-left: 8px;
+          width: 100%;
+
+          &::placeholder {
+            color: $outline;
+          }
+        }
+
+        &.focused {
+          border-color: $secondary-container;
+          box-shadow: 0 0 0 3px rgba($secondary-container, 0.15);
+          background-color: $surface-container-lowest;
+        }
+      }
+
+      .top-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+
+        @media (max-width: 1100px) {
+          display: none;
+        }
+
+        .nav-link {
+          font-size: 14px;
+          font-weight: 500;
+          color: $on-surface-variant;
+          cursor: pointer;
+          transition: color 0.2s;
+
+          &:hover {
+            color: $primary;
+          }
+
+          &.active {
+            color: $primary;
+            font-weight: 700;
+            border-bottom: 2px solid $primary;
+            padding-bottom: 4px;
+          }
+        }
+
+        .btn-admin-panel {
+          background-color: $primary;
+          border-color: $primary;
+          color: #ffffff;
+          border-radius: 8px;
+          height: 36px;
+          font-weight: 500;
+          padding: 0 16px;
+
+          &:hover {
+            background-color: $primary-container;
+            border-color: $primary-container;
+          }
+        }
+      }
+
+      .header-action-icons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .icon-btn {
+          background: none;
+          border: none;
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $on-surface-variant;
+          transition: background-color 0.2s, transform 0.1s;
+
+          &:hover {
+            background-color: $surface-container-low;
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+
+          .text-icon {
+            font-size: 22px;
+          }
+        }
+
+        .admin-profile-trigger {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: none;
+          border: 1.5px solid $outline-variant;
+          border-radius: 99px;
+          padding: 4px 10px 4px 4px;
+          cursor: pointer;
+          transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+          margin-left: 8px;
+
+          &:hover {
+            background: $surface-container-low;
+            border-color: $primary;
+            box-shadow: 0 0 0 3px rgba($primary, 0.1);
+          }
+
+          .nav-avatar {
+            background: linear-gradient(135deg, $primary-container, $primary) !important;
+            color: $on-primary !important;
+            font-family: $font-mono !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
+          }
+
+          .nav-avatar-name {
+            display: block;
+            font-family: $font-mono;
+            font-size: 13px;
+            font-weight: 500;
+            color: $on-surface;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .nav-avatar-chevron {
+            font-size: 20px;
+            color: $on-surface-variant;
+            display: block;
+            transition: transform 0.2s;
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Sidebar Navigation Styles
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 256px;
+    background-color: $surface-container-lowest;
+    border-right: 1px solid $outline-variant;
+    padding-top: 80px;
+    padding-bottom: 20px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    @media (max-width: 768px) {
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &.open {
+        transform: translateX(0);
+      }
+    }
+
+    &.collapsed {
+      width: 72px;
+
+      .sidebar-brand-area {
+        padding: 0;
+        justify-content: center;
+
+        .brand-text-wrapper {
+          display: none;
+        }
+      }
+
+      .sidebar-navigation {
+        padding: 0 8px;
+
+        .sidebar-nav-item {
+          padding: 10px 0;
+          justify-content: center;
+          gap: 0;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+
+          .nav-label {
+            display: none;
+          }
+
+          &:hover {
+            padding-left: 0;
+          }
+
+          &.active {
+            padding-left: 0;
+            border-right: none;
+            background-color: rgba($secondary-container, 0.12);
+            color: $secondary;
+          }
+        }
+
+        .sidebar-nav-group__header {
+          padding: 10px 0;
+          justify-content: center;
+          gap: 0;
+
+          .nav-label,
+          .sidebar-nav-group__chevron {
+            display: none;
+          }
+        }
+      }
+
+      .sidebar-footer-links {
+        padding: 16px 8px 0 8px;
+
+        .sidebar-footer-item {
+          padding: 10px 0;
+          justify-content: center;
+          gap: 0;
+
+          .nav-label {
+            display: none;
+          }
+        }
+      }
+    }
+
+    .sidebar-brand-area {
+      padding: 0 20px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+
+      .brand-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        background-color: $primary;
+        color: #ffffff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        .brand-icon {
+          font-size: 24px;
+        }
+      }
+
+      .brand-text-wrapper {
+        display: flex;
+        flex-direction: column;
+        white-space: nowrap;
+        overflow: hidden;
+
+        .brand-name {
+          font-size: 16px;
+          font-weight: 700;
+          color: $primary;
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        .brand-subtitle {
+          font-size: 12px;
+          font-family: $font-mono;
+          color: $outline;
+          margin: 0;
+        }
+      }
+    }
+
+    .sidebar-navigation {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      // Subtle scrollbar styling
+      &::-webkit-scrollbar {
+        width: 5px;
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba($outline, 0.2);
+        border-radius: 4px;
+      }
+      &::-webkit-scrollbar-thumb:hover {
+        background: rgba($outline, 0.4);
+      }
+
+      .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 16px;
+        border-radius: 6px;
+        color: $on-surface-variant;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+
+        .nav-icon {
+          font-size: 20px;
+          color: inherit;
+        }
+
+        .nav-label {
+          font-size: 14px;
+          font-family: $font-mono;
+        }
+
+        &:hover {
+          background-color: $surface-container-low;
+          color: $on-surface;
+          padding-left: 20px;
+        }
+
+        &.active {
+          color: $secondary;
+          font-weight: 700;
+          background-color: rgba($secondary-container, 0.08);
+          border-right: 4px solid $secondary;
+          border-radius: 6px 0 0 6px;
+          padding-left: 20px;
+
+          .nav-icon { color: $secondary; }
+        }
+      }
+
+      // ── Sub-menu group ────────────────────────────────────────────────────
+      .sidebar-nav-group {
+        display: flex;
+        flex-direction: column;
+
+        &__header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 10px 16px;
+          border-radius: 6px;
+          color: $on-surface-variant;
+          font-weight: 500;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          background: none;
+          border: none;
+          cursor: pointer;
+          width: 100%;
+          text-align: left;
+
+          .nav-icon { font-size: 20px; }
+          .nav-label { font-size: 14px; font-family: $font-mono; flex: 1; }
+
+          &:hover {
+            background-color: $surface-container-low;
+            color: $on-surface;
+          }
+
+          &.active {
+            color: $secondary;
+            font-weight: 700;
+          }
+        }
+
+        &__chevron {
+          font-size: 18px;
+          transition: transform 0.2s ease;
+          flex-shrink: 0;
+          color: $outline;
+
+          &.open { transform: rotate(90deg); }
+        }
+
+        &__children {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 2px 0 4px 16px;
+          border-left: 2px solid $outline-variant;
+          margin-left: 28px;
+          animation: slideDown 0.18s ease;
+        }
+      }
+
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .sidebar-nav-child {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: $on-surface-variant;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+        font-size: 13px;
+
+        .nav-icon { font-size: 17px; }
+        .nav-label { font-size: 13px; font-family: $font-mono; }
+
+        &:hover {
+          background-color: $surface-container-low;
+          color: $on-surface;
+          padding-left: 16px;
+        }
+
+        &.active {
+          color: $secondary;
+          font-weight: 700;
+          background-color: rgba($secondary-container, 0.1);
+
+          .nav-icon { color: $secondary; }
+        }
+      }
+    }
+
+    .sidebar-footer-links {
+      padding: 16px 12px 0 12px;
+      border-top: 1px solid $outline-variant;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .sidebar-footer-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 16px;
+        border-radius: 6px;
+        color: $on-surface-variant;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+
+        .nav-icon {
+          font-size: 20px;
+        }
+
+        .nav-label {
+          font-size: 14px;
+          font-family: $font-mono;
+        }
+
+        &:hover {
+          background-color: $surface-container-low;
+          color: $on-surface;
+        }
+      }
+    }
+  }
+
+  // 3. Main Content Canvas Styles
+  .admin-main-canvas {
+    margin-left: 256px;
+    padding-top: 64px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.sidebar-collapsed {
+      margin-left: 72px;
+    }
+
+    @media (max-width: 768px) {
+      margin-left: 0;
+    }
+
+    .admin-content-inner {
+      flex-grow: 1;
+      padding: 32px;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      box-sizing: border-box;
+
+      @media (max-width: 768px) {
+        padding: 16px;
+      }
+    }
+  }
+}
+
+// User profile dropdown overrides
+.admin-profile-menu {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  padding: 8px !important;
+  min-width: 180px;
+
+  .menu-icon-antd {
+    font-size: 18px;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  .ant-dropdown-menu-item {
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+
+    &:hover {
+      background-color: $surface-container-low !important;
+    }
+  }
+}
+
+// ── Notification Dropdown Wrapper ──
+.nav-notification-dropdown-wrap {
+  .ant-dropdown-menu {
+    border: 1px solid $outline-variant;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    padding: 0 !important;
+    width: 320px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.nav-notification-dropdown {
+  display: flex;
+  flex-direction: column;
+  background: $surface;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: $surface;
+  }
+
+  &__title {
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $on-surface;
+  }
+
+  &__readall {
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: $primary;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
+
+  &__list {
+    overflow-y: auto;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    color: $on-surface-variant;
+
+    p {
+      margin: 8px 0 0;
+      font-size: 13px;
+    }
+  }
+
+  &__item {
+    padding: 12px 16px;
+    border-bottom: 1px solid $outline-variant;
+    cursor: pointer;
+    transition: background 0.18s;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: $surface-container-low;
+    }
+
+    &--unread {
+      background: rgba($primary, 0.02);
+
+      &:hover {
+        background: rgba($primary, 0.04);
+      }
+
+      .nav-notification-dropdown__item-subject {
+        font-weight: 600;
+        color: #0f172a;
+      }
+    }
+  }
+
+  &__item-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  &__item-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__item-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #005daa;
+    flex-shrink: 0;
+  }
+
+  &__item-subject {
+    font-size: 13.5px;
+    color: #1e293b;
+    line-height: 1.4;
+  }
+
+  &__item-time {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  &__item-message {
+    font-size: 12px;
+    color: $on-surface-variant;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  &__footer {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $primary;
+    cursor: pointer;
+    background: $surface;
+    transition: background 0.18s;
+
+    &:hover {
+      background: $surface-container-low;
+      text-decoration: underline;
+    }
+  }
+}

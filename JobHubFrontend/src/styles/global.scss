@@ -1,0 +1,164 @@
+// ============================================================
+//  global.scss — Shared Design Tokens & Ant Design Overrides
+//  Import file này vào đầu mỗi page SCSS:
+//    @use '../../styles/global' as *;
+// ============================================================
+
+// ─── Design Tokens ────────────────────────────────────────────────
+$primary:                  #002660;
+$primary-container:        #003a8c;
+$on-primary:               #ffffff;
+$on-primary-container:     #84a8ff;
+$secondary:                #005daa;
+$secondary-container:      #0075d5;
+$primary-fixed-dim:        #b0c6ff;
+$secondary-fixed:          #d4e3ff;
+$surface:                  #faf9f9;
+$surface-container:        #efeded;
+$surface-container-lowest: #ffffff;
+$surface-container-low:    #f4f3f3;
+$surface-container-high:   #e9e8e8;
+$surface-container-highest:#e3e2e2;
+$on-surface:               #1b1c1c;
+$on-surface-variant:       #434651;
+$outline:                  #747783;
+$outline-variant:          #c3c6d3;
+$error:                    #ba1a1a;
+$success:                  #2d7a4f;
+
+$font-body: 'Inter', sans-serif;
+$font-mono: 'JetBrains Mono', monospace;
+
+// ─── Mixins ───────────────────────────────────────────────────────
+
+// Label dạng monospace (dùng cho Form.Item label)
+@mixin label-mono {
+  font-family: $font-mono;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  color: $on-surface;
+}
+
+// Link dạng monospace (dùng cho các "Đăng nhập", "Đăng ký ngay")
+@mixin link-mono {
+  font-family: $font-mono;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  color: $secondary-container;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover { color: $primary; }
+}
+
+// Button gốc dùng chung cho các nút action chính
+@mixin btn-base {
+  border-radius: 8px !important;
+  height: auto !important;
+  font-family: $font-mono !important;
+  font-size: 14px !important;
+  letter-spacing: 0.02em !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  .ant-btn-icon { margin-inline-end: 0 !important; margin-inline-start: 0 !important; }
+}
+
+// ─── Shared Ant Design Overrides (dùng qua @include hoặc scope) ───
+//
+// Các mixin dưới đây được include bên trong selector scope của từng page
+// để tránh ảnh hưởng toàn cục.
+
+@mixin antd-form-overrides {
+
+  // Form Label
+  .ant-form-item-label > label {
+    @include label-mono;
+    height: auto !important;
+    margin-bottom: 4px !important;
+  }
+
+  // Form Item spacing
+  .ant-form-item { margin-bottom: 24px; }
+
+  // Standalone Input (không có prefix/suffix)
+  .ant-input {
+    font-family: $font-body !important;
+    font-size: 16px !important;
+    color: $on-surface !important;
+    background: $surface-container-lowest !important;
+    border-color: $outline-variant !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+
+    &::placeholder { color: $on-surface-variant !important; }
+
+    &:hover { border-color: $secondary-container !important; }
+
+    &:focus {
+      border-color: $secondary-container !important;
+      box-shadow: 0 0 0 3px rgba($secondary-container, 0.2) !important;
+    }
+  }
+
+  // Input wrapper (có prefix/suffix hoặc Input.Password)
+  .ant-input-affix-wrapper {
+    border: 1px solid $outline-variant !important;
+    border-radius: 8px !important;
+    background: $surface-container-lowest !important;
+    box-shadow: none !important;
+    padding: 0 12px !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+
+    &:hover       { border-color: $outline !important; }
+
+    &:focus-within,
+    &.ant-input-affix-wrapper-focused {
+      border-color: $secondary-container !important;
+      box-shadow: 0 0 0 3px rgba($secondary-container, 0.2) !important;
+    }
+
+    // Prefix icon (Material Symbols)
+    .ant-input-prefix {
+      margin-inline-end: 10px;
+
+      .field-icon {
+        color: $outline;
+        font-size: 20px;
+        line-height: 1;
+      }
+    }
+
+    // Input bên trong wrapper
+    .ant-input {
+      padding: 8px 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      line-height: 24px !important;
+    }
+
+    // Eye icon của Input.Password
+    .ant-input-suffix .anticon {
+      color: $outline;
+      font-size: 18px;
+      transition: color 0.2s;
+      &:hover { color: $on-surface-variant; }
+    }
+  }
+
+  // Validation error
+  .ant-form-item-explain-error {
+    font-family: $font-body;
+    font-size: 13px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+  }
+}

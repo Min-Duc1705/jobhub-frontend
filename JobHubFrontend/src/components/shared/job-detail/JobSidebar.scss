@@ -1,0 +1,225 @@
+/* ── Sidebar ────────────────────────────────────────────────── */
+.jd-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* AI Card */
+.jd-ai-card {
+  background: linear-gradient(135deg, #002660 0%, #005daa 100%);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 38, 96, 0.25);
+  min-width: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -24px;
+    right: -24px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 50%;
+  }
+}
+
+.jd-ai-card-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+
+  .material-symbols-outlined {
+    color: #a5c8ff;
+    font-size: 20px;
+  }
+
+  span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+}
+
+.jd-ai-card-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 14px;
+}
+
+.jd-ai-salary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 5px;
+
+  .jd-ai-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+
+  .jd-ai-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a5c8ff;
+  }
+}
+
+.jd-ai-bar-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.jd-ai-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #a5c8ff, #d9e2ff);
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.jd-ai-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+/* Company card */
+.jd-company-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e9e8e8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.jd-company-banner {
+  height: 60px;
+  background: linear-gradient(135deg, #002660, #005daa);
+}
+
+.jd-company-body {
+  padding: 40px 16px 16px;
+  position: relative;
+}
+
+.jd-company-avatar {
+  position: absolute;
+  top: -30px;
+  left: 16px;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  border: 3px solid #ffffff;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  object-fit: contain;
+  padding: 3px;
+}
+
+.jd-company-avatar-fallback {
+  position: absolute;
+  top: -30px;
+  left: 16px;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  border: 3px solid #ffffff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.jd-company-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b1c1c;
+  margin-bottom: 3px;
+}
+
+.jd-company-type {
+  font-size: 12px;
+  color: #747783;
+  margin-bottom: 8px;
+}
+
+.jd-company-desc {
+  font-size: 12px;
+  color: #434651;
+  line-height: 1.7;
+  margin-bottom: 12px;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  p,
+  div {
+    margin: 0 0 6px;
+    font-size: 12px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  ul,
+  ol {
+    padding-left: 14px;
+    margin: 0 0 6px;
+  }
+
+  li {
+    margin-bottom: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+}
+
+.jd-company-meta {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  border-top: 1px solid #e9e8e8;
+  padding-top: 12px;
+  margin-bottom: 12px;
+
+  .jd-company-meta-label {
+    font-size: 10px;
+    color: #747783;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+
+  .jd-company-meta-val {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1b1c1c;
+    word-break: break-all;
+  }
+}

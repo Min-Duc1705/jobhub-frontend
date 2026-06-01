@@ -1,0 +1,347 @@
+@use '../../../styles/global' as *;
+
+// ─── Page Layout (Split) ──────────────────────────────────────────
+.register-page {
+  min-height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  font-family: $font-body;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+// ─── Left Panel ───────────────────────────────────────────────────
+.register-left {
+  display: none;
+  width: 50%;
+  position: relative;
+  background: $primary;
+  overflow: hidden;
+  flex-direction: column;
+
+  @media (min-width: 768px) { display: flex; }
+
+  .reg-left-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB4GAomQGTey_nvqgJ4YPW6XpDX9LEN3_Wjp8ox4_Yqu9GkAlw3tZyafoYlXpZdGD165N3tRFBxD9xjnVuQZW1yfkoyMPXrPvbbKD2uNVy3kzefERhzQwHcP3czslOv1310A4n4WmSOQxTqAwzQLurpi8R9MKhdN3Ez8QesE_r4ETWsWe0XpMlM-4I-nP0dMajBR_T7RUxzNNx9LFrYWEAx9tYIAD2aCgUH720OPfVIRqB9x6i28yHkB3rsXmIR1Y4kxgGNH7m6XsY');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.8;
+    mix-blend-mode: overlay;
+  }
+
+  .reg-left-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba($primary, 0.9) 0%, rgba($primary, 0.6) 50%, transparent 100%);
+  }
+
+  .reg-left-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 48px;
+  }
+}
+
+// ─── Left Panel Content ───────────────────────────────────────────
+.reg-brand {
+  font-size: 48px;
+  line-height: 56px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: $on-primary;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  .material-symbols-outlined { font-size: 40px; }
+}
+
+.reg-value-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 480px;
+
+  .reg-value-title {
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    color: $on-primary;
+    margin-bottom: 16px;
+  }
+
+  .reg-value-desc {
+    font-size: 18px;
+    line-height: 28px;
+    color: $primary-fixed-dim;
+  }
+}
+
+.reg-trust {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.reg-avatars {
+  display: flex;
+
+  .reg-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: $surface-container;
+    border: 2px solid $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -12px;
+    overflow: hidden;
+
+    &:first-child { margin-left: 0; }
+    .material-symbols-outlined { font-size: 20px; color: $outline; }
+
+    &.reg-avatar--count {
+      background: $secondary;
+      color: $on-primary;
+      font-family: $font-mono;
+      font-size: 12px;
+      font-weight: 500;
+      z-index: 10;
+    }
+  }
+}
+
+.reg-trust-text {
+  font-size: 14px;
+  line-height: 22px;
+  color: $primary-fixed-dim;
+}
+
+// ─── Right Panel ──────────────────────────────────────────────────
+.register-right {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: $surface;
+  overflow-y: auto;
+
+  @media (min-width: 768px) {
+    width: 50%;
+    padding: 32px;
+  }
+}
+
+.register-form-wrap { width: 100%; max-width: 440px; }
+
+.reg-mobile-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 700;
+  color: $primary;
+
+  .material-symbols-outlined { font-size: 26px; }
+
+  @media (min-width: 768px) { display: none; }
+}
+
+.reg-form-header {
+  margin-bottom: 16px;
+  text-align: center;
+
+  @media (min-width: 768px) { text-align: left; }
+
+  h2 {
+    font-size: 26px;
+    line-height: 34px;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    color: $on-surface;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 20px;
+    color: $on-surface-variant;
+  }
+}
+
+// ─── Role Selection Cards ─────────────────────────────────────────
+.role-selection {
+  margin-bottom: 12px;
+
+  .role-label {
+    display: block;
+    @include label-mono;
+    margin-bottom: 4px;
+  }
+}
+
+.role-cards { display: flex; gap: 12px; }
+
+.role-card {
+  flex: 1;
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  border: 1px solid $outline-variant;
+  background: $surface-container-lowest;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+
+  input.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  .role-check {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-size: 18px;
+    color: $secondary-container;
+    font-variation-settings: 'FILL' 1;
+  }
+
+  .role-icon {
+    font-size: 24px;
+    color: $on-surface-variant;
+    margin-bottom: 4px;
+    transition: color 0.2s;
+  }
+
+  .role-name {
+    @include label-mono;
+    color: $on-surface;
+  }
+
+  &:hover {
+    border-color: $outline;
+    .role-icon { color: $primary; }
+  }
+
+  &.role-card--active {
+    border: 2px solid $secondary-container;
+    background: rgba($secondary-fixed, 0.2);
+    .role-icon { color: $secondary-container; }
+  }
+}
+
+// ─── Ant Design Overrides (scoped to form) ────────────────────────
+.reg-form {
+  @include antd-form-overrides;
+
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+}
+
+// ─── Register Button ──────────────────────────────────────────────
+.ant-btn.btn-register {
+  @include btn-base;
+  background: $primary !important;
+  border-color: $primary !important;
+  color: $on-primary !important;
+  padding: 12px 16px !important;
+
+  .ant-btn-icon { margin-inline-start: 8px !important; }
+
+  &:hover, &:focus {
+    background: $primary-container !important;
+    border-color: $primary-container !important;
+    color: $on-primary !important;
+  }
+}
+
+// ─── Password Strength Meter ──────────────────────────────────────
+.strength-meter {
+  margin-top: -8px;
+  margin-bottom: 12px;
+
+  .strength-bars {
+    display: flex;
+    gap: 8px;
+    height: 4px;
+    margin-bottom: 4px;
+  }
+
+  .strength-bar {
+    flex: 1;
+    border-radius: 999px;
+    background: $surface-container-highest;
+    transition: background 0.3s;
+
+    &[data-level='weak'].active   { background: $error; }
+    &[data-level='medium'].active { background: $secondary-container; }
+    &[data-level='strong'].active { background: $success; }
+  }
+
+  .strength-text {
+    font-size: 13px;
+    line-height: 18px;
+    color: $on-surface-variant;
+  }
+
+  .strength-label {
+    font-weight: 600;
+    &--weak   { color: $error; }
+    &--medium { color: $secondary-container; }
+    &--strong { color: $success; }
+  }
+}
+
+// ─── Footer Links ─────────────────────────────────────────────────
+.reg-login-link {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: $on-surface-variant;
+
+  a {
+    @include link-mono;
+    color: $secondary-container;
+    &:hover { color: $secondary; text-decoration: underline; }
+  }
+}
+
+.reg-terms {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 16px;
+  color: $outline;
+
+  a {
+    text-decoration: underline;
+    color: $outline;
+    transition: color 0.2s;
+    &:hover { color: $primary; }
+  }
+}

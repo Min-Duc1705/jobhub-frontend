@@ -1,0 +1,828 @@
+@use '../../../styles/global' as *;
+
+// ─── Page container ────────────────────────────────────────────────
+.profile-settings {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+
+  @media (min-width: 768px) { padding: 40px 40px 80px; }
+  @media (min-width: 1200px) { padding: 48px 48px 80px; }
+}
+
+// ─── Page Header ──────────────────────────────────────────────────
+.ps-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-family: $font-body;
+    font-size: 30px;
+    font-weight: 700;
+    color: $primary;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  &__sub {
+    font-family: $font-body;
+    font-size: 14px;
+    color: $on-surface-variant;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+
+    .ant-btn-primary {
+      background: $primary !important;
+      border-color: $primary !important;
+      border-radius: 8px !important;
+
+      &:hover {
+        background: $primary-container !important;
+        border-color: $primary-container !important;
+      }
+    }
+
+    .ant-btn-default {
+      border-radius: 8px !important;
+    }
+  }
+}
+
+// ─── Profile Strength Banner ───────────────────────────────────────
+.ps-strength-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba($secondary, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba($secondary, 0.08);
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  &__glow {
+    position: absolute;
+    top: -32px;
+    right: -32px;
+    width: 128px;
+    height: 128px;
+    background: rgba($secondary, 0.06);
+    border-radius: 50%;
+    filter: blur(32px);
+    pointer-events: none;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba($secondary, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .material-symbols-outlined {
+      color: $secondary;
+      font-size: 24px;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  &__label {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    color: $on-surface;
+  }
+
+  &__badge {
+    font-family: $font-mono;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__tip {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: $on-surface-variant;
+  }
+}
+
+.ps-strength-cta {
+  flex-shrink: 0;
+  border-radius: 8px !important;
+  color: $secondary !important;
+  border-color: rgba($secondary, 0.3) !important;
+  font-family: $font-mono !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    background: $secondary !important;
+    color: $on-primary !important;
+    border-color: $secondary !important;
+  }
+}
+
+// ─── Grid ─────────────────────────────────────────────────────────
+.ps-form-root { width: 100%; }
+
+.ps-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 360px;
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: 1fr 400px;
+  }
+}
+
+.ps-left,
+.ps-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ─── Card ─────────────────────────────────────────────────────────
+.ps-card {
+  background: $surface-container-lowest;
+  border: 1px solid $outline-variant;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    .material-symbols-outlined { color: $secondary; font-size: 22px; }
+
+    h2 {
+      font-family: $font-body;
+      font-size: 18px;
+      font-weight: 600;
+      color: $on-surface;
+      margin: 0;
+    }
+  }
+}
+
+// ─── Loading / Error state ───────────────────────────────────────
+.ps-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ─── Avatar Row ───────────────────────────────────────────────────
+.ps-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid $outline-variant;
+}
+
+// Wrapper for position: relative on the avatar circle
+.ps-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+
+  &:hover .ps-avatar-edit { opacity: 1; }
+}
+
+.ps-avatar {
+  background: linear-gradient(135deg, $primary-container, $primary) !important;
+  color: $on-primary !important;
+  font-family: $font-mono !important;
+  font-weight: 700 !important;
+  font-size: 22px !important;
+  flex-shrink: 0;
+
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $surface-container !important;
+    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+  }
+
+  &--img {
+    // antd <Image> renders a <span class="ant-image"> wrapper — border-radius + overflow
+    // phải đặt ở đây để clip ảnh thành hình tròn
+    border-radius: 50% !important;
+    width: 72px !important;
+    height: 72px !important;
+    overflow: hidden;
+    display: block;
+    border: 2px solid $outline-variant;
+    flex-shrink: 0;
+
+    // Ảnh thực bên trong wrapper của antd
+    .ant-image-img {
+      width: 72px !important;
+      height: 72px !important;
+      object-fit: cover;
+      display: block;
+      border-radius: 50%;
+    }
+
+    // Mask preview (hover) cũng bo tròn
+    .ant-image-mask {
+      border-radius: 50%;
+    }
+  }
+}
+
+.ps-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $primary;
+  color: $on-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+  .material-symbols-outlined { font-size: 14px; }
+}
+
+.ps-avatar-name {
+  font-family: $font-body;
+  font-size: 15px;
+  font-weight: 600;
+  color: $on-surface;
+  margin: 0 0 2px;
+}
+
+.ps-avatar-email {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $on-surface-variant;
+  margin: 0 0 4px;
+}
+
+.ps-avatar-hint {
+  font-size: 11px;
+  color: $on-surface-variant;
+  margin: 0 0 8px;
+  font-style: italic;
+}
+
+// ─── Form grid ──────────────────────────────────────────────────────
+.ps-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 20px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (min-width: 720px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.ps-full-width { width: 100% !important; }
+
+// Full-width modifier for form items inside ps-form-grid
+.ps-form-grid--full {
+  @media (min-width: 480px) { grid-column: span 2; }
+  @media (min-width: 720px) { grid-column: span 3; }
+}
+
+
+// ─── Skills ───────────────────────────────────────────────────────
+.ps-skills {
+  margin-top: 4px;
+
+  &__label {
+    display: block;
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 500;
+    color: $on-surface-variant;
+    margin-bottom: 4px;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0 0 12px;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+.ps-skill-tag {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-family: $font-mono !important;
+  font-size: 12px !important;
+  background: rgba($secondary, 0.08) !important;
+  border-color: rgba($secondary, 0.2) !important;
+  color: $secondary !important;
+
+  &__years {
+    background: $secondary;
+    color: $on-primary;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+
+  &--add {
+    background: transparent !important;
+    border-style: dashed !important;
+    color: $on-surface-variant !important;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $secondary !important;
+      border-color: $secondary !important;
+      background: rgba($secondary, 0.05) !important;
+    }
+  }
+}
+
+.ps-skill-add-panel {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  background: $surface-container-low;
+  border: 1px dashed $outline-variant;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease-in-out;
+  animation: fadeIn 0.2s ease-out;
+
+  &:hover {
+    border-color: rgba($secondary, 0.4);
+    background: rgba($secondary, 0.02);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba($outline-variant, 0.15);
+    padding-bottom: 8px;
+  }
+
+  &__icon {
+    font-size: 18px;
+    color: $secondary;
+  }
+
+  &__title {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    color: $primary;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 16px;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+
+    &--select {
+      flex: 2;
+    }
+
+    &--years {
+      flex: 1;
+      max-width: 150px;
+      
+      @media (max-width: 640px) {
+        max-width: none;
+      }
+    }
+  }
+
+  &__field-label {
+    font-family: $font-mono;
+    font-size: 12px;
+    font-weight: 500;
+    color: $on-surface-variant;
+  }
+
+  &__select {
+    width: 100% !important;
+
+    .ant-select-selector {
+      height: 38px !important;
+      padding: 3px 12px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+  }
+
+  &__input {
+    width: 100% !important;
+
+    .ant-input-number {
+      width: 100% !important;
+      border-radius: 8px !important;
+    }
+
+    .ant-input-number-group-addon {
+      background: $surface-container-high !important;
+      border-color: $outline-variant !important;
+      color: $on-surface-variant !important;
+      font-family: $font-mono !important;
+      font-size: 12px !important;
+      border-start-end-radius: 8px !important;
+      border-end-end-radius: 8px !important;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 4px;
+
+    @media (min-width: 640px) {
+      margin-top: 0;
+      flex-shrink: 0;
+    }
+  }
+
+  &__btn-cancel {
+    border-radius: 8px !important;
+    font-family: $font-mono !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    color: $on-surface-variant !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    &:hover {
+      background: rgba($outline-variant, 0.2) !important;
+      color: $on-surface !important;
+    }
+  }
+
+  &__btn-submit {
+    border-radius: 8px !important;
+    font-family: $font-mono !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    background: $secondary !important;
+    border-color: $secondary !important;
+    color: $on-primary !important;
+    box-shadow: 0 2px 4px rgba($secondary, 0.15) !important;
+    height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    &:hover {
+      background: $secondary-container !important;
+      border-color: $secondary-container !important;
+      box-shadow: 0 4px 8px rgba($secondary, 0.25) !important;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Security ─────────────────────────────────────────────────────
+.ps-security-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid $outline-variant;
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba($secondary, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { color: $secondary; }
+  }
+
+  &__title {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    color: $on-surface;
+    margin: 0 0 2px;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0;
+  }
+
+  &__action {
+    margin-left: auto;
+    color: $secondary !important;
+    font-family: $font-mono !important;
+    font-size: 13px !important;
+  }
+}
+
+// ─── Social Links ─────────────────────────────────────────────────
+.ps-social-section {
+  &__title {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    color: $on-surface;
+    margin: 0 0 10px;
+  }
+}
+
+.ps-social-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (min-width: 480px) { flex-direction: row; }
+}
+
+.ps-social-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid $outline-variant;
+  border-radius: 10px;
+  font-family: $font-mono;
+  font-size: 13px;
+  background: $surface-container-low;
+  color: $on-surface;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .material-symbols-outlined { font-size: 18px; color: $on-surface-variant; }
+  }
+
+  &__check { color: #52c41a; font-size: 20px; }
+
+  &--dashed {
+    background: none;
+    border-style: dashed;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+
+    &:hover {
+      background: $surface-container;
+      border-color: $secondary;
+      color: $secondary;
+    }
+  }
+
+  &--connected .material-symbols-outlined { color: #0a66c2; }
+}
+
+// ─── Notifications ────────────────────────────────────────────────
+.ps-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ps-notif-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $on-surface;
+}
+
+// ─── Privacy ──────────────────────────────────────────────────────
+.ps-privacy {
+  &__label {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    color: $primary;
+    margin: 0 0 8px;
+  }
+
+  &__tip {
+    font-size: 12px;
+    color: $on-surface-variant;
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+// ─── Account Type Badge ───────────────────────────────────────────
+.ps-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: rgba($secondary, 0.05);
+  border: 1px solid rgba($secondary, 0.15);
+  border-radius: 10px;
+
+  .material-symbols-outlined {
+    font-size: 28px;
+    color: $secondary;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    font-family: $font-mono;
+    font-size: 14px;
+    font-weight: 600;
+    color: $on-surface;
+    margin: 0 0 2px;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0;
+  }
+}
+
+// ─── Danger Zone ──────────────────────────────────────────────────
+.ps-danger {
+  background: rgba($error, 0.05);
+  border: 1px solid rgba($error, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+
+  &__title {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 700;
+    color: $error;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: $on-surface-variant;
+    margin: 0 0 14px;
+    line-height: 1.6;
+  }
+
+  .ant-btn-dangerous {
+    border-radius: 8px !important;
+    font-family: $font-mono !important;
+    font-weight: 600 !important;
+  }
+}
+
+// ─── Ant Design overrides ─────────────────────────────────────────
+.profile-settings {
+  .ant-form-item-label > label {
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 500;
+    color: $on-surface-variant;
+  }
+
+  .ant-input,
+  .ant-input-number,
+  .ant-picker,
+  .ant-select-selector {
+    border-radius: 8px !important;
+    border-color: $outline-variant !important;
+    font-family: $font-body !important;
+
+    &:hover { border-color: $secondary !important; }
+  }
+
+  .ant-input:focus,
+  .ant-input-number-focused,
+  .ant-picker-focused,
+  .ant-select-focused .ant-select-selector {
+    border-color: $secondary !important;
+    box-shadow: 0 0 0 2px rgba($secondary, 0.15) !important;
+  }
+
+  .ant-switch-checked { background: $secondary !important; }
+
+  .ant-input-disabled,
+  .ant-input[disabled] {
+    background: $surface-container-low !important;
+    color: $on-surface-variant !important;
+    cursor: not-allowed;
+  }
+
+  .ant-progress-bg {
+    border-radius: 99px !important;
+  }
+}

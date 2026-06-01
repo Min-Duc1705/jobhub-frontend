@@ -1,0 +1,218 @@
+/* ════════════════════════════════════════════════════════════
+   JobDetailPage.scss
+   ════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.jd-page {
+  background: #faf9f9;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* ── Wrapper ────────────────────────────────────────────────── */
+.jd-wrap {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  box-sizing: border-box;
+}
+
+/* ── Breadcrumb ─────────────────────────────────────────────── */
+.jd-breadcrumb {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #747783;
+  a { color: #005daa; text-decoration: none; &:hover { text-decoration: underline; } }
+}
+
+/* ── Header card ────────────────────────────────────────────── */
+.jd-header-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e9e8e8;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.jd-header-top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.jd-company-logo {
+  width: 72px; height: 72px;
+  border-radius: 10px;
+  border: 1px solid #e9e8e8;
+  object-fit: contain;
+  padding: 6px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.jd-company-logo-fallback {
+  width: 72px; height: 72px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 26px;
+  flex-shrink: 0;
+}
+
+.jd-header-info {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.jd-title {
+  font-size: 22px; font-weight: 700;
+  color: #002660; margin: 0 0 8px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.jd-badges {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+
+.jd-meta-row {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  align-items: center; color: #434651; font-size: 13px;
+
+  .jd-meta-item {
+    display: flex; align-items: center; gap: 4px;
+    min-width: 0; word-break: break-word;
+    .material-symbols-outlined { font-size: 16px; color: #002660; flex-shrink: 0; }
+    &.salary { color: #005daa; font-weight: 600; }
+  }
+}
+
+.jd-header-actions {
+  display: flex; gap: 8px; align-items: flex-start; flex-shrink: 0;
+  @media (max-width: 600px) { width: 100%; button { flex: 1; } }
+}
+
+/* ── Main grid ──────────────────────────────────────────────── */
+.jd-grid {
+  display: grid;
+  /* dùng minmax(0,1fr) để left column có thể co lại */
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+
+  @media (max-width: 960px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Content card ───────────────────────────────────────────── */
+.jd-content-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e9e8e8;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  padding: 20px;
+  min-width: 0;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.jd-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 700; color: #002660;
+  margin-bottom: 14px;
+
+  .jd-section-bar {
+    width: 4px; height: 20px;
+    background: #002660; border-radius: 4px; flex-shrink: 0;
+  }
+}
+
+.jd-description {
+  font-size: 14px; line-height: 1.8; color: #434651;
+  word-break: break-word; overflow-wrap: break-word;
+
+  p { margin-bottom: 10px; }
+  ul, ol { padding-left: 18px; margin-bottom: 10px; li { margin-bottom: 5px; } }
+  h1, h2, h3 { color: #002660; margin: 14px 0 6px; font-weight: 600; }
+  strong { color: #1b1c1c; }
+  img { max-width: 100%; height: auto; }
+  pre, code { white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+
+  /* Numbered section headers tự động in đậm (plain text) */
+  br + span, &:first-child span { }
+}
+
+.jd-responsibility-list {
+  list-style: none; padding: 0; margin: 0 0 16px;
+  display: flex; flex-direction: column; gap: 7px;
+
+  li {
+    display: flex; align-items: flex-start; gap: 7px;
+    font-size: 13px; color: #434651; line-height: 1.6;
+    .material-symbols-outlined { color: #002660; font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+  }
+}
+
+.jd-skill-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+}
+
+/* ── Thông tin chung (info grid) ────────────────────────────── */
+.jd-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.jd-info-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: #f4f3f3;
+  border-radius: 8px;
+
+  .material-symbols-outlined { color: #005daa; font-size: 18px; flex-shrink: 0; }
+  .jd-info-label { font-size: 11px; color: #747783; text-transform: uppercase; letter-spacing: .04em; }
+  .jd-info-val   { font-size: 13px; font-weight: 600; color: #1b1c1c; }
+}
+
+.jd-benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.jd-benefit-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: #efeded; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  word-break: break-word;
+  .material-symbols-outlined { color: #005daa; font-size: 20px; flex-shrink: 0; }
+}
+
+
+
+/* ── Mobile sticky bar ───────────────────────────────────────── */
+.jd-sticky-bar {
+  display: none;
+  @media (max-width: 600px) {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 10px 14px; background: #fff;
+    border-top: 1px solid #e9e8e8; gap: 8px;
+    z-index: 100; box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+  }
+}

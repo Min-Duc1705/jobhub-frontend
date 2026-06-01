@@ -1,0 +1,567 @@
+// ── ApplicationDetailModal.scss ─────────────────────────────────────────────
+
+.adm-drawer {
+  .ant-drawer-content {
+    background: #ffffff;
+  }
+}
+
+.adm-drawer-layout {
+  display: flex;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+// Floating close button on the left edge of split drawer
+.adm-floating-close {
+  position: absolute;
+  top: 16px;
+  left: 12px;
+  background: #ffffff;
+  border: 1px solid #c3c6d3;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 100;
+  color: #747783;
+  transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    color: #002660;
+    border-color: #002660;
+    box-shadow: 0 4px 16px rgba(0, 38, 96, 0.18);
+  }
+}
+
+// LEFT PANE: PDF Viewer
+.adm-left-pane {
+  flex: 1;
+  background: #dbdad9;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid #c3c6d3;
+  overflow: hidden;
+}
+
+.adm-pane-header {
+  height: 64px;
+  border-bottom: 1px solid #c3c6d3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px 0 64px; // indent to leave room for close button
+  background: #efeded;
+  flex-shrink: 0;
+}
+
+.adm-file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1b1c1c;
+
+  .adm-filename {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .text-outline {
+    color: #747783;
+  }
+}
+
+.adm-header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.adm-action-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #747783;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #e3e2e2;
+    color: #1b1c1c;
+  }
+}
+
+.adm-pdf-viewer-body {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #dbdad9;
+}
+
+.adm-pdf-iframe-container {
+  width: 85%;
+  min-height: 1200px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #c3c6d3;
+  border-radius: 4px;
+  overflow: hidden;
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 1200px;
+    border: none;
+  }
+}
+
+.adm-pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #747783;
+  font-size: 14px;
+  padding-top: 100px;
+  width: 100%;
+}
+
+// Online CV wrapper when there's no PDF upload
+.adm-online-cv-wrapper {
+  width: auto;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.adm-online-cv-paper {
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border: 1px solid #c3c6d3;
+  border-radius: 4px;
+  padding: 0; /* Remove double padding so template padding takes precedence */
+  width: 860px; /* Fixed width matching standard resume builder size */
+  flex-shrink: 0;
+  min-height: 1120px;
+  box-sizing: border-box;
+}
+
+.adm-online-fallback-wrap {
+  padding: 48px;
+}
+
+.adm-online-fallback-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #002660;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #002660;
+  padding-bottom: 12px;
+}
+
+.adm-online-badge-info {
+  background: rgba(0, 93, 170, 0.08);
+  color: #005daa;
+  border: 1px solid rgba(0, 93, 170, 0.2);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  margin-bottom: 24px;
+}
+
+.adm-online-section {
+  margin-top: 24px;
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1b1c1c;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #434651;
+    white-space: pre-wrap;
+  }
+}
+
+// RIGHT PANE: AI Insights
+.adm-right-pane {
+  width: 450px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+// Glassmorphism background effect on top of right panel
+.adm-ai-glass-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 252px;
+  background: linear-gradient(135deg, rgba(212,227,255,0.3) 0%, rgba(236,220,255,0.2) 100%);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(195,198,211,0.2);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.adm-ai-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 24px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.adm-ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.adm-candidate-meta {
+  flex: 1;
+}
+
+.adm-ai-badge-complete {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #5e08bd;
+  margin-bottom: 8px;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+    font-variation-settings: 'FILL' 1;
+  }
+}
+
+.adm-candidate-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b1c1c;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.adm-applied-time {
+  font-size: 13.5px;
+  color: #747783;
+  margin: 0;
+}
+
+// Matching score circular chart
+.adm-score-ring {
+  width: 72px;
+  height: 72px;
+  position: relative;
+  flex-shrink: 0;
+
+  .stroke-surface-variant {
+    stroke: #e3e2e2;
+  }
+  
+  .stroke-secondary {
+    stroke: #005daa;
+  }
+}
+
+.adm-score-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .score-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: #005daa;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 10px;
+    color: #747783;
+    line-height: 1;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+}
+
+.adm-divider {
+  border: 0;
+  border-top: 1px solid rgba(195,198,211,0.5);
+  margin: 0;
+}
+
+.adm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1b1c1c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: #747783;
+  }
+}
+
+.adm-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adm-skill-tag {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  
+  &--highlight {
+    background: #d9e2ff;
+    color: #001945;
+    border: 1px solid #b0c6ff;
+  }
+  
+  &--default {
+    background: #e3e2e2;
+    color: #434651;
+    border: 1px solid transparent;
+  }
+}
+
+// Strengths and Concerns columns
+.adm-pros-cons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.adm-pros-card, .adm-cons-card {
+  background: #faf9f9;
+  border: 1px solid #c3c6d3;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+
+  ul {
+    padding-left: 16px;
+    margin: 0;
+    font-size: 12px;
+    color: #434651;
+    line-height: 1.5;
+  }
+
+  li {
+    margin-bottom: 6px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.adm-pros-card {
+  border-left: 4px solid #005daa;
+}
+
+.adm-cons-card {
+  border-left: 4px solid #ba1a1a;
+}
+
+.adm-card-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+}
+
+// AI Notes Quote Block
+.adm-evaluator-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid #d5baff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: inset 0 2px 10px rgba(255, 255, 255, 0.8);
+}
+
+.adm-evaluator-quote {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  opacity: 0.15;
+  color: #380077;
+  pointer-events: none;
+
+  .material-symbols-outlined {
+    font-size: 40px;
+  }
+}
+
+.adm-evaluator-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #380077;
+  margin: 0 0 8px 0;
+}
+
+.adm-evaluator-text {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #1b1c1c;
+  margin: 0;
+}
+
+// Internal reviewer note
+.adm-review-note-box {
+  background: #fff8e1;
+  border-left: 3px solid #ffd666;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 12.5px;
+
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1b1c1c;
+    margin: 0 0 4px 0;
+  }
+
+  p {
+    margin: 0;
+    color: #434651;
+    line-height: 1.5;
+  }
+}
+
+// Sticky actions footer
+.adm-ai-footer {
+  padding: 24px;
+  background: #ffffff;
+  border-top: 1px solid #c3c6d3;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.adm-footer-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.adm-btn-reject {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #ba1a1a;
+  color: #ba1a1a;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: rgba(186, 26, 26, 0.05);
+  }
+}
+
+.adm-btn-approve {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  color: #ffffff;
+  background: #002660;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: #001945;
+  }
+}
+
+.adm-review-note-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #c3c6d3;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1b1c1c;
+  background: #ffffff;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #002660;
+  }
+}

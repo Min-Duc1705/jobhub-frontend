@@ -1,0 +1,878 @@
+@use '../../../styles/global' as *;
+
+// Local Design Tokens (Not present in global.scss)
+$tertiary:                  #380077;
+$tertiary-container:        #5400ad;
+$on-tertiary:               #ffffff;
+$tertiary-fixed:            #ecdcff;
+$on-tertiary-fixed-variant: #5e08bd;
+$primary-fixed:             #d9e2ff;
+$on-primary-fixed-variant:  #124394;
+$on-secondary-fixed-variant: #004785;
+$primary-fixed-dim:         #b0c6ff;
+$secondary-fixed-dim:       #a5c8ff;
+$secondary-fixed:           #d4e3ff;
+
+.admin-dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    gap: 24px;
+  }
+
+  // 1. Dashboard Header Row
+  .dashboard-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+
+    .title-area {
+      .title-text {
+        font-size: 28px;
+        font-weight: 700;
+        color: $primary;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .subtitle-text {
+        font-size: 14px;
+        color: $on-surface-variant;
+        margin: 4px 0 0 0;
+      }
+    }
+
+    .action-area {
+      display: flex;
+      gap: 12px;
+
+      .btn-filter-date {
+        height: 38px;
+        border-radius: 8px;
+        border-color: $outline-variant;
+        background-color: $surface-container-lowest;
+        color: $on-surface;
+        font-family: $font-mono;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        &:hover {
+          background-color: $surface-container-low;
+          border-color: $outline;
+        }
+      }
+
+      .btn-export {
+        height: 38px;
+        border-radius: 20px;
+        background-color: $primary;
+        border-color: $primary;
+        font-family: $font-mono;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 10px rgba($primary, 0.15);
+
+        &:hover {
+          background-color: $primary-container;
+          border-color: $primary-container;
+          transform: translateY(-1px);
+        }
+      }
+
+      .icon-size-antd {
+        font-size: 18px;
+      }
+    }
+  }
+
+  // 2. KPI Cards Section
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    width: 100%;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+
+    .kpi-card {
+      background-color: $surface-container-lowest;
+      border: 1px solid rgba($outline-variant, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+
+        .kpi-sparkline {
+          opacity: 1;
+        }
+      }
+
+      .kpi-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+
+        .kpi-icon-wrapper {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          span {
+            font-size: 20px;
+          }
+
+          &.revenue {
+            background-color: rgba($primary, 0.05);
+            color: $primary;
+          }
+          &.candidates {
+            background-color: rgba($secondary, 0.05);
+            color: $secondary;
+          }
+          &.jobs {
+            background-color: rgba($tertiary, 0.05);
+            color: $tertiary;
+          }
+          &.conversion {
+            background-color: rgba($on-surface-variant, 0.05);
+            color: $on-surface-variant;
+          }
+        }
+
+        .trend-badge {
+          font-size: 11px;
+          font-family: $font-mono;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 9999px;
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+
+          &.positive {
+            color: #16a34a;
+            background-color: #f0fdf4;
+          }
+          &.stable {
+            color: $outline;
+            background-color: $surface-container;
+          }
+
+          .trend-arrow {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .kpi-label {
+        font-size: 13px;
+        font-family: $font-mono;
+        color: $on-surface-variant;
+        margin: 0;
+      }
+
+      .kpi-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: $on-surface;
+        margin: 4px 0 16px 0;
+        line-height: 1.1;
+      }
+
+      .kpi-sparkline {
+        height: 32px;
+        width: 100%;
+        opacity: 0.55;
+        transition: opacity 0.3s;
+
+        .sparkline-svg {
+          width: 100%;
+          height: 100%;
+          overflow: visible;
+        }
+      }
+    }
+  }
+
+  // 3. Analytics Section (Charts)
+  .analytics-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    width: 100%;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-container-card {
+      background-color: $surface-container-lowest;
+      border: 1px solid rgba($outline-variant, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+
+      .chart-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: $primary;
+        margin: 0;
+      }
+
+      .chart-subtitle {
+        font-size: 13px;
+        color: $outline;
+        margin: 2px 0 0 0;
+      }
+    }
+
+    .recruitment-chart {
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 16px;
+
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+
+            &.applications {
+              background-color: $primary;
+            }
+            &.hires {
+              background-color: $secondary;
+            }
+          }
+
+          .legend-label {
+            font-size: 12px;
+            font-family: $font-mono;
+            color: $on-surface-variant;
+          }
+        }
+      }
+
+      .chart-canvas-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 8px;
+
+        .main-chart-svg {
+          width: 100%;
+          height: 240px;
+          overflow: visible;
+        }
+
+        .chart-axis-x {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 8px;
+          font-size: 11px;
+          font-family: $font-mono;
+          color: $outline;
+        }
+      }
+    }
+
+    .category-donut-card {
+      align-items: center;
+      justify-content: space-between;
+
+      .chart-title {
+        align-self: flex-start;
+        margin-bottom: 16px;
+      }
+
+      .donut-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px 0;
+
+        .donut-svg {
+          transform: rotate(-90deg);
+        }
+
+        .donut-center-text {
+          position: absolute;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+
+          .total-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: $on-surface;
+            line-height: 1;
+          }
+
+          .total-label {
+            font-size: 11px;
+            font-family: $font-mono;
+            color: $outline;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
+          }
+        }
+      }
+
+      .donut-legend {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 16px;
+
+        .legend-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+
+          .row-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .dot {
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+
+              &.engineering { background-color: $primary; }
+              &.marketing { background-color: $secondary; }
+              &.sales { background-color: $tertiary; }
+              &.other { background-color: $outline-variant; }
+            }
+
+            .label {
+              font-size: 13px;
+              color: $on-surface-variant;
+            }
+          }
+
+          .pct {
+            font-size: 13px;
+            font-family: $font-mono;
+            font-weight: 600;
+            color: $on-surface;
+          }
+        }
+      }
+    }
+  }
+
+  // 4. AI Salary Predictor Banner (Styled as mandated in guidance)
+  .ai-predictor-banner-premium {
+    border-radius: 12px;
+    background: linear-gradient(135deg, $primary 0%, #082d6b 100%);
+    padding: 32px;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba($primary, 0.15);
+    position: relative;
+    overflow: hidden;
+    gap: 32px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 24px;
+      gap: 24px;
+    }
+
+    .predictor-left {
+      flex: 1;
+
+      .ai-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        .ai-lightning {
+          color: $secondary-fixed;
+          font-size: 24px;
+          animation: lightning-pulse 2s infinite ease-in-out;
+        }
+
+        .ai-title-text {
+          font-size: 18px;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: $secondary-fixed;
+          margin: 0;
+        }
+      }
+
+      .ai-description-text {
+        font-size: 15px;
+        line-height: 24px;
+        color: $primary-fixed;
+        max-width: 48rem;
+        margin: 0 0 20px 0;
+      }
+
+      .ai-metrics-row {
+        display: flex;
+        gap: 32px;
+
+        .metric-box {
+          .metric-label {
+            font-size: 12px;
+            font-family: $font-mono;
+            color: $primary-fixed-dim;
+            margin: 0;
+          }
+          .metric-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: $secondary-fixed-dim;
+            margin: 4px 0 0 0;
+          }
+
+          &.border-left {
+            border-left: 1px solid rgba(#ffffff, 0.15);
+            padding-left: 32px;
+          }
+        }
+      }
+    }
+
+    .predictor-right {
+      flex-shrink: 0;
+
+      @media (max-width: 768px) {
+        width: 100%;
+      }
+
+      .btn-premium-action {
+        background: linear-gradient(135deg, $secondary 0%, $tertiary 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: $font-mono;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 8px 24px rgba($secondary, 0.4);
+
+        @media (max-width: 768px) {
+          width: 100%;
+        }
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 30px rgba($secondary, 0.5), 0 0 15px rgba($tertiary, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  // 5. Recent Activity Section (Custom Table Card)
+  .activity-table-card {
+    background-color: $surface-container-lowest;
+    border: 1px solid rgba($outline-variant, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    .table-card-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba($outline-variant, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .table-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: $primary;
+        margin: 0;
+      }
+
+      .table-subtitle {
+        font-size: 13px;
+        color: $outline;
+        margin: 2px 0 0 0;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+
+        .icon-btn-action {
+          background: none;
+          border: none;
+          padding: 6px;
+          border-radius: 4px;
+          color: $on-surface-variant;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: $surface-container-low;
+          }
+
+          span {
+            font-size: 20px;
+          }
+        }
+      }
+    }
+
+    .table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .custom-dashboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+
+      th {
+        background-color: $surface-container-low;
+        padding: 12px 24px;
+        font-family: $font-mono;
+        font-size: 12px;
+        font-weight: 600;
+        color: $on-surface-variant;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba($outline-variant, 0.2);
+      }
+
+      td {
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba($outline-variant, 0.15);
+        vertical-align: middle;
+      }
+
+      .table-item-row {
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: $surface-container-low;
+
+          .btn-view-details {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      }
+
+      .user-profile-cell {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .avatar-container {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+          background-color: $surface-container;
+          border: 1px solid $outline-variant;
+          flex-shrink: 0;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .user-info {
+          .user-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: $primary;
+            margin: 0;
+          }
+          .user-email {
+            font-size: 12px;
+            color: $outline;
+            margin: 2px 0 0 0;
+          }
+        }
+      }
+
+      .action-cell {
+        font-size: 14px;
+        color: $on-surface;
+        font-weight: 500;
+      }
+
+      .time-cell {
+        font-size: 13px;
+        color: $outline;
+      }
+
+      .status-pill {
+        font-size: 11px;
+        font-family: $font-mono;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        display: inline-block;
+
+        &.success {
+          color: #15803d;
+          background-color: #dcfce7;
+        }
+        &.processing {
+          color: #1d4ed8;
+          background-color: #dbeafe;
+        }
+        &.warning {
+          color: #b45309;
+          background-color: #fef3c7;
+        }
+      }
+
+      .actions-cell {
+        text-align: right;
+      }
+
+      .btn-view-details {
+        opacity: 0;
+        transform: translateX(5px);
+        background: none;
+        border: none;
+        color: $secondary;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          color: $primary;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .table-card-footer {
+      padding: 16px 24px;
+      background-color: $surface-container-low;
+      border-top: 1px solid rgba($outline-variant, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+
+      .footer-results-text {
+        font-size: 12px;
+        font-family: $font-mono;
+        color: $outline;
+        margin: 0;
+      }
+
+      .footer-pagination-buttons {
+        display: flex;
+        gap: 8px;
+
+        .btn-page {
+          background-color: $surface-container-lowest;
+          border: 1px solid $outline-variant;
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-size: 12px;
+          font-family: $font-mono;
+          font-weight: 500;
+          color: $on-surface;
+          cursor: pointer;
+          transition: background-color 0.2s;
+
+          &:hover:not(:disabled) {
+            background-color: $surface-container;
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+
+  // 6. Floating Action Button
+  .floating-action-button {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background-color: $primary;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba($primary, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 50;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba($primary, 0.5);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    span {
+      font-size: 28px;
+    }
+  }
+}
+
+// Custom animations
+@keyframes lightning-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
+}
+
+// Modal specific overrides
+.admin-entry-modal {
+  .ant-modal-content {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .ant-modal-header {
+    border-bottom: 1px solid $outline-variant !important;
+    padding: 16px 24px !important;
+  }
+
+  .ant-modal-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: $primary !important;
+  }
+
+  .ant-modal-body {
+    padding: 24px !important;
+  }
+
+  .btn-modal-submit {
+    background-color: $primary !important;
+    border-color: $primary !important;
+    &:hover {
+      background-color: $primary-container !important;
+      border-color: $primary-container !important;
+    }
+  }
+}
+
+// Activity Detail Modal Layout
+.activity-detail-modal-body {
+  .detail-profile-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: $primary;
+      margin: 0;
+    }
+
+    p {
+      font-size: 13px;
+      color: $outline;
+      margin: 2px 0 0 0;
+    }
+  }
+
+  .detail-meta-list {
+    background-color: $surface-container-low;
+    border: 1px solid rgba($outline-variant, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+
+    p {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: $on-surface;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
