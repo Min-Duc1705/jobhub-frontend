@@ -17,6 +17,9 @@ import { Mutex } from "async-mutex";
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
   withCredentials: true, // Gửi kèm cookie (refresh_token httpOnly)
+  headers: {
+    "ngrok-skip-browser-warning": "true"
+  }
 });
 
 // Mutex: chỉ 1 request refresh token được gửi tại một thời điểm
