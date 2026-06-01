@@ -6,9 +6,11 @@ interface Props {
   onChangeKeyword: (val: string) => void
   onChangeLocation: (val: string) => void
   onSearch: () => void
+  provinceOptions: any[]
+  loadingProvinces: boolean
 }
 
-const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSearch }: Props) => {
+const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSearch, provinceOptions, loadingProvinces }: Props) => {
   return (
     <section className="home-hero-section">
       <div className="hero-overlay-decor">
@@ -27,7 +29,7 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
         <p className="hero-subtitle">
           Khám phá hàng ngàn cơ hội việc làm từ các công ty công nghệ hàng đầu, được hỗ trợ bởi AI.
         </p>
-
+ 
         <div className="search-bar-container glass-ai">
           <div className="search-input-wrapper">
             <span className="material-symbols-outlined search-icon">search</span>
@@ -40,7 +42,7 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
               onPressEnter={onSearch}
             />
           </div>
-
+ 
           <div className="search-select-wrapper">
             <span className="material-symbols-outlined select-icon">location_on</span>
             <Select
@@ -48,12 +50,14 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
               variant="borderless"
               value={location}
               onChange={onChangeLocation}
-              options={[
-                { value: '', label: 'Tất cả địa điểm' },
-                { value: 'hanoi', label: 'Hà Nội' },
-                { value: 'hcm', label: 'TP. Hồ Chí Minh' },
-                { value: 'danang', label: 'Đà Nẵng' },
-              ]}
+              showSearch
+              optionFilterProp="children"
+              loading={loadingProvinces}
+              options={provinceOptions}
+              placeholder="Chọn địa điểm"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
             />
           </div>
 

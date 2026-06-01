@@ -1,4 +1,4 @@
-import { Input, Button } from 'antd'
+import { Input, Button, Select } from 'antd'
 
 interface Props {
   keyword: string
@@ -6,6 +6,8 @@ interface Props {
   onChangeKeyword: (val: string) => void
   onChangeLocation: (val: string) => void
   onSearch: () => void
+  provinceOptions: any[]
+  loadingProvinces: boolean
 }
 
 const JobHeroSearch = ({
@@ -14,6 +16,8 @@ const JobHeroSearch = ({
   onChangeKeyword,
   onChangeLocation,
   onSearch,
+  provinceOptions,
+  loadingProvinces,
 }: Props) => {
   return (
     <section className="hero-search-section">
@@ -43,13 +47,20 @@ const JobHeroSearch = ({
           </div>
           <div className="search-input-wrapper">
             <span className="material-symbols-outlined search-icon">location_on</span>
-            <Input
-              className="search-input"
-              placeholder="Thành phố, Remote..."
+            <Select
+              className="search-select search-input"
               variant="borderless"
-              value={locationInput}
-              onChange={e => onChangeLocation(e.target.value)}
-              onPressEnter={onSearch}
+              value={locationInput || undefined}
+              onChange={onChangeLocation}
+              showSearch
+              optionFilterProp="children"
+              loading={loadingProvinces}
+              options={provinceOptions}
+              placeholder="Chọn địa điểm..."
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              style={{ width: '100%' }}
             />
           </div>
           <Button className="btn-search-jobs" type="primary" onClick={onSearch}>

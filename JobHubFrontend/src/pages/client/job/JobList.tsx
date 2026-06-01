@@ -49,6 +49,53 @@ const JobList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [loading,     setLoading]     = useState(false)
 
+  // ── Provinces API state
+  const [provinceOptions, setProvinceOptions] = useState<any[]>([])
+  const [loadingProvinces, setLoadingProvinces] = useState(false)
+
+  // Fetch Vietnam provinces
+  useEffect(() => {
+    setLoadingProvinces(true)
+    fetch('https://provinces.open-api.vn/api/v2/p/')
+      .then(res => res.json())
+      .then((data: any[]) => {
+        const cleanProvinceName = (name: string) => name.replace(/^(Thành phố|Tỉnh)\s+/i, '').trim();
+        const options = data.map((province: any) => {
+          const cleaned = cleanProvinceName(province.name);
+          return {
+            label: cleaned,
+            value: cleaned,
+          };
+        })
+        options.unshift({
+          label: 'Tất cả địa điểm',
+          value: '',
+        })
+        options.push({
+          label: 'Remote',
+          value: 'Remote',
+        })
+        options.push({
+          label: 'Khác',
+          value: 'Khác',
+        })
+        setProvinceOptions(options)
+      })
+      .catch(err => {
+        console.warn('Lỗi khi tải danh sách tỉnh thành:', err)
+        setProvinceOptions([
+          { label: 'Tất cả địa điểm', value: '' },
+          { label: 'Hà Nội', value: 'Hà Nội' },
+          { label: 'TP.HCM', value: 'TP.HCM' },
+          { label: 'Đà Nẵng', value: 'Đà Nẵng' },
+          { label: 'Hải Phòng', value: 'Hải Phòng' },
+          { label: 'Khác', value: 'Khác' },
+          { label: 'Remote', value: 'Remote' },
+        ])
+      })
+      .finally(() => setLoadingProvinces(false))
+  }, [])
+
   // Fetch user's saved job IDs
   useEffect(() => {
     const fetchSavedJobIds = async () => {
@@ -121,7 +168,7 @@ const JobList = () => {
       const params = new URLSearchParams()
       params.set('pageNumber', String(page))
       params.set('pageSize',   String(PAGE_SIZE))
-      if (appliedKeyword)               params.set('keyword',  appliedKeyword)
+      if (appliedKeyword)               params.set('searchTerm',  appliedKeyword)
       if (appliedLocation)              params.set('location', appliedLocation)
       if (appliedTypes.length)          params.set('jobType',  appliedTypes.join(','))
       if (appliedLevels.length)         params.set('level',    appliedLevels.join(','))
@@ -186,6 +233,8 @@ const JobList = () => {
         onChangeKeyword={setKeyword}
         onChangeLocation={setLocationInput}
         onSearch={handleSearch}
+        provinceOptions={provinceOptions}
+        loadingProvinces={loadingProvinces}
       />
 
       {/* Main Layout */}

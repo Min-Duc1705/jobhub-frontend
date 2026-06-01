@@ -57,10 +57,14 @@ const SalaryPredictorPage = () => {
     fetch('https://provinces.open-api.vn/api/v2/p/')
       .then(res => res.json())
       .then((data: any[]) => {
-        const options = data.map((province: any) => ({
-          label: province.name,
-          value: province.name,
-        }))
+        const cleanProvinceName = (name: string) => name.replace(/^(Thành phố|Tỉnh)\s+/i, '').trim();
+        const options = data.map((province: any) => {
+          const cleaned = cleanProvinceName(province.name);
+          return {
+            label: cleaned,
+            value: cleaned,
+          };
+        })
         // Thêm Remote và Khác
         options.push({
           label: 'Remote',
@@ -152,7 +156,7 @@ const SalaryPredictorPage = () => {
               jobTitle: 'Frontend Developer',
               level: 'MIDDLE',
               skills: ['React', 'TypeScript'],
-              location: 'Thành phố Hồ Chí Minh',
+              location: 'Hồ Chí Minh',
             }}
           >
             <Form.Item
