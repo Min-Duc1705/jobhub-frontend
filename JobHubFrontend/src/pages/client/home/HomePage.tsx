@@ -124,6 +124,18 @@ const HomePage = () => {
           const defaultResume = resumes.find(r => r.isDefault) || resumes[0]
 
           if (defaultResume) {
+            const cacheKey = `job-recs-${user.id}-${defaultResume.id}`
+            const cached = sessionStorage.getItem(cacheKey)
+            if (cached) {
+              try {
+                setRecommendedJobs(JSON.parse(cached))
+                setLoadingRecommended(false)
+                return
+              } catch (e) {
+                // ignore
+              }
+            }
+
             const cvText = buildCvText({
               id: '',
               customerId: user.id,
@@ -135,6 +147,7 @@ const HomePage = () => {
             const recJobs = recRes.data ?? []
             if (recJobs.length > 0) {
               setRecommendedJobs(recJobs)
+              sessionStorage.setItem(cacheKey, JSON.stringify(recJobs))
               setLoadingRecommended(false)
               return
             }

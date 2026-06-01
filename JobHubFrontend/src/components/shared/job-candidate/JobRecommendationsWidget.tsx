@@ -81,6 +81,19 @@ const JobRecommendationsWidget = () => {
         const defaultResume = resumes.find(r => r.isDefault) || resumes[0]
 
         if (defaultResume) {
+          const cacheKey = `job-recs-${user.id}-${defaultResume.id}`
+          const cached = sessionStorage.getItem(cacheKey)
+          if (cached) {
+            try {
+              const fullData = JSON.parse(cached)
+              setRecommendations(fullData.slice(0, 3))
+              setLoading(false)
+              return
+            } catch (e) {
+              // ignore
+            }
+          }
+
           const cvText = buildCvText({
             id: '',
             customerId: user.id,
@@ -89,8 +102,10 @@ const JobRecommendationsWidget = () => {
           }, defaultResume)
 
           const recRes = await getJobRecommendationsApi({ cv_text: cvText, customer_id: user.id })
+          const recData = recRes.data ?? []
           // AI service trả về tối đa 6 jobs, ta lấy top 3 hiển thị ở widget sidebar
-          setRecommendations((recRes.data ?? []).slice(0, 3))
+          setRecommendations(recData.slice(0, 3))
+          sessionStorage.setItem(cacheKey, JSON.stringify(recData))
         }
       } catch (err) {
         console.warn('Lỗi khi tải gợi ý việc làm widget:', err)
