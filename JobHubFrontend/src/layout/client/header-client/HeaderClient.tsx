@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Avatar, Dropdown, Button, notification } from 'antd'
+import { Avatar, Dropdown, Button, notification, Drawer } from 'antd'
 import type { MenuProps } from 'antd'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
@@ -87,6 +87,7 @@ const HeaderClient = () => {
   // Toggle mở/đóng sub Jobs cho candidate
   const [jobsOpen,     setJobsOpen]     = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Notification state
   const [notifications, setNotifications] = useState<INotification[]>([])
@@ -229,6 +230,9 @@ const HeaderClient = () => {
 
         {/* ── Brand ── */}
         <div className="nav-bar__brand-wrap">
+          <button className="nav-bar__mobile-menu-btn" onClick={() => setMobileMenuOpen(true)} aria-label="Menu">
+            <span className="material-symbols-outlined">menu</span>
+          </button>
           <Link to="/" className="nav-bar__brand">JobHub</Link>
         </div>
 
@@ -317,6 +321,81 @@ const HeaderClient = () => {
         </div>
 
       </div>
+
+      {/* ── Mobile Menu Drawer ── */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link to="/" className="nav-bar__brand" style={{ fontSize: '28px' }} onClick={() => setMobileMenuOpen(false)}>
+              JobHub
+            </Link>
+          </div>
+        }
+        placement="left"
+        onClose={() => setMobileMenuOpen(false)}
+        open={mobileMenuOpen}
+        width={280}
+        styles={{
+          header: { padding: '16px 24px', borderBottom: '1px solid var(--outline-variant)' },
+          body: { padding: '24px' }
+        }}
+        className="nav-bar__drawer"
+      >
+        <div className="nav-bar__drawer-links" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {NAV_LINKS.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `nav-bar__drawer-link${isActive ? ' nav-bar__drawer-link--active' : ''}`
+              }
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '15px',
+                fontWeight: 500,
+                color: 'var(--on-surface-variant)',
+                textDecoration: 'none',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                display: 'block',
+                transition: 'background 0.18s'
+              }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {label}
+            </NavLink>
+          ))}
+
+          {!isAuthenticated && (
+            <div className="nav-bar__drawer-auth" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--outline-variant)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Link
+                to="/login"
+                className="nav-bar__drawer-login"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: 'var(--on-surface-variant)',
+                  textDecoration: 'none',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--outline)'
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Button className="btn-signup" style={{ width: '100%' }}>
+                <Link to="/register" style={{ color: 'inherit', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
+                  Sign Up
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </Drawer>
     </nav>
   )
 }

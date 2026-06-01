@@ -25,6 +25,7 @@
   &__brand-wrap {
     display: flex;
     align-items: center;
+    grid-column: 1;
   }
 
   // Center column — nav links
@@ -32,6 +33,7 @@
     display: none;
     align-items: center;
     gap: 4px;
+    grid-column: 2;
 
     @media (min-width: 768px) { display: flex; }
   }
@@ -42,6 +44,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
+    grid-column: 3;
   }
 
   // Brand
@@ -196,6 +199,104 @@
     transition: transform 0.2s;
 
     @media (min-width: 768px) { display: block; }
+  }
+
+  // Mobile menu button
+  &__mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: $on-surface-variant;
+    margin-right: 8px;
+    transition: background 0.18s, color 0.18s;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+    }
+
+    &:hover {
+      background: $surface-container-low;
+      color: $primary;
+    }
+
+    @media (min-width: 768px) {
+      display: none; // Ẩn trên desktop
+    }
+  }
+}
+
+// Drawer mobile menu styling
+.nav-bar__drawer {
+  .ant-drawer-header {
+    border-bottom: 1px solid $outline-variant;
+    padding: 16px 24px;
+  }
+
+  .ant-drawer-body {
+    padding: 24px;
+  }
+
+  .nav-bar__drawer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .nav-bar__drawer-link {
+    font-family: $font-mono;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: $on-surface-variant !important;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s;
+
+    &:hover {
+      color: $primary !important;
+      background: rgba($primary, 0.06) !important;
+    }
+
+    &--active {
+      color: $primary !important;
+      background: rgba($primary, 0.08) !important;
+      font-weight: 600;
+    }
+  }
+
+  .nav-bar__drawer-auth {
+    margin-top: 24px;
+    border-top: 1px solid $outline-variant;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-bar__drawer-login {
+    display: block;
+    text-align: center;
+    font-family: $font-mono;
+    font-size: 15px;
+    font-weight: 500;
+    color: $on-surface-variant !important;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid $outline-variant;
+    transition: background 0.18s, color 0.18s;
+
+    &:hover {
+      background: $surface-container-low !important;
+      color: $primary !important;
+    }
   }
 }
 
