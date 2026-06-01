@@ -647,6 +647,110 @@
           transform: scale(0.95);
         }
       }
+
+      @media (max-width: 576px) {
+        padding: 16px;
+        gap: 12px;
+
+        .card-main-header {
+          gap: 12px;
+          position: relative;
+        }
+
+        .company-logo-container {
+          width: 42px;
+          height: 42px;
+        }
+
+        .company-logo {
+          width: 28px;
+          height: 28px;
+        }
+
+        .job-title-heading {
+          font-size: 16px;
+          line-height: 22px;
+          padding-right: 28px;
+        }
+
+        .company-location-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          margin-top: 4px;
+          
+          .separator {
+            display: none;
+          }
+
+          .location-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            width: 100%; // Force break to next line
+            margin-top: 2px;
+            color: $on-surface-variant;
+
+            .inline-icon {
+              font-size: 14px;
+              margin-top: 2px;
+              flex-shrink: 0;
+            }
+          }
+        }
+
+        .btn-bookmark {
+          position: absolute;
+          top: 0;
+          right: 0;
+          margin: 0 !important;
+        }
+
+        .card-tags-container {
+          gap: 6px;
+          
+          .job-tag {
+            font-size: 11px;
+            padding: 1px 6px;
+          }
+        }
+
+        .card-footer-row {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+          margin-top: 4px;
+          padding-top: 12px;
+        }
+
+        .footer-meta {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          gap: 6px;
+          
+          .salary-range-badge, .job-tag, .posted-time {
+            font-size: 11px;
+            white-space: nowrap;
+          }
+          
+          .posted-time {
+            margin-left: auto;
+            white-space: nowrap;
+          }
+        }
+
+        .btn-apply-now {
+          width: 100% !important;
+          height: 36px !important;
+          font-size: 13px !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
     }
 
     .pagination-container {

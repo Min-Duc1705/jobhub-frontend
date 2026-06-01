@@ -122,13 +122,14 @@ const JobList = () => {
     let urlSortBy = qParams.get('sortBy') || 'newest'
     if (urlSortBy === 'createdDate') urlSortBy = 'newest'
     if (urlSortBy === 'salary') urlSortBy = 'salary_desc'
+    const urlPage = parseInt(qParams.get('page') || '1', 10)
 
     setKeyword(urlKeyword)
     setLocationInput(urlLocation)
     setAppliedKeyword(urlKeyword)
     setAppliedLocation(urlLocation)
     setSortBy(urlSortBy)
-    setCurrentPage(1)
+    setCurrentPage(urlPage)
   }, [location.search])
 
   const handleToggleSave = async (e: React.MouseEvent, job: IJob) => {
@@ -198,9 +199,15 @@ const JobList = () => {
 
   // Handlers
   const handleSearch = () => {
-    setAppliedKeyword(keyword)
-    setAppliedLocation(locationInput)
-    setCurrentPage(1)
+    const params = new URLSearchParams(location.search)
+    if (keyword) params.set('keyword', keyword)
+    else params.delete('keyword')
+
+    if (locationInput) params.set('location', locationInput)
+    else params.delete('location')
+
+    params.delete('page') // Reset pagination to page 1
+    navigate(`/jobs?${params.toString()}`)
   }
 
   const handleApplyFilters = () => {
@@ -210,12 +217,13 @@ const JobList = () => {
   }
 
   const handleClearAll = () => {
-    setKeyword('');       setLocationInput('')
-    setAppliedKeyword(''); setAppliedLocation('')
-    setTempTypes([]);     setTempLevels([])
-    setAppliedTypes([]);  setAppliedLevels([])
-    setSortBy('newest')
-    setCurrentPage(1)
+    setKeyword('')
+    setLocationInput('')
+    setTempTypes([])
+    setTempLevels([])
+    setAppliedTypes([])
+    setAppliedLevels([])
+    navigate('/jobs')
   }
 
   const toggleType = (t: JobType) =>
@@ -262,7 +270,13 @@ const JobList = () => {
                 className="select-sort"
                 variant="borderless"
                 value={sortBy}
-                onChange={val => { setSortBy(val); setCurrentPage(1) }}
+                onChange={val => {
+                  const params = new URLSearchParams(location.search)
+                  if (val && val !== 'newest') params.set('sortBy', val)
+                  else params.delete('sortBy')
+                  params.delete('page') // Reset pagination to page 1
+                  navigate(`/jobs?${params.toString()}`)
+                }}
                 options={[
                   { value: 'newest',     label: 'Mới nhất' },
                   { value: 'salary_desc', label: 'Lương cao nhất' },
@@ -299,7 +313,12 @@ const JobList = () => {
                 current={currentPage}
                 pageSize={PAGE_SIZE}
                 total={total}
-                onChange={page => setCurrentPage(page)}
+                onChange={page => {
+                  const params = new URLSearchParams(location.search)
+                  if (page > 1) params.set('page', String(page))
+                  else params.delete('page')
+                  navigate(`/jobs?${params.toString()}`)
+                }}
                 showSizeChanger={false}
                 itemRender={(_, type, originalElement) => {
                   if (type === 'prev') return <button className="pagination-arrow-btn"><span className="material-symbols-outlined">chevron_left</span></button>
