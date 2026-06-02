@@ -213,7 +213,8 @@ const FloatingChatWidget = () => {
       formData.append('file', file)
       const res = await uploadResumeFileApi(formData)
       if (res && res.data && res.data.url) {
-        await handleSend(res.data.url, 'file')
+        const fileUrl = res.data.fullUrl || (res.data.url.startsWith('http') ? res.data.url : `http://localhost:9000/resumes/${res.data.url}`)
+        await handleSend(fileUrl, 'file')
         message.success('Gửi tệp tin thành công!')
       } else {
         message.error('Không thể tải tệp tin lên!')

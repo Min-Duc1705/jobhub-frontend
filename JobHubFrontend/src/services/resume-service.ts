@@ -13,7 +13,7 @@ export const getResumeByIdApi = (id: string): Promise<ApiResponse<IResume>> =>
   axios.get(`/api/v1/resumes/${id}`)
 
 /** Upload file CV (PDF/DOC) */
-export const uploadResumeFileApi = (formData: FormData): Promise<ApiResponse<{ url: string; originalFileName: string; extractedText?: string }>> =>
+export const uploadResumeFileApi = (formData: FormData): Promise<ApiResponse<{ url: string; fullUrl?: string; originalFileName: string; extractedText?: string }>> =>
   axios.post('/api/v1/resumes/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
