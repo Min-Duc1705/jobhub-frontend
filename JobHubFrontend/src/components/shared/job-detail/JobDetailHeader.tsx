@@ -1,5 +1,5 @@
 import { Button, Tag } from 'antd'
-import { BookOutlined, SendOutlined } from '@ant-design/icons'
+import { BookOutlined, SendOutlined, MessageOutlined } from '@ant-design/icons'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
 import { LEVEL_COLOR, TYPE_COLOR, formatSalary, timeAgo } from './jobDetailHelpers'
@@ -11,13 +11,15 @@ interface Props {
   salaryText: string
   saved: boolean
   alreadyApplied: boolean
+  showChatButton: boolean
   onToggleSave: () => void
   onApply: () => void
+  onMessage: () => void
 }
 
 const JobDetailHeader = ({
   job, companyName, companyLogo, salaryText,
-  saved, alreadyApplied, onToggleSave, onApply,
+  saved, alreadyApplied, showChatButton, onToggleSave, onApply, onMessage,
 }: Props) => {
   const companyInitial = companyName.charAt(0).toUpperCase()
 
@@ -67,6 +69,15 @@ const JobDetailHeader = ({
           >
             {saved ? 'Đã lưu' : 'Lưu tin'}
           </Button>
+          {showChatButton && (
+            <Button
+              icon={<MessageOutlined />}
+              onClick={onMessage}
+              style={{ borderColor: '#005daa', color: '#005daa' }}
+            >
+              Nhắn tin
+            </Button>
+          )}
           <Button
             type="primary"
             icon={<SendOutlined />}

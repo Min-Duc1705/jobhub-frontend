@@ -18,6 +18,8 @@ import ResumeBuilderPage from '../pages/client/cv/ResumeBuilderPage'
 import JobHRPage             from '../pages/client/job-hr/JobHRPage'
 import JobApplicationsPage   from '../pages/client/job-application/JobApplicationsPage'
 import AppliedJobsPage       from '../pages/client/job-candidate/AppliedJobsPage'
+import ChatPage              from '../pages/client/chat/ChatPage'
+import NotificationList      from '../pages/client/notification/NotificationList'
 
 import AdminLayout      from '../layout/admin/AdminLayout'
 import RoleBasedRoute   from '../components/auth/RoleBasedRoute'
@@ -81,6 +83,7 @@ const router = createBrowserRouter([
       { path: '/salary-predict', element: <SalaryPredictorPage /> },
       { path: '/about', element: <AboutPage /> },
       { path: '/contact', element: <ContactPage /> },
+      { path: '/chat', element: <ChatPage /> },
       { path: '/candidate/profile', element: <ProfileSettings /> },
       { path: '/candidate/resume', element: <ResumeManagerPage /> },
       { path: '/candidate/resume/builder/:id', element: <ResumeBuilderPage /> },
@@ -97,6 +100,14 @@ const router = createBrowserRouter([
         element: (
           <RoleBasedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
             <AppliedJobsPage />
+          </RoleBasedRoute>
+        )
+      },
+      {
+        path: '/candidate/notifications',
+        element: (
+          <RoleBasedRoute allowedRoles={['CANDIDATE', 'HR', 'ADMIN']}>
+            <NotificationList />
           </RoleBasedRoute>
         )
       },

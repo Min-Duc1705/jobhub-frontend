@@ -30,7 +30,7 @@ export interface INotificationDto {
 
 /** Lấy danh sách thông báo */
 export const getNotificationsApi = (): Promise<ApiResponse<INotificationDto[]>> =>
-  axios.get('/api/v1/notifications')
+  axios.get(`/api/v1/notifications?t=${Date.now()}`)
 
 /** Đánh dấu đã đọc 1 thông báo */
 export const markNotificationReadApi = (id: string): Promise<ApiResponse<{ id: string, isRead: boolean }>> =>

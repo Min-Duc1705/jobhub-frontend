@@ -1,0 +1,857 @@
+@use '../../../styles/global' as *;
+
+// Local Design Tokens for premium aesthetics
+$tertiary:                  #380077;
+$tertiary-container:        #5400ad;
+$on-tertiary:               #ffffff;
+$tertiary-fixed:            #ecdcff;
+$tertiary-fixed-dim:        #d5baff;
+$on-secondary-fixed-variant: #004785;
+
+.notification-page {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  gap: 48px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 24px 16px;
+    gap: 32px;
+  }
+
+  .notification-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 48px;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 32px;
+    }
+  }
+
+  // ─── SIDEBAR ──────────────────────────────────────────────────
+  .notification-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+
+    .sidebar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-group-title {
+      font-family: $font-mono;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: $outline;
+      margin: 0;
+      padding: 0 16px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      text-align: left;
+      cursor: pointer;
+      color: $on-surface-variant;
+      transition: all 0.2s ease-in-out;
+
+      .nav-icon {
+        font-size: 20px;
+      }
+
+      .nav-text {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      &:hover {
+        background-color: $surface-container;
+        color: $primary;
+      }
+
+      &--active {
+        background-color: $primary-container !important;
+        color: $on-primary !important;
+        font-weight: 600;
+
+        &:hover {
+          background-color: $primary-container !important;
+          color: $on-primary !important;
+        }
+      }
+    }
+
+    // AI Insights Card
+    .ai-insights-card {
+      position: relative;
+      background-color: rgba($tertiary-container, 0.08);
+      border: 1px solid rgba($tertiary-fixed-dim, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .ai-insights-bg-decor {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        opacity: 0.15;
+        pointer-events: none;
+
+        .decor-icon {
+          font-size: 80px;
+          color: $tertiary;
+        }
+      }
+
+      .ai-insights-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: $tertiary;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .title-icon {
+          font-size: 18px;
+        }
+      }
+
+      .ai-insights-desc {
+        font-size: 14px;
+        line-height: 20px;
+        color: $on-surface-variant;
+        margin: 0;
+        z-index: 1;
+      }
+
+      .ai-insights-btn {
+        width: 100%;
+        padding: 10px 16px;
+        background-color: $tertiary;
+        color: $on-tertiary;
+        font-family: $font-mono;
+        font-size: 14px;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba($tertiary, 0.1);
+
+        &:hover {
+          background-color: darken($tertiary, 5%);
+          box-shadow: 0 4px 8px rgba($tertiary, 0.2);
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+  }
+
+  // ─── MAIN CONTENT ─────────────────────────────────────────────
+  .notification-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    gap: 16px;
+
+    @media (max-width: 576px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .header-title-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      line-height: 40px;
+      font-weight: 700;
+      color: $primary;
+      margin: 0;
+      letter-spacing: -0.01em;
+
+      @media (max-width: 576px) {
+        font-size: 28px;
+        line-height: 36px;
+      }
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      line-height: 24px;
+      color: $on-surface-variant;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      @media (max-width: 576px) {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .action-link-btn {
+        background: transparent;
+        border: none;
+        font-family: $font-mono;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.2s;
+
+        &--readall {
+          color: $secondary;
+          &:hover {
+            color: $primary;
+          }
+        }
+
+        &--clearall {
+          color: $error;
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+
+      .divider-line {
+        width: 1px;
+        height: 16px;
+        background-color: $outline-variant;
+      }
+    }
+  }
+
+  // Filters (Tabs)
+  .notification-filters {
+    display: flex;
+    overflow-x: auto;
+    border-b: 1px solid $outline-variant;
+    margin-bottom: 32px;
+    gap: 8px;
+    
+    // Hide Scrollbar
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .filter-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    font-family: $font-mono;
+    font-size: 14px;
+    font-weight: 600;
+    color: $on-surface-variant;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease-in-out;
+
+    .tab-icon {
+      font-size: 18px;
+    }
+
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 9px;
+      background-color: rgba($primary, 0.08);
+      color: $primary;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    &:hover {
+      color: $primary;
+    }
+
+    &--active {
+      color: $primary !important;
+      border-bottom-color: $primary !important;
+
+      .tab-badge {
+        background-color: $primary;
+        color: white;
+      }
+    }
+
+    &--ai {
+      color: $tertiary;
+
+      .tab-badge {
+        background-color: rgba($tertiary, 0.08);
+        color: $tertiary;
+      }
+
+      &:hover {
+        color: $tertiary-container;
+      }
+
+      &.filter-tab--active {
+        color: $tertiary-container !important;
+        border-bottom-color: $tertiary-container !important;
+
+        .tab-badge {
+          background-color: $tertiary;
+          color: white;
+        }
+      }
+    }
+  }
+
+  // Notifications List
+  .notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // ─── NOTIFICATION CARD ────────────────────────────────────────
+  .notification-card {
+    position: relative;
+    background-color: $surface-container-lowest;
+    border: 1px solid $outline-variant;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    @media (max-width: 576px) {
+      padding: 16px;
+      gap: 16px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -10px rgba($primary, 0.08);
+      border-color: rgba($primary, 0.15);
+    }
+
+    // Left Icon Box
+    .card-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid transparent;
+
+      .card-icon {
+        font-size: 28px;
+        font-variation-settings: 'FILL' 1;
+      }
+    }
+
+    .icon-view {
+      background-color: rgba($primary-fixed-dim, 0.2);
+      border-color: $primary-fixed-dim;
+      color: $primary;
+    }
+
+    .icon-invite {
+      background-color: rgba($secondary-fixed, 0.3);
+      border-color: $secondary-fixed;
+      color: $on-secondary-fixed-variant;
+    }
+
+    .icon-recommend {
+      background-color: rgba($tertiary-fixed, 0.3);
+      border-color: $tertiary-fixed-dim;
+      color: $tertiary;
+    }
+
+    .icon-default {
+      background-color: $surface-container-highest;
+      border-color: $outline-variant;
+      color: $outline;
+      .card-icon {
+        font-variation-settings: 'FILL' 0;
+      }
+    }
+
+    // Content Box
+    .card-content-box {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 80px;
+
+      @media (max-width: 576px) {
+        padding-right: 0;
+        margin-top: 4px;
+      }
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      line-height: 26px;
+      font-weight: 700;
+      color: $on-surface;
+      margin: 0;
+    }
+
+    .card-unread-dot {
+      width: 10px;
+      height: 10px;
+      background-color: $secondary-container;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba($secondary-container, 0.1);
+    }
+
+    .card-premium-badge {
+      background-color: $tertiary;
+      color: $on-tertiary;
+      font-family: $font-mono;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 10px;
+      border-radius: 9999px;
+    }
+
+    .card-message {
+      font-size: 15px;
+      line-height: 22px;
+      color: $on-surface-variant;
+      margin: 0;
+    }
+
+    // Interview specific actions
+    .card-action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+
+      .action-btn {
+        padding: 8px 18px;
+        font-family: $font-mono;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &--primary {
+          background-color: $primary;
+          color: white;
+          border: none;
+          &:hover {
+            background-color: darken($primary, 5%);
+          }
+        }
+
+        &--outline {
+          background-color: transparent;
+          border: 1px solid $outline;
+          color: $on-surface-variant;
+          &:hover {
+            background-color: $surface-container-low;
+          }
+        }
+      }
+    }
+
+    .card-timestamp {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: $font-mono;
+      font-size: 12px;
+      color: $outline;
+      margin-top: 4px;
+
+      .time-icon {
+        font-size: 14px;
+      }
+    }
+
+    // Actions Overlay (Top Right)
+    .card-actions-overlay {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      gap: 4px;
+
+      @media (max-width: 576px) {
+        position: relative;
+        top: auto;
+        right: auto;
+        justify-content: flex-end;
+        margin-top: 8px;
+      }
+
+      .action-icon-btn {
+        background: transparent;
+        border: none;
+        color: $outline;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        span {
+          font-size: 20px;
+        }
+
+        &:hover {
+          color: $primary;
+          background-color: $surface-container;
+        }
+
+        &--delete:hover {
+          color: $error;
+        }
+      }
+    }
+
+    // Read Card overrides
+    &--read {
+      background-color: $surface-container-low;
+      border-color: transparent;
+      opacity: 0.65;
+      
+      .card-icon-box {
+        opacity: 0.6;
+      }
+
+      &:hover {
+        opacity: 0.85;
+        border-color: transparent;
+      }
+    }
+
+    // Premium Match Card overrides
+    &--premium {
+      background: linear-gradient(135deg, #fefcff 0%, #ecdcff 100%);
+      border-color: rgba($tertiary-fixed-dim, 0.7);
+
+      .card-icon-box {
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .card-actions-overlay {
+        .action-icon-btn {
+          color: rgba($tertiary, 0.6);
+          &:hover {
+            color: $tertiary;
+            background-color: rgba(white, 0.5);
+          }
+          &--delete:hover {
+            color: $error;
+          }
+        }
+      }
+    }
+  }
+
+  // ─── SETTINGS PANEL ───────────────────────────────────────────
+  .notification-settings-panel {
+    background-color: $surface-container-lowest;
+    border: 1px solid $outline-variant;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    @media (max-width: 576px) {
+      padding: 16px;
+      gap: 24px;
+    }
+
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .settings-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: $primary;
+      margin: 0;
+      border-bottom: 1px solid $outline-variant;
+      padding-bottom: 8px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px dashed $surface-container-high;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .settings-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-right: 24px;
+      }
+
+      .settings-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: $on-surface;
+        margin: 0;
+      }
+
+      .settings-desc {
+        font-size: 13px;
+        color: $on-surface-variant;
+        margin: 0;
+      }
+    }
+
+    .btn-save-settings {
+      margin-top: 16px;
+      width: fit-content;
+      align-self: flex-end;
+      background-color: $primary !important;
+      border-color: $primary !important;
+      color: white !important;
+      height: 44px !important;
+      padding: 0 32px !important;
+      border-radius: 8px !important;
+      font-family: $font-mono !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+
+      &:hover {
+        background-color: darken($primary, 5%) !important;
+      }
+    }
+  }
+
+  // ─── EMPTY STATE ──────────────────────────────────────────────
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 24px;
+    background-color: $surface-container-lowest;
+    border: 1px solid $outline-variant;
+    border-radius: 16px;
+
+    .empty-icon-wrap {
+      width: 96px;
+      height: 96px;
+      background-color: $surface-container-low;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 0 0 8px rgba($surface-container, 0.3);
+
+      .empty-icon {
+        font-size: 48px;
+        color: $outline;
+      }
+    }
+
+    .empty-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: $on-surface;
+      margin: 0 0 8px 0;
+    }
+
+    .empty-desc {
+      font-size: 16px;
+      color: $on-surface-variant;
+      max-width: 380px;
+      line-height: 24px;
+      margin: 0 0 32px 0;
+    }
+
+    .empty-action-btn {
+      padding: 12px 32px;
+      background-color: $primary;
+      color: white;
+      font-family: $font-mono;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba($primary, 0.1);
+
+      &:hover {
+        background-color: darken($primary, 5%);
+        box-shadow: 0 8px 12px rgba($primary, 0.15);
+      }
+    }
+  }
+
+  // ─── PAGINATION ────────────────────────────────────────────────
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid $outline-variant;
+
+    @media (max-width: 576px) {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .pag-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      font-family: $font-mono;
+      font-size: 14px;
+      font-weight: 700;
+      color: $on-surface-variant;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover:not(:disabled) {
+        color: $primary;
+      }
+
+      &:disabled {
+        opacity: 0.25;
+        cursor: not-allowed;
+      }
+
+      .btn-arrow-icon {
+        font-size: 18px;
+      }
+    }
+
+    .pag-pages-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pag-page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      font-family: $font-body;
+      font-size: 14px;
+      font-weight: 700;
+      color: $on-surface-variant;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: $surface-container;
+      }
+
+      &--active {
+        background-color: $primary !important;
+        color: white !important;
+        box-shadow: 0 4px 6px rgba($primary, 0.15);
+      }
+    }
+
+    .pag-dots {
+      padding: 0 8px;
+      color: $outline;
+      font-weight: 700;
+    }
+  }
+}

@@ -130,18 +130,20 @@ const CompanyDetailPage = () => {
           {/* Thông tin + Nút action */}
           <div className="cd-brand-info">
             <div className="cd-brand-main">
-              <h1 className="cd-company-name">{company.name}</h1>
+              <div className="cd-name-wrapper">
+                <h1 className="cd-company-name">{company.name}</h1>
+                {company.isVerified && (
+                  <span className="cd-verified-badge">
+                    <span className="material-symbols-outlined">verified</span>
+                    Đã xác minh
+                  </span>
+                )}
+              </div>
               <div className="cd-meta-row">
                 {company.industry && (
                   <span className="cd-meta-item">
                     <span className="material-symbols-outlined">domain</span>
                     {company.industry}
-                  </span>
-                )}
-                {company.address && (
-                  <span className="cd-meta-item">
-                    <span className="material-symbols-outlined">location_on</span>
-                    {company.address}
                   </span>
                 )}
                 {company.companySize && (
@@ -151,11 +153,11 @@ const CompanyDetailPage = () => {
                   </span>
                 )}
               </div>
-              {company.isVerified && (
-                <span className="cd-verified-badge">
-                  <span className="material-symbols-outlined">verified</span>
-                  Đã xác minh
-                </span>
+              {company.address && (
+                <div className="cd-address-row">
+                  <span className="material-symbols-outlined">location_on</span>
+                  <span className="cd-address-text">{company.address}</span>
+                </div>
               )}
             </div>
 

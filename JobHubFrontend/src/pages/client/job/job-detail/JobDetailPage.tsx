@@ -13,6 +13,7 @@ import type { ICompany } from '../../../../types/company'
 import { getJobByIdApi, getJobsApi, getSavedJobsApi, saveJobApi, unsaveJobApi } from '../../../../services/job-service'
 import { getCompanyByIdApi } from '../../../../services/company-service'
 import { getApplicationsApi } from '../../../../services/application-service'
+import { getCustomerByIdApi } from '../../../../services/customer-service'
 import { formatSalary } from '../../../../components/shared/job-detail/jobDetailHelpers'
 import { trackJobInteractionApi } from '../../../../services/ai-service'
 import JobDetailHeader from '../../../../components/shared/job-detail/JobDetailHeader'
@@ -162,6 +163,31 @@ const JobDetailPage = () => {
     }
   }
 
+  // ── Nhắn tin với nhà tuyển dụng ────────────────────────────────
+  const handleMessage = async () => {
+    if (!currentUser) {
+      notification.warning({ message: 'Vui lòng đăng nhập để nhắn tin', duration: 2 })
+      navigate('/login')
+      return
+    }
+    if (!job?.customerId) {
+      notification.error({ message: 'Không thể nhắn tin với tin tuyển dụng này', duration: 2 })
+      return
+    }
+    
+    try {
+      const res = await getCustomerByIdApi(job.customerId)
+      if (res && res.data && res.data.appUserId) {
+        navigate(`/chat?userId=${res.data.appUserId}`)
+      } else {
+        notification.error({ message: 'Không tìm thấy thông tin liên hệ của nhà tuyển dụng', duration: 2 })
+      }
+    } catch (err) {
+      console.error('Error fetching HR appUserId:', err)
+      notification.error({ message: 'Không thể kết nối tới tài khoản của nhà tuyển dụng', duration: 2 })
+    }
+  }
+
   // ── Loading skeleton ───────────────────────────────────────────
   if (loading) {
     return (
@@ -201,8 +227,10 @@ const JobDetailPage = () => {
           salaryText={salaryText}
           saved={saved}
           alreadyApplied={alreadyApplied}
+          showChatButton={!!job.customerId && (!currentUser || currentUser.id.toLowerCase() !== job.customerId.toLowerCase())}
           onToggleSave={handleToggleSave}
           onApply={openApplyModal}
+          onMessage={handleMessage}
         />
 
         {/* Grid */}
@@ -223,8 +251,10 @@ const JobDetailPage = () => {
       <JobStickyBar
         saved={saved}
         alreadyApplied={alreadyApplied}
+        showChatButton={!!job.customerId && (!currentUser || currentUser.id.toLowerCase() !== job.customerId.toLowerCase())}
         onToggleSave={handleToggleSave}
         onApply={openApplyModal}
+        onMessage={handleMessage}
       />
 
       {/* Apply Modal */}

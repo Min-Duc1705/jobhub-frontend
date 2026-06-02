@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Avatar, Dropdown, Button, notification, Drawer } from 'antd'
 import type { MenuProps } from 'antd'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
@@ -13,6 +13,7 @@ import {
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../../services/notification-service'
+import { getConversationsApi } from '../../../services/chat-service'
 import './HeaderClient.scss'
 
 const NAV_LINKS = [
@@ -93,7 +94,43 @@ const HeaderClient = () => {
   const [notifications, setNotifications] = useState<INotification[]>([])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [isRinging, setIsRinging] = useState(false)
+  const [chatUnreadCount, setChatUnreadCount] = useState(0)
   const unreadCount = notifications.filter(n => !n.isRead).length
+
+  // Stable notification fetch function
+  const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated || !user) return
+    try {
+      const res = await getNotificationsApi()
+      if (res && res.data) {
+        const formatted = res.data.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          isRead: n.isRead,
+          time: timeAgo(n.createdDate),
+          type: n.type
+        }))
+        setNotifications(formatted)
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err)
+    }
+  }, [isAuthenticated, user])
+
+  // Sync event listener (stable)
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const handleSync = () => {
+      fetchNotifications()
+    }
+
+    window.addEventListener('notification-updated', handleSync)
+    return () => {
+      window.removeEventListener('notification-updated', handleSync)
+    }
+  }, [isAuthenticated, fetchNotifications])
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -101,32 +138,26 @@ const HeaderClient = () => {
       return
     }
 
-    // 1. Fetch initial notifications
-    const fetchNotifications = async () => {
+    fetchNotifications()
+
+    // 1.5. Fetch initial chat unread count
+    const fetchChatUnreadCount = async () => {
       try {
-        const res = await getNotificationsApi()
+        const res = await getConversationsApi()
         if (res && res.data) {
-          const formatted = res.data.map((n: any) => ({
-            id: n.id,
-            title: n.title,
-            message: n.message,
-            isRead: n.isRead,
-            time: timeAgo(n.createdDate),
-            type: n.type
-          }))
-          setNotifications(formatted)
+          const totalUnread = res.data.reduce((acc: number, c: any) => acc + c.unreadCount, 0)
+          setChatUnreadCount(totalUnread)
         }
       } catch (err) {
-        console.error('Error fetching notifications:', err)
+        console.error('Error fetching chat unread count:', err)
       }
     }
 
-    fetchNotifications()
+    fetchChatUnreadCount()
 
     // 2. Setup SignalR connection - kết nối trực tiếp đến NotificationService
-    // (bỏ qua Ocelot vì Ocelot làm mất query string access_token khi upgrade WebSocket)
     const token = localStorage.getItem('access_token')
-    const socketUrl = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || import.meta.env.VITE_BACKEND_URL
+    const socketUrl = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || 'http://localhost:5008'
     const connection = new HubConnectionBuilder()
       .withUrl(`${socketUrl}/ws/notifications`, {
         accessTokenFactory: () => token || ''
@@ -170,17 +201,61 @@ const HeaderClient = () => {
       .then(() => console.log('SignalR Connected to NotificationHub'))
       .catch(err => console.error('SignalR Connection Error:', err))
 
+    // 3. Setup SignalR Chat connection to listen to real-time chat messages
+    const chatConnection = new HubConnectionBuilder()
+      .withUrl(`${socketUrl}/ws/chat`, {
+        accessTokenFactory: () => token || ''
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build()
+
+    chatConnection.on('ReceiveMessage', (msg: any) => {
+      if (msg.senderId.toLowerCase() !== user.id.toLowerCase()) {
+        fetchChatUnreadCount()
+
+        // Hiển thị thông báo khi không ở trang chat
+        if (window.location.pathname !== '/chat') {
+          notification.info({
+            message: 'Tin nhắn mới',
+            description: msg.content.length > 60 ? msg.content.substring(0, 60) + '...' : msg.content,
+            placement: 'bottomRight',
+            duration: 4,
+            onClick: () => navigate('/chat'),
+            style: {
+              borderRadius: '10px',
+              borderLeft: '4px solid #52c41a',
+              cursor: 'pointer'
+            }
+          })
+          playNotificationSound()
+        }
+      }
+    })
+
+    chatConnection.on('ConversationRead', () => {
+      fetchChatUnreadCount()
+    })
+
+    chatConnection.start()
+      .then(() => console.log('SignalR Connected to ChatHub (Header)'))
+      .catch(err => console.error('SignalR ChatHub Connection Error (Header):', err))
+
     return () => {
       connection.stop()
         .then(() => console.log('SignalR Connection Stopped'))
         .catch(err => console.error('SignalR Stop Error:', err))
+      chatConnection.stop()
+        .then(() => console.log('SignalR Chat Connection Stopped'))
+        .catch(err => console.error('SignalR Chat Stop Error:', err))
     }
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, fetchNotifications])
 
   const markAllAsRead = async () => {
     try {
       await markAllNotificationsReadApi()
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      window.dispatchEvent(new Event('notification-updated'))
     } catch (err) {
       console.error('Error marking all notifications as read:', err)
     }
@@ -192,6 +267,7 @@ const HeaderClient = () => {
       
       await markNotificationReadApi(id)
       setNotifications(prev => prev.map(item => item.id === id ? { ...item, isRead: true } : item))
+      window.dispatchEvent(new Event('notification-updated'))
       
       // Đóng dropdown khi click
       setNotificationsOpen(false)
@@ -255,6 +331,17 @@ const HeaderClient = () => {
         <div className="nav-bar__right">
           {isAuthenticated && user ? (
             <>
+              {/* Chat Button */}
+              <button
+                className="nav-chat-btn"
+                onClick={() => navigate('/chat')}
+                aria-label="Tin nhắn"
+                style={{ marginRight: '8px' }}
+              >
+                <span className="material-symbols-outlined">chat</span>
+                {chatUnreadCount > 0 && <span className="chat-badge">{chatUnreadCount}</span>}
+              </button>
+
               {/* Notification Dropdown */}
               <Dropdown
                 popupRender={() => (

@@ -30,7 +30,7 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
           Khám phá hàng ngàn cơ hội việc làm từ các công ty công nghệ hàng đầu, được hỗ trợ bởi AI.
         </p>
  
-        <div className="search-bar-container glass-ai">
+        <div className="search-bar-container glass-panel ai-glow">
           <div className="search-input-wrapper">
             <span className="material-symbols-outlined search-icon">search</span>
             <Input
@@ -43,12 +43,12 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
             />
           </div>
  
-          <div className="search-select-wrapper">
-            <span className="material-symbols-outlined select-icon">location_on</span>
+          <div className="search-input-wrapper">
+            <span className="material-symbols-outlined search-icon">location_on</span>
             <Select
-              className="search-select"
+              className="search-select search-input"
               variant="borderless"
-              value={location}
+              value={location || undefined}
               onChange={onChangeLocation}
               showSearch
               optionFilterProp="children"
@@ -58,10 +58,11 @@ const HomeHero = ({ keyword, location, onChangeKeyword, onChangeLocation, onSear
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
+              style={{ width: '100%' }}
             />
           </div>
 
-          <Button className="btn-search-home" type="primary" onClick={onSearch}>
+          <Button className="btn-search-jobs" type="primary" onClick={onSearch}>
             Tìm kiếm
           </Button>
         </div>

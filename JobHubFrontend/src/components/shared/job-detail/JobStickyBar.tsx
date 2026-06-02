@@ -1,14 +1,16 @@
 import { Button } from 'antd'
-import { BookOutlined, SendOutlined } from '@ant-design/icons'
+import { BookOutlined, SendOutlined, MessageOutlined } from '@ant-design/icons'
 
 interface Props {
   saved: boolean
   alreadyApplied: boolean
+  showChatButton: boolean
   onToggleSave: () => void
   onApply: () => void
+  onMessage: () => void
 }
 
-const JobStickyBar = ({ saved, alreadyApplied, onToggleSave, onApply }: Props) => {
+const JobStickyBar = ({ saved, alreadyApplied, showChatButton, onToggleSave, onApply, onMessage }: Props) => {
   return (
     <div className="jd-sticky-bar">
       <Button
@@ -19,6 +21,15 @@ const JobStickyBar = ({ saved, alreadyApplied, onToggleSave, onApply }: Props) =
       >
         {saved ? 'Đã lưu' : 'Lưu tin'}
       </Button>
+      {showChatButton && (
+        <Button
+          style={{ flex: 1, borderColor: '#005daa', color: '#005daa' }}
+          icon={<MessageOutlined />}
+          onClick={onMessage}
+        >
+          Chat
+        </Button>
+      )}
       <Button
         type="primary"
         style={alreadyApplied

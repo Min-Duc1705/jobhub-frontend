@@ -139,11 +139,19 @@
 
 .cd-brand-main { flex: 1; min-width: 0; }
 
+.cd-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
 .cd-company-name {
   font-size: 26px;
   font-weight: 700;
   color: $primary;
-  margin: 0 0 10px;
+  margin: 0;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -177,6 +185,26 @@
   }
 }
 
+.cd-address-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: $on-surface-variant;
+  margin-top: 8px;
+  line-height: 1.4;
+
+  .material-symbols-outlined {
+    font-size: 17px;
+    color: $secondary;
+    flex-shrink: 0;
+  }
+
+  .cd-address-text {
+    word-break: break-word;
+  }
+}
+
 .cd-verified-badge {
   display: flex;
   align-items: center;
@@ -184,7 +212,6 @@
   font-size: 13px;
   font-weight: 600;
   color: #52c41a;
-  margin-top: 8px;
 
   .material-symbols-outlined {
     font-size: 16px;
