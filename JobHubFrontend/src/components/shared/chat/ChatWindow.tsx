@@ -51,7 +51,9 @@ const ChatWindow = ({
       formData.append('file', file)
       const res = await uploadResumeFileApi(formData)
       if (res && res.data && res.data.url) {
-        const fileUrl = res.data.fullUrl || (res.data.url.startsWith('http') ? res.data.url : `http://localhost:9000/resumes/${res.data.url}`)
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"
+        const cleanBackendUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl
+        const fileUrl = res.data.fullUrl || (res.data.url.startsWith('http') ? res.data.url : `${cleanBackendUrl}/resumes/${res.data.url}`)
         await handleSendMessage(fileUrl, 'file')
         message.success('Gửi tệp tin thành công!')
       } else {
