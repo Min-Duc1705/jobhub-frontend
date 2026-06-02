@@ -23,6 +23,11 @@ const ChatPage = () => {
   const [searchParams] = useSearchParams()
   const chatWithUserId = searchParams.get('userId')
 
+  // Scroll window to top on mount to avoid carrying over scroll position from previous page
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const [conversations, setConversations] = useState<IConversationDto[]>([])
   const [activeConversation, setActiveConversation] = useState<IConversationDto | null>(null)
   const [messages, setMessages] = useState<IMessageDto[]>([])
