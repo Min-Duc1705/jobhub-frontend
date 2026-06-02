@@ -1,6 +1,9 @@
-import { Avatar, Button, Spin, Input } from 'antd'
+import { useRef } from 'react'
+import { Avatar, Button, Spin, Input, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import type { IConversationDto, IMessageDto } from '../../../services/chat-service'
+import { uploadCompanyPublicImageApi } from '../../../services/company-service'
+import { uploadResumeFileApi } from '../../../services/resume-service'
 
 interface ChatWindowProps {
   activeConversation: IConversationDto | null
@@ -10,7 +13,7 @@ interface ChatWindowProps {
   loadingMessages: boolean
   inputText: string
   setInputText: (text: string) => void
-  handleSendMessage: () => void
+  handleSendMessage: (customContent?: string, customType?: string) => Promise<void>
   handleKeyPress: (e: any) => void
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   messagesContainerRef: React.RefObject<HTMLDivElement | null>
@@ -29,6 +32,65 @@ const ChatWindow = ({
   messagesContainerRef
 }: ChatWindowProps) => {
   const navigate = useNavigate()
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 20 * 1024 * 1024) {
+      message.error('Tệp tin không được vượt quá 20MB!')
+      return
+    }
+
+    const hide = message.loading('Đang tải tệp tin lên...', 0)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await uploadResumeFileApi(formData)
+      if (res && res.data && res.data.url) {
+        await handleSendMessage(res.data.url, 'file')
+        message.success('Gửi tệp tin thành công!')
+      } else {
+        message.error('Không thể tải tệp tin lên!')
+      }
+    } catch (err) {
+      console.error('File upload error:', err)
+      message.error('Lỗi tải tệp tin lên!')
+    } finally {
+      hide()
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('Hình ảnh không được vượt quá 10MB!')
+      return
+    }
+
+    const hide = message.loading('Đang tải hình ảnh lên...', 0)
+    try {
+      const res = await uploadCompanyPublicImageApi(file)
+      if (res && res.data && res.data.url) {
+        await handleSendMessage(res.data.url, 'image')
+        message.success('Gửi ảnh thành công!')
+      } else {
+        message.error('Không thể tải hình ảnh lên!')
+      }
+    } catch (err) {
+      console.error('Image upload error:', err)
+      message.error('Lỗi tải hình ảnh lên!')
+    } finally {
+      hide()
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
+  }
 
   const handleMinimize = () => {
     if (!activeConversation) return
@@ -128,7 +190,28 @@ const ChatWindow = ({
                           </Avatar>
                         )}
                         <div className="message-bubble__content-wrap">
-                          <div className="message-bubble__text">{m.content}</div>
+                          <div className="message-bubble__text">
+                            {m.type?.toLowerCase() === 'image' ? (
+                              <img 
+                                src={m.content} 
+                                alt="Shared Image" 
+                                style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', cursor: 'pointer' }}
+                                onClick={() => window.open(m.content, '_blank')}
+                              />
+                            ) : m.type?.toLowerCase() === 'file' ? (
+                              <a 
+                                href={m.content} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isMe ? '#fff' : 'inherit', textDecoration: 'underline' }}
+                              >
+                                <span className="material-symbols-outlined">description</span>
+                                {m.content.split('/').pop() || 'Tài liệu đính kèm'}
+                              </a>
+                            ) : (
+                              m.content
+                            )}
+                          </div>
                           <div className="message-bubble__meta">
                             <span className="message-bubble__time">
                               {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -175,15 +258,39 @@ const ChatWindow = ({
               />
               <div className="chat-input-toolbar">
                 <div className="chat-input-toolbar__left">
-                  <Button type="text" icon={<span className="material-symbols-outlined">attach_file</span>} className="toolbar-btn" />
-                  <Button type="text" icon={<span className="material-symbols-outlined">image</span>} className="toolbar-btn" />
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange} 
+                  />
+                  <input 
+                    type="file" 
+                    ref={imageInputRef} 
+                    style={{ display: 'none' }} 
+                    accept="image/*" 
+                    onChange={handleImageChange} 
+                  />
+                  <Button 
+                    type="text" 
+                    icon={<span className="material-symbols-outlined">attach_file</span>} 
+                    className="toolbar-btn" 
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                  <Button 
+                    type="text" 
+                    icon={<span className="material-symbols-outlined">image</span>} 
+                    className="toolbar-btn" 
+                    onClick={() => imageInputRef.current?.click()}
+                  />
                   <Button type="text" icon={<span className="material-symbols-outlined">mood</span>} className="toolbar-btn" />
                   <Button type="text" icon={<span className="material-symbols-outlined">alternate_email</span>} className="toolbar-btn" />
                 </div>
                 <Button
                   type="primary"
                   className="chat-send-btn"
-                  onClick={handleSendMessage}
+                  onClick={() => handleSendMessage()}
                 >
                   <span>Gửi</span>
                   <span className="material-symbols-outlined send-btn-icon">send</span>

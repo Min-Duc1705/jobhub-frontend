@@ -264,8 +264,11 @@ const ChatPage = () => {
   }
 
   // 4. Send message handler
-  const handleSendMessage = async () => {
-    if (!inputText.trim() || !activeConversation) return
+  const handleSendMessage = async (customContent?: string, customType?: string) => {
+    const textToSend = customContent !== undefined ? customContent : inputText.trim()
+    const messageType = customType !== undefined ? customType : 'text'
+
+    if (!textToSend || !activeConversation) return
 
     const receiverId = activeConversation.participantA.toLowerCase() === currentUserId.toLowerCase()
       ? activeConversation.participantB
@@ -273,15 +276,17 @@ const ChatPage = () => {
 
     try {
       if (connection) {
-        await connection.invoke('SendPrivateMessage', receiverId, inputText.trim(), 'text')
+        await connection.invoke('SendPrivateMessage', receiverId, textToSend, messageType)
       } else {
-        const res = await sendChatMessageApi(receiverId, inputText.trim(), 'text')
+        const res = await sendChatMessageApi(receiverId, textToSend, messageType)
         if (res && res.data) {
           setMessages(prev => [...prev, res.data])
           scrollToBottom()
         }
       }
-      setInputText('')
+      if (customContent === undefined) {
+        setInputText('')
+      }
     } catch (err) {
       console.error('Error sending message:', err)
       notification.error({ message: 'Lỗi gửi tin nhắn', description: 'Vui lòng kiểm tra lại kết nối.' })

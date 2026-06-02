@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Avatar, Input, Button, Spin } from 'antd'
+import { Avatar, Input, Button, Spin, message } from 'antd'
 import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr'
 import { useAppSelector } from '../../../redux/hooks'
 import {
@@ -9,6 +9,8 @@ import {
   getConversationsApi,
   type IMessageDto
 } from '../../../services/chat-service'
+import { uploadCompanyPublicImageApi } from '../../../services/company-service'
+import { uploadResumeFileApi } from '../../../services/resume-service'
 import './FloatingChatWidget.scss'
 
 interface IFloatingConv {
@@ -193,20 +195,83 @@ const FloatingChatWidget = () => {
     }, 100)
   }
 
-  const handleSend = async () => {
-    if (!inputText.trim() || !activeConv) return
-    const textToSend = inputText.trim()
-    setInputText('')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 20 * 1024 * 1024) {
+      message.error('Tệp tin không được vượt quá 20MB!')
+      return
+    }
+
+    const hide = message.loading('Đang tải tệp tin lên...', 0)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await uploadResumeFileApi(formData)
+      if (res && res.data && res.data.url) {
+        await handleSend(res.data.url, 'file')
+        message.success('Gửi tệp tin thành công!')
+      } else {
+        message.error('Không thể tải tệp tin lên!')
+      }
+    } catch (err) {
+      console.error('File upload error:', err)
+      message.error('Lỗi tải tệp tin lên!')
+    } finally {
+      hide()
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('Hình ảnh không được vượt quá 10MB!')
+      return
+    }
+
+    const hide = message.loading('Đang tải hình ảnh lên...', 0)
+    try {
+      const res = await uploadCompanyPublicImageApi(file)
+      if (res && res.data && res.data.url) {
+        await handleSend(res.data.url, 'image')
+        message.success('Gửi ảnh thành công!')
+      } else {
+        message.error('Không thể tải hình ảnh lên!')
+      }
+    } catch (err) {
+      console.error('Image upload error:', err)
+      message.error('Lỗi tải hình ảnh lên!')
+    } finally {
+      hide()
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
+  }
+
+  const handleSend = async (customContent?: string, customType?: string) => {
+    const textToSend = customContent !== undefined ? customContent : inputText.trim()
+    const messageType = customType !== undefined ? customType : 'text'
+
+    if (!textToSend || !activeConv) return
 
     try {
       if (connection) {
-        await connection.invoke('SendPrivateMessage', activeConv.otherUserId, textToSend, 'text')
+        await connection.invoke('SendPrivateMessage', activeConv.otherUserId, textToSend, messageType)
       } else {
-        const res = await sendChatMessageApi(activeConv.otherUserId, textToSend, 'text')
+        const res = await sendChatMessageApi(activeConv.otherUserId, textToSend, messageType)
         if (res && res.data) {
           setMessages(prev => [...prev, res.data])
           scrollToBottom()
         }
+      }
+      if (customContent === undefined) {
+        setInputText('')
       }
     } catch (err) {
       console.error('Error sending floating message:', err)
@@ -317,7 +382,28 @@ const FloatingChatWidget = () => {
                 const isMe = m.senderId.toLowerCase() === currentUserId.toLowerCase()
                 return (
                   <div key={m.id} className={`floating-msg ${isMe ? 'floating-msg--me' : 'floating-msg--other'}`}>
-                    <div className="floating-msg__text">{m.content}</div>
+                    <div className="floating-msg__text">
+                      {m.type?.toLowerCase() === 'image' ? (
+                        <img 
+                          src={m.content} 
+                          alt="Shared Image" 
+                          style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', cursor: 'pointer' }}
+                          onClick={() => window.open(m.content, '_blank')}
+                        />
+                      ) : m.type?.toLowerCase() === 'file' ? (
+                        <a 
+                          href={m.content} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px', color: isMe ? '#fff' : 'inherit', textDecoration: 'underline' }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>description</span>
+                          <span style={{ fontSize: '12px', wordBreak: 'break-all' }}>{m.content.split('/').pop() || 'Tài liệu'}</span>
+                        </a>
+                      ) : (
+                        m.content
+                      )}
+                    </div>
                     <div className="floating-msg__time">
                       {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {isMe && (
@@ -356,14 +442,38 @@ const FloatingChatWidget = () => {
               />
               <div className="floating-chat-input-toolbar">
                 <div className="toolbar-left">
-                  <Button type="text" icon={<span className="material-symbols-outlined">attach_file</span>} className="t-btn" />
-                  <Button type="text" icon={<span className="material-symbols-outlined">image</span>} className="t-btn" />
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange} 
+                  />
+                  <input 
+                    type="file" 
+                    ref={imageInputRef} 
+                    style={{ display: 'none' }} 
+                    accept="image/*" 
+                    onChange={handleImageChange} 
+                  />
+                  <Button 
+                    type="text" 
+                    icon={<span className="material-symbols-outlined">attach_file</span>} 
+                    className="t-btn" 
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                  <Button 
+                    type="text" 
+                    icon={<span className="material-symbols-outlined">image</span>} 
+                    className="t-btn" 
+                    onClick={() => imageInputRef.current?.click()}
+                  />
                   <Button type="text" icon={<span className="material-symbols-outlined">mood</span>} className="t-btn" />
                 </div>
                 <Button
                   type="primary"
                   className="floating-send-btn"
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                 >
                   <span className="material-symbols-outlined">send</span>
                 </Button>
