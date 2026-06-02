@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Avatar, Input, Button, Spin, message } from 'antd'
+import { Avatar, Input, Button, Spin, message, Popover, List } from 'antd'
 import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr'
 import { useAppSelector } from '../../../redux/hooks'
 import {
@@ -10,7 +10,9 @@ import {
   type IMessageDto
 } from '../../../services/chat-service'
 import { uploadCompanyPublicImageApi } from '../../../services/company-service'
-import { uploadResumeFileApi } from '../../../services/resume-service'
+import { uploadResumeFileApi, getMyResumesApi } from '../../../services/resume-service'
+import { getJobsApi } from '../../../services/job-service'
+import { POPULAR_EMOJIS, CANDIDATE_TEMPLATES, HR_TEMPLATES } from './chat-features'
 import './FloatingChatWidget.scss'
 
 interface IFloatingConv {
@@ -37,6 +39,243 @@ const FloatingChatWidget = () => {
   const [connection, setConnection] = useState<HubConnection | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement | null>(null)
+  const textareaRef = useRef<any>(null)
+
+  // Popover States
+  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [mentionOpen, setMentionOpen] = useState(false)
+  const [resumes, setResumes] = useState<any[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [loadingShortcuts, setLoadingShortcuts] = useState(false)
+
+  // Role details
+  const isHR = user?.role?.name === 'HR'
+  const isCandidate = user?.role?.name === 'CANDIDATE' || (!isHR && !!user)
+
+  // Load shortcuts on popover open
+  const loadShortcuts = async (visible: boolean) => {
+    if (!visible) return
+    setLoadingShortcuts(true)
+    try {
+      if (isCandidate) {
+        const res = await getMyResumesApi(currentUserId)
+        if (res && res.data && res.data.result) {
+          setResumes(res.data.result)
+        }
+      } else if (isHR) {
+        const res = await getJobsApi("pageNumber=1&pageSize=10&sortBy=createdDate&isDescending=true")
+        if (res && res.data && res.data.result) {
+          setJobs(res.data.result)
+        }
+      }
+    } catch (err) {
+      console.error("Error loading shortcuts:", err)
+    } finally {
+      setLoadingShortcuts(false)
+    }
+  }
+
+  // Insert Emoji at cursor position
+  const insertEmoji = (emoji: string) => {
+    const rawTextarea = textareaRef.current?.resizableTextArea?.textArea
+    if (rawTextarea) {
+      const start = rawTextarea.selectionStart
+      const end = rawTextarea.selectionEnd
+      const text = rawTextarea.value
+      const newText = text.substring(0, start) + emoji + text.substring(end)
+      setInputText(newText)
+      setTimeout(() => {
+        rawTextarea.focus()
+        rawTextarea.setSelectionRange(start + emoji.length, start + emoji.length)
+      }, 0)
+    } else {
+      setInputText(prev => prev + emoji)
+    }
+    setEmojiOpen(false)
+  }
+
+  // Insert Text at cursor position
+  const insertTextAtCursor = (insertedText: string) => {
+    const rawTextarea = textareaRef.current?.resizableTextArea?.textArea
+    if (rawTextarea) {
+      const start = rawTextarea.selectionStart
+      const end = rawTextarea.selectionEnd
+      const text = rawTextarea.value
+      const newText = text.substring(0, start) + insertedText + text.substring(end)
+      setInputText(newText)
+      setTimeout(() => {
+        rawTextarea.focus()
+        rawTextarea.setSelectionRange(start + insertedText.length, start + insertedText.length)
+      }, 0)
+    } else {
+      setInputText(prev => prev + insertedText)
+    }
+    setMentionOpen(false)
+  }
+
+  // Custom text input change to trigger mentions on '@'
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setInputText(value)
+    if (value.endsWith('@')) {
+      setMentionOpen(true)
+      loadShortcuts(true)
+    }
+  }
+
+  // Emoji popover content
+  const emojiContent = (
+    <div className="emoji-picker-popover" style={{ width: '200px', padding: '2px' }}>
+      <div 
+        className="emoji-picker-grid" 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(6, 1fr)', 
+          gap: '6px', 
+          maxHeight: '130px', 
+          overflowY: 'auto' 
+        }}
+      >
+        {POPULAR_EMOJIS.map((emoji, idx) => (
+          <span 
+            key={idx} 
+            className="emoji-picker-item"
+            style={{ 
+              fontSize: '18px', 
+              cursor: 'pointer', 
+              textAlign: 'center', 
+              padding: '2px',
+              borderRadius: '4px',
+              transition: 'background 0.2s',
+              display: 'inline-block'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f0f0')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            onClick={() => insertEmoji(emoji)}
+          >
+            {emoji}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+
+  // Mentions popover content
+  const mentionContent = (
+    <div className="mention-picker-popover custom-scrollbar" style={{ maxHeight: '240px', width: '260px', overflowY: 'auto', padding: '2px' }}>
+      <div className="mention-section-title" style={{ fontSize: '11px', fontWeight: 600, color: '#8c8c8c', padding: '4px 6px', borderBottom: '1px solid #f0f0f0' }}>Tin nhắn mẫu</div>
+      <List
+        size="small"
+        dataSource={isHR ? HR_TEMPLATES : CANDIDATE_TEMPLATES}
+        renderItem={(item) => (
+          <List.Item 
+            className="mention-list-item" 
+            onClick={() => insertTextAtCursor(item.text)}
+            style={{ cursor: 'pointer', padding: '6px', borderBottom: '1px solid #f0f0f0' }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+              <span style={{ fontWeight: 500, fontSize: '11px', color: '#1f1f1f' }}>{item.label}</span>
+              <span style={{ fontSize: '10px', color: '#8c8c8c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '230px', marginTop: '2px' }}>
+                {item.text}
+              </span>
+            </div>
+          </List.Item>
+        )}
+      />
+
+      {isCandidate && (
+        <>
+          <div className="mention-section-title" style={{ fontSize: '11px', fontWeight: 600, color: '#8c8c8c', padding: '6px 6px 4px', borderBottom: '1px solid #f0f0f0', marginTop: '6px' }}>Đính kèm nhanh CV</div>
+          {loadingShortcuts ? (
+            <div style={{ textAlign: 'center', padding: '6px' }}><Spin size="small" /></div>
+          ) : resumes.length > 0 ? (
+            <List
+              size="small"
+              dataSource={resumes}
+              renderItem={(r) => (
+                <List.Item 
+                  style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px', borderBottom: '1px solid #f5f5f5' }}
+                >
+                  <span style={{ fontSize: '10px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '110px' }}>
+                    📄 {r.title}
+                  </span>
+                  <div style={{ display: 'flex', gap: '2px' }}>
+                    <Button 
+                      type="dashed"
+                      size="small"
+                      style={{ fontSize: '9px', height: '18px', padding: '0 4px', borderRadius: '3px' }}
+                      onClick={() => insertTextAtCursor(` [CV: ${r.title}](${r.url}) `)}
+                    >
+                      Chèn
+                    </Button>
+                    <Button 
+                      type="primary"
+                      size="small"
+                      style={{ fontSize: '9px', height: '18px', padding: '0 4px', borderRadius: '3px' }}
+                      onClick={async () => {
+                        await handleSend(r.url, 'file')
+                        setMentionOpen(false)
+                      }}
+                    >
+                      Gửi
+                    </Button>
+                  </div>
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div style={{ fontSize: '10px', color: '#8c8c8c', padding: '6px', textAlign: 'center' }}>Chưa tải CV lên</div>
+          )}
+        </>
+      )}
+
+      {isHR && (
+        <>
+          <div className="mention-section-title" style={{ fontSize: '11px', fontWeight: 600, color: '#8c8c8c', padding: '6px 6px 4px', borderBottom: '1px solid #f0f0f0', marginTop: '6px' }}>Chia sẻ tin tuyển dụng</div>
+          {loadingShortcuts ? (
+            <div style={{ textAlign: 'center', padding: '6px' }}><Spin size="small" /></div>
+          ) : jobs.length > 0 ? (
+            <List
+              size="small"
+              dataSource={jobs}
+              renderItem={(j) => (
+                <List.Item 
+                  style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px', borderBottom: '1px solid #f5f5f5' }}
+                >
+                  <span style={{ fontSize: '10px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '110px' }}>
+                    💼 {j.title}
+                  </span>
+                  <div style={{ display: 'flex', gap: '2px' }}>
+                    <Button 
+                      type="dashed"
+                      size="small"
+                      style={{ fontSize: '9px', height: '18px', padding: '0 4px', borderRadius: '3px' }}
+                      onClick={() => insertTextAtCursor(` [Tin tuyển dụng: ${j.title}](${window.location.origin}/jobs/${j.id}) `)}
+                    >
+                      Chèn
+                    </Button>
+                    <Button 
+                      type="primary"
+                      size="small"
+                      style={{ fontSize: '9px', height: '18px', padding: '0 4px', borderRadius: '3px' }}
+                      onClick={async () => {
+                        await handleSend(`${window.location.origin}/jobs/${j.id}`, 'text')
+                        setMentionOpen(false)
+                      }}
+                    >
+                      Gửi
+                    </Button>
+                  </div>
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div style={{ fontSize: '10px', color: '#8c8c8c', padding: '6px', textAlign: 'center' }}>Chưa có tin tuyển dụng</div>
+          )}
+        </>
+      )}
+    </div>
+  )
 
   // Use a ref for isMinimized to prevent WebSocket reconnection on toggle
   const isMinimizedRef = useRef(isMinimized)
@@ -434,9 +673,10 @@ const FloatingChatWidget = () => {
           <div className="floating-chat-box__footer">
             <div className="floating-chat-input-container">
               <Input.TextArea
-                placeholder="Nhập tin nhắn..."
+                ref={textareaRef}
+                placeholder="Nhập tin nhắn... (Gõ @ để xem phím tắt)"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
                 rows={1}
                 autoSize={{ minRows: 1, maxRows: 3 }}
@@ -471,7 +711,39 @@ const FloatingChatWidget = () => {
                     className="t-btn" 
                     onClick={() => imageInputRef.current?.click()}
                   />
-                  <Button type="text" icon={<span className="material-symbols-outlined">mood</span>} className="t-btn" />
+                  
+                  <Popover
+                    content={emojiContent}
+                    title="Chọn Emoji"
+                    trigger="click"
+                    open={emojiOpen}
+                    onOpenChange={setEmojiOpen}
+                    placement="topRight"
+                  >
+                    <Button 
+                      type="text" 
+                      icon={<span className="material-symbols-outlined">mood</span>} 
+                      className="t-btn" 
+                    />
+                  </Popover>
+
+                  <Popover
+                    content={mentionContent}
+                    title={isHR ? "Phím tắt & Tin tuyển dụng (@)" : "Phím tắt & Hồ sơ ứng tuyển (@)"}
+                    trigger="click"
+                    open={mentionOpen}
+                    onOpenChange={(visible) => {
+                      setMentionOpen(visible)
+                      loadShortcuts(visible)
+                    }}
+                    placement="topRight"
+                  >
+                    <Button 
+                      type="text" 
+                      icon={<span className="material-symbols-outlined">alternate_email</span>} 
+                      className="t-btn" 
+                    />
+                  </Popover>
                 </div>
                 <Button
                   type="primary"

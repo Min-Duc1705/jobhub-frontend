@@ -1,9 +1,12 @@
-import { Button, Tag, Popconfirm } from 'antd'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button, Tag, Popconfirm, notification } from 'antd'
 import { CalendarOutlined, MessageOutlined, FileTextOutlined, CloseOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import type { IApplication } from '../../../types/application'
 import { APPLICATION_STATUS_LABEL, APPLICATION_STATUS_COLOR } from '../../../types/application'
 import type { IJob } from '../../../types/job'
+import { getCustomerByIdApi } from '../../../services/customer-service'
 import './JobCandidateComponents.scss'
 
 interface Props {
@@ -15,6 +18,8 @@ interface Props {
 
 const AppliedJobCard = ({ application, job, onViewDetail, onWithdraw }: Props) => {
   const { status, createdDate } = application
+  const navigate = useNavigate()
+  const [loadingChat, setLoadingChat] = useState(false)
 
   // Use values from fetched job, or fallbacks if not resolved yet
   const jobTitle = job?.name ?? 'Đang tải vị trí...'
@@ -28,6 +33,28 @@ const AppliedJobCard = ({ application, job, onViewDetail, onWithdraw }: Props) =
   // If status is APPROVED, it might mean scheduled interview in our mock context,
   // we can display the reviewNote if it exists.
   const hasInterview = status === 'APPROVED' && application.reviewNote
+
+  const handleSendMessageClick = async () => {
+    if (!job?.customerId) {
+      notification.error({ message: 'Không thể nhắn tin với tin tuyển dụng này', duration: 2 })
+      return
+    }
+
+    setLoadingChat(true)
+    try {
+      const res = await getCustomerByIdApi(job.customerId)
+      if (res && res.data && res.data.appUserId) {
+        navigate(`/chat?userId=${res.data.appUserId}`)
+      } else {
+        notification.error({ message: 'Không tìm thấy thông tin liên hệ của nhà tuyển dụng', duration: 2 })
+      }
+    } catch (err) {
+      console.error('Error fetching HR appUserId:', err)
+      notification.error({ message: 'Không thể kết nối tới tài khoản của nhà tuyển dụng', duration: 2 })
+    } finally {
+      setLoadingChat(false)
+    }
+  }
 
   return (
     <div className="cjp-job-card">
@@ -82,7 +109,8 @@ const AppliedJobCard = ({ application, job, onViewDetail, onWithdraw }: Props) =
             style={{ borderRadius: 8, fontWeight: 500 }}
             icon={<MessageOutlined />}
             className="flex items-center justify-center"
-            onClick={() => window.open(`mailto:support@${job?.companyName?.toLowerCase().replace(/\s+/g, '') || 'company'}.com`)}
+            loading={loadingChat}
+            onClick={handleSendMessageClick}
           >
             Gửi tin nhắn
           </Button>
