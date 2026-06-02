@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { Avatar, Button, Spin, Input, message, Popover, List } from 'antd'
+import { Avatar, Button, Spin, Input, Popover, List } from 'antd'
+import { message } from '../../../utils/antd'
 import { useNavigate } from 'react-router-dom'
 import type { IConversationDto, IMessageDto } from '../../../services/chat-service'
 import { uploadCompanyPublicImageApi } from '../../../services/company-service'

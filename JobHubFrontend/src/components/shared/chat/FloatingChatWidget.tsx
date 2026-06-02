@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Avatar, Input, Button, Spin, message, Popover, List } from 'antd'
+import { Avatar, Input, Button, Spin, Popover, List } from 'antd'
+import { message } from '../../../utils/antd'
 import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr'
 import { useAppSelector } from '../../../redux/hooks'
 import {
