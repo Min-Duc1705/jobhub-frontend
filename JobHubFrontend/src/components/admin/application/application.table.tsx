@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
-import { EditOutlined } from '@ant-design/icons'
-import { App, Breadcrumb, Space, Tag } from 'antd'
+import { EditOutlined, EyeOutlined } from '@ant-design/icons'
+import { App, Breadcrumb, Space, Tag, Tooltip, Spin } from 'antd'
 import type { SortOrder } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
@@ -22,6 +22,38 @@ const ApplicationTable = () => {
 
   const [openUpdate, setOpenUpdate] = useState(false)
   const [editRow,    setEditRow]    = useState<IApplication | null>(null)
+  const [previewingId, setPreviewingId] = useState<string | null>(null)
+
+  const handlePreview = async (resume: any) => {
+    if (!resume?.id) return
+    if (resume.isOnlineCv) {
+      window.open(`/candidate/resume/builder/${resume.id}`, '_blank')
+      return
+    }
+
+    setPreviewingId(resume.id)
+    try {
+      const token = localStorage.getItem('access_token')
+      const baseUrl = import.meta.env.VITE_BACKEND_URL ?? ''
+      const res = await fetch(`${baseUrl}/api/v1/resumes/${resume.id}/preview`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+    } catch (err) {
+      console.error(err)
+      notification.error({
+        message: 'Thất bại',
+        description: 'Không thể tải bản xem trước CV. Vui lòng thử lại.',
+        duration: 3,
+      })
+    } finally {
+      setPreviewingId(null)
+    }
+  }
 
   const reload = () => actionRef.current?.reload()
 
@@ -62,9 +94,24 @@ const ApplicationTable = () => {
       dataIndex: ['resume', 'title'],
       ellipsis: true,
       hideInSearch: true,
-      render: (_v, r) => r.resume?.title
-        ? <Tag color={r.resume.isOnlineCv ? 'blue' : 'default'}>{r.resume.title}</Tag>
-        : '—',
+      render: (_v, r) => {
+        if (!r.resume?.title) return '—'
+        const isOnline = r.resume.isOnlineCv
+        const isLoading = previewingId === r.resume.id
+
+        return (
+          <Tooltip title={isOnline ? "Xem Online CV (tab mới)" : "Xem Preview CV dạng PDF (tab mới)"}>
+            <Tag
+              color={isOnline ? 'blue' : 'default'}
+              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              onClick={() => handlePreview(r.resume)}
+            >
+              {isLoading ? <Spin size="small" style={{ marginRight: 4 }} /> : <EyeOutlined />}
+              {r.resume.title}
+            </Tag>
+          </Tooltip>
+        )
+      }
     },
     {
       title: 'Trạng thái',

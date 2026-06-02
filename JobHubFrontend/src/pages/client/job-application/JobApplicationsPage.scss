@@ -60,6 +60,10 @@
     display: inline-block;
   }
 }
+.jap-job-info {
+  flex: 1;
+  min-width: 0;
+}
 .jap-job-title {
   font-size: 26px;
   font-weight: 700;
@@ -75,7 +79,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 .jap-stat-item {
   text-align: center;

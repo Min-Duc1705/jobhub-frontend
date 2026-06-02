@@ -1,6 +1,109 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Area } from '@ant-design/plots';
+import { Spin } from 'antd';
+import dayjs from 'dayjs';
+
+import { getApplicationsApi } from '../../../services/application-service';
+import type { IApplication } from '../../../types/application';
 
 const RecruitmentChart = () => {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getApplicationsApi('pageSize=1000&sortBy=createdDate&isDescending=true')
+      .then((res) => {
+        const apps = res.data?.result ?? res.data ?? [];
+        
+        // Build last 30 days map using DD/MM format (numerical, avoids localization parsing issues)
+        const daysMap: Record<string, { apps: number; hires: number }> = {};
+        const datesList: string[] = [];
+        
+        for (let i = 29; i >= 0; i--) {
+          const d = dayjs().subtract(i, 'day');
+          const formatted = d.format('DD/MM');
+          daysMap[formatted] = { apps: 0, hires: 0 };
+          datesList.push(formatted);
+        }
+
+        // Aggregate real data if present
+        if (Array.isArray(apps)) {
+          apps.forEach((app: IApplication) => {
+            if (!app.createdDate) return;
+            const appDate = dayjs(app.createdDate).format('DD/MM');
+            if (daysMap[appDate] !== undefined) {
+              daysMap[appDate].apps += 1;
+              if (app.status === 'APPROVED') {
+                daysMap[appDate].hires += 1;
+              }
+            }
+          });
+        }
+
+        // Convert to format required by G2 v5
+        const chartList: any[] = [];
+        datesList.forEach((date) => {
+          chartList.push({
+            date,
+            value: daysMap[date].apps,
+            type: 'Applications',
+          });
+          chartList.push({
+            date,
+            value: daysMap[date].hires,
+            type: 'Hires',
+          });
+        });
+
+        setData(chartList);
+      })
+      .catch((err) => {
+        console.error('Failed to load recruitment stats:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const config = {
+    data,
+    xField: 'date',
+    yField: 'value',
+    colorField: 'type',
+    height: 240,
+    legend: false,
+    scale: {
+      x: {
+        type: 'point', // Force categorical axis representation to prevent auto-translation of months
+      },
+      color: {
+        domain: ['Applications', 'Hires'],
+        range: ['#002660', '#005daa'],
+      },
+    },
+    style: {
+      lineDash: (datum: any) => (datum.type === 'Hires' ? [4, 4] : [0, 0]),
+      strokeWidth: 2.5,
+      fillOpacity: 0.15,
+    },
+    interaction: {
+      tooltip: {
+        shared: true,
+        showMarkers: true,
+      },
+    },
+    tooltip: {
+      title: 'date',
+      items: [
+        {
+          channel: 'y',
+          valueFormatter: (v: any) => `${v}`,
+        },
+      ],
+    },
+  };
+
   return (
     <div className="chart-container-card recruitment-chart">
       <div className="chart-header">
@@ -20,39 +123,11 @@ const RecruitmentChart = () => {
         </div>
       </div>
 
-      <div className="chart-canvas-wrapper">
-        <svg className="main-chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="chartLineGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" stopColor="#002660" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#002660" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {/* Horizontal Gridlines */}
-          <line stroke="#f0f0f0" strokeWidth="1" x1="0" x2="600" y1="0" y2="0" />
-          <line stroke="#f0f0f0" strokeWidth="1" x1="0" x2="600" y1="50" y2="50" />
-          <line stroke="#f0f0f0" strokeWidth="1" x1="0" x2="600" y1="100" y2="100" />
-          <line stroke="#f0f0f0" strokeWidth="1" x1="0" x2="600" y1="150" y2="150" />
-          <line stroke="#f0f0f0" strokeWidth="1" x1="0" x2="600" y1="200" y2="200" />
-
-          {/* Area Fill Under Applications Line */}
-          <path d="M0 150 L100 120 L200 140 L300 80 L400 90 L500 40 L600 60 V200 H0 Z" fill="url(#chartLineGradient)" />
-
-          {/* Applications Solid Line */}
-          <path d="M0 150 L100 120 L200 140 L300 80 L400 90 L500 40 L600 60" fill="none" stroke="#002660" strokeWidth="2.5" />
-
-          {/* Hires Dashed Line */}
-          <path d="M0 190 L100 180 L200 185 L300 160 L400 170 L500 150 L600 155" fill="none" stroke="#005daa" strokeDasharray="5,4" strokeWidth="2" />
-        </svg>
-
-        <div className="chart-axis-x">
-          <span>01 May</span>
-          <span>08 May</span>
-          <span>15 May</span>
-          <span>22 May</span>
-          <span>29 May</span>
+      <Spin spinning={loading}>
+        <div className="chart-canvas-wrapper" style={{ minHeight: 240 }}>
+          <Area {...config} />
         </div>
-      </div>
+      </Spin>
     </div>
   );
 };

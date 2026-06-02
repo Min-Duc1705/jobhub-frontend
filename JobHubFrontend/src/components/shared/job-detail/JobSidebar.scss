@@ -54,22 +54,23 @@
 
 .jd-ai-salary-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 5px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 8px;
 
   .jd-ai-label {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.75);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 2px;
   }
 
   .jd-ai-value {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 700;
     color: #a5c8ff;
+    white-space: nowrap;
   }
 }
 

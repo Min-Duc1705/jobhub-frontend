@@ -6,7 +6,7 @@ import AuditLogTable from '../../../components/admin/audit-log/audit-log.table';
 import KpiCards from '../../../components/admin/dashboard/kpi-cards';
 import RecruitmentChart from '../../../components/admin/dashboard/recruitment-chart';
 import CategoryDonut from '../../../components/admin/dashboard/category-donut';
-import AiPredictor from '../../../components/admin/dashboard/ai-predictor';
+import SkillTrendChart from '../../../components/admin/dashboard/skill-trend-chart';
 
 export default function Dashboard() {
   const handleExport = () => {
@@ -46,8 +46,8 @@ export default function Dashboard() {
         <CategoryDonut />
       </section>
 
-      {/* AI Market Predictor Banner */}
-      <AiPredictor />
+      {/* AI Skill Trend Forecast Chart */}
+      <SkillTrendChart />
 
       {/* Recent Activity Section */}
       <AuditLogTable />

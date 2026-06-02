@@ -876,3 +876,232 @@ $secondary-fixed:           #d4e3ff;
     }
   }
 }
+
+// 7. AI Skill Market Trend Section
+.dashboard-skill-trend-section {
+  background-color: $surface-container-lowest;
+  border: 1px solid rgba($outline-variant, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+
+  .trend-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .header-icon {
+        font-size: 24px;
+        color: $secondary;
+        background-color: rgba($secondary, 0.08);
+        padding: 8px;
+        border-radius: 8px;
+      }
+
+      .trend-card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: $primary;
+        margin: 0;
+      }
+
+      .trend-card-subtitle {
+        font-size: 13px;
+        color: $outline;
+        margin: 2px 0 0 0;
+      }
+    }
+
+    .trend-header-form {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .ant-form-item {
+        margin-right: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ant-form-item-label {
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        
+        label {
+          font-family: $font-mono !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          color: $on-surface-variant !important;
+          height: auto !important;
+          
+          &::after {
+            content: '' !important;
+          }
+        }
+      }
+
+      .ant-input, .ant-select-selector, .ant-input-number {
+        border-color: $outline-variant !important;
+        border-radius: 6px !important;
+        height: 36px !important;
+        background: white !important;
+        
+        &:hover, &:focus {
+          border-color: $secondary !important;
+        }
+      }
+
+      .ant-select-selector {
+        display: flex;
+        align-items: center;
+      }
+
+      .ant-input-number-input {
+        height: 34px !important;
+      }
+
+      .btn-query-trend {
+        height: 36px !important;
+        border-radius: 6px !important;
+        background-color: $primary !important;
+        border-color: $primary !important;
+        font-weight: 600;
+        
+        &:hover {
+          background-color: $primary-container !important;
+          border-color: $primary-container !important;
+        }
+      }
+    }
+  }
+
+  .trend-card-body {
+    width: 100%;
+  }
+
+  .trend-chart-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .trend-chart-tabs-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .trend-tabs {
+      display: flex;
+      gap: 6px;
+      background-color: $surface-container-low;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid rgba($outline-variant, 0.2);
+    }
+
+    .trend-tab-btn {
+      border: none;
+      background: none;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: $on-surface-variant;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: $font-mono;
+
+      &:hover {
+        color: $primary;
+      }
+
+      &.active {
+        background-color: $surface-container-lowest;
+        color: $primary;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    .trend-info-badge {
+      font-size: 13px;
+      color: $on-surface-variant;
+      background-color: rgba($primary, 0.05);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba($primary, 0.1);
+      
+      strong {
+        color: $primary;
+      }
+    }
+  }
+
+  .trend-chart-render {
+    background-color: rgba($surface-container-lowest, 0.5);
+    border: 1px solid rgba($outline-variant, 0.2);
+    border-radius: 8px;
+    padding: 16px 16px 8px 8px;
+  }
+}
+
+.trend-tooltip {
+  background: rgba(#002660, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 2000;
+
+  &__date {
+    font-size: 11px;
+    color: #a5c8ff;
+    margin: 0;
+    font-family: $font-mono;
+    font-weight: 600;
+  }
+
+  &__value {
+    font-size: 13px;
+    color: white;
+    margin: 0;
+    strong {
+      color: #fff;
+      font-weight: 700;
+    }
+  }
+
+  &__badge {
+    align-self: flex-start;
+    background: rgba(#ff9f43, 0.2);
+    border: 1px solid rgba(#ff9f43, 0.5);
+    color: #ff9f43;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-family: $font-mono;
+    margin-top: 2px;
+  }
+}

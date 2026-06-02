@@ -14,7 +14,7 @@ const ApplicationJobHeader = ({ job, total, totalApproved }: Props) => {
   return (
     <div className="jap-job-header">
       <div className="jap-job-header-inner">
-        <div>
+        <div className="jap-job-info">
           <div className="jap-job-badge-row">
             <span className="jap-job-active-badge">
               <span className="dot" />

@@ -89,7 +89,7 @@ const UpdateJobModal = ({ open, onOpenChange, data, onSuccess }: Props) => {
         description: data.description ?? '',
         requirements: data.requirements ?? '',
         benefits: data.benefits ?? '',
-        skillIds: data.skills.map(s => s.id),
+        skillIds: data.skills?.map(s => s.id) ?? [],
         startDate: data.startDate ? dayjs(data.startDate) : null,
         endDate: data.endDate ? dayjs(data.endDate) : null,
         status: data.status,
@@ -115,8 +115,10 @@ const UpdateJobModal = ({ open, onOpenChange, data, onSuccess }: Props) => {
         companyLogo: selectedCompany?.logo ?? data.companyLogo,
         startDate: values.startDate ? values.startDate.toISOString() : null,
         endDate: values.endDate ? values.endDate.toISOString() : null,
-        skillIds: values.skillIds ?? [],
+        skillIds: values.skillIds ?? (data.skills?.map(s => s.id) ?? []),
       }
+
+      console.log("Submit update job payload:", body)
 
       await updateJobApi(data.id, body)
       notification.success({ message: 'Cập nhật tin tuyển dụng thành công!', duration: 2 })

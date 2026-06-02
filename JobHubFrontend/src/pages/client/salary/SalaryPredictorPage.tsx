@@ -268,7 +268,7 @@ const SalaryPredictorPage = () => {
 
               <div className="salary-glass__badge">
                 <span className="material-symbols-outlined">insights</span>
-                <span>{result ? `AI Prediction ${result.model_version}` : 'AI Prediction'}</span>
+                <span>{result ? `AI Prediction ${result.model_version}` : 'AI Prediction 2.0-MultiOutput'}</span>
               </div>
 
               <p className="salary-glass__label">Estimated Monthly Salary</p>
@@ -276,41 +276,31 @@ const SalaryPredictorPage = () => {
                 {rangeText} <span>Triệu VND</span>
               </div>
 
-              {!result && (
-                <div className="salary-glass__empty">
-                  Điền form bên trái và bấm Dự đoán lương để lấy kết quả thật từ dịch vụ AI.
+              <div className="salary-glass__range-labels">
+                <span>Min ({result ? `${formatMoney(result.min_salary)}M` : '--M'})</span>
+                <span>Max ({result ? `${formatMoney(result.max_salary)}M` : '--M'})</span>
+              </div>
+              <div className="salary-glass__bar-wrap">
+                <div className="salary-glass__bar-base" />
+                <div className="salary-glass__bar-predict" />
+                <div className="salary-glass__bar-marker" />
+              </div>
+
+              <div className="salary-glass__metrics">
+                <div>
+                  <p className="salary-glass__metric-label">Model Confidence</p>
+                  <p className="salary-glass__metric-value">{result ? formatConfidence(result.confidence) : '--'}</p>
                 </div>
-              )}
+                <div>
+                  <p className="salary-glass__metric-label">Response Source</p>
+                  <p className="salary-glass__metric-value">{result ? (result.from_cache ? 'Cache' : 'Model') : '--'}</p>
+                </div>
+              </div>
 
-              {result && (
-                <>
-                  <div className="salary-glass__range-labels">
-                    <span>Min ({formatMoney(result.min_salary)}M)</span>
-                    <span>Max ({formatMoney(result.max_salary)}M)</span>
-                  </div>
-                  <div className="salary-glass__bar-wrap">
-                    <div className="salary-glass__bar-base" />
-                    <div className="salary-glass__bar-predict" />
-                    <div className="salary-glass__bar-marker" />
-                  </div>
-
-                  <div className="salary-glass__metrics">
-                    <div>
-                      <p className="salary-glass__metric-label">Model Confidence</p>
-                      <p className="salary-glass__metric-value">{formatConfidence(result.confidence)}</p>
-                    </div>
-                    <div>
-                      <p className="salary-glass__metric-label">Response Source</p>
-                      <p className="salary-glass__metric-value">{result.from_cache ? 'Cache' : 'Model'}</p>
-                    </div>
-                  </div>
-
-                  <div className="salary-glass__status">
-                    <span className="dot" />
-                    DataAnalyticsService responded via API Gateway
-                  </div>
-                </>
-              )}
+              <div className="salary-glass__status">
+                <span className="dot" />
+                DataAnalyticsService responded via API Gateway
+              </div>
 
             </div>
           </div>

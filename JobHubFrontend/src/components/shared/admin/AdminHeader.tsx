@@ -37,6 +37,52 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const searchItems = [
+    { label: 'Dashboard (Bảng điều khiển)', path: '/admin/dashboard', icon: 'dashboard', category: 'Trang chính' },
+    { label: 'Tài khoản hệ thống', path: '/admin/accounts', icon: 'account_circle', category: 'Người dùng' },
+    { label: 'Khách hàng', path: '/admin/customers', icon: 'person', category: 'Người dùng' },
+    { label: 'Công ty', path: '/admin/companies', icon: 'business', category: 'Doanh nghiệp' },
+    { label: 'Kỹ năng', path: '/admin/skills', icon: 'psychology', category: 'Dữ liệu' },
+    { label: 'Tin tuyển dụng', path: '/admin/jobs', icon: 'work', category: 'Tuyển dụng' },
+    { label: 'Quản lý CV', path: '/admin/resumes', icon: 'article', category: 'CV & Ứng tuyển' },
+    { label: 'Đơn ứng tuyển', path: '/admin/applications', icon: 'assignment', category: 'CV & Ứng tuyển' },
+    { label: 'Quản lý thông báo', path: '/admin/notifications', icon: 'notifications', category: 'Hệ thống' },
+    { label: 'Permissions (Quyền hạn)', path: '/admin/permissions', icon: 'lock', category: 'Bảo mật' },
+    { label: 'Roles (Vai trò)', path: '/admin/roles', icon: 'admin_panel_settings', category: 'Bảo mật' },
+    { label: 'Analytics (Thống kê)', path: '/admin/analytics', icon: 'analytics', category: 'Thống kê' },
+    { label: 'Settings (Cài đặt)', path: '/admin/settings', icon: 'settings', category: 'Cài đặt' },
+  ];
+
+  const filteredItems = searchItems.filter(item =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 8);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (filteredItems.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev + 1) % filteredItems.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev - 1 + filteredItems.length) % filteredItems.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const target = filteredItems[selectedIndex];
+      if (target) {
+        navigate(target.path);
+        setSearchQuery('');
+        (e.target as HTMLInputElement).blur();
+      }
+    } else if (e.key === 'Escape') {
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
   const { user, avatarUrl } = useAppSelector((state: any) => state.auth);
 
   useEffect(() => {
@@ -122,10 +168,45 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
           <span className="material-symbols-outlined search-icon">search</span>
           <input
             type="text"
-            placeholder="Search system resources..."
+            placeholder="Tìm kiếm tài nguyên hệ thống..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
             onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
+            onBlur={() => {
+              // Delay blur to allow item selection click events to register
+              setTimeout(() => setSearchFocused(false), 200);
+            }}
+            onKeyDown={handleSearchKeyDown}
           />
+          {searchFocused && (
+            <div className="admin-search-dropdown">
+              {filteredItems.length > 0 ? (
+                <>
+                  <div className="search-dropdown-group-title">Chức năng hệ thống</div>
+                  {filteredItems.map((item, idx) => (
+                    <div
+                      key={item.path}
+                      className={`search-dropdown-item ${idx === selectedIndex ? 'active' : ''}`}
+                      onMouseDown={() => {
+                        navigate(item.path);
+                        setSearchQuery('');
+                      }}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+                      <span style={{ flex: 1 }}>{item.label}</span>
+                      <span style={{ fontSize: 11, color: '#999' }}>{item.category}</span>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div className="search-dropdown-empty">Không tìm thấy tài nguyên hợp lệ</div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="header-action-icons">
