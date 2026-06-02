@@ -1,25 +1,51 @@
+import { useState } from 'react'
 import { Button, Form, Input, Select } from 'antd'
+import { message } from '../../../utils/antd'
+import { submitContactFormApi } from '../../../services/contact-service'
 import './ContactPage.scss'
 
 const { TextArea } = Input
 
 const INFO_CARDS = [
-  { icon: 'location_on',   title: 'Văn phòng Hà Nội',   body: 'Tòa nhà TechCenter, 123 Phố Duy Tân, Cầu Giấy, Hà Nội' },
-  { icon: 'location_city', title: 'Văn phòng TP. HCM',   body: 'Lầu 15, Bitexco Financial Tower, Quận 1, TP. Hồ Chí Minh' },
-  { icon: 'call',          title: 'Điện thoại',           body: 'Hotline: 1900 6789\nHỗ trợ: (024) 3765 4321' },
-  { icon: 'mail',          title: 'Email',                body: 'support@jobhub.vn\npartnership@jobhub.vn' },
+  { icon: 'location_on', title: 'Văn phòng Hà Nội', body: 'Tòa nhà TechCenter, 123 Phố Duy Tân, Cầu Giấy, Hà Nội' },
+  { icon: 'location_city', title: 'Văn phòng TP. HCM', body: 'Lầu 15, Bitexco Financial Tower, Quận 1, TP. Hồ Chí Minh' },
+  { icon: 'call', title: 'Điện thoại', body: 'Hotline: 1900 6789\nHỗ trợ: (024) 3765 4321' },
+  { icon: 'mail', title: 'Email', body: 'support@jobhub.vn\npartnership@jobhub.vn' },
 ]
 
 const SOCIAL_LINKS = [
-  { icon: 'share',  href: '#' },
-  { icon: 'group',  href: '#' },
+  { icon: 'share', href: '#' },
+  { icon: 'group', href: '#' },
   { icon: 'public', href: '#' },
   { icon: 'rss_feed', href: '#' },
 ]
 
 const ContactPage = () => {
-  const onFinish = (values: unknown) => {
-    console.log('Contact form:', values)
+  const [form] = Form.useForm()
+  const [submitting, setSubmitting] = useState(false)
+
+  const onFinish = async (values: any) => {
+    setSubmitting(true)
+    try {
+      const res = await submitContactFormApi({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        topic: values.topic,
+        message: values.message
+      })
+      if (res && res.data) {
+        message.success('Gửi lời nhắn liên hệ thành công! Chúng tôi sẽ phản hồi sớm nhất.')
+        form.resetFields()
+      } else {
+        message.error('Không thể gửi lời nhắn. Vui lòng thử lại sau.')
+      }
+    } catch (err) {
+      console.error('Contact submit error:', err)
+      message.error('Đã xảy ra lỗi khi gửi lời nhắn. Vui lòng thử lại.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -65,7 +91,7 @@ const ContactPage = () => {
         <div className="contact-form-card">
           <h2 className="contact-form-card__title">Gửi lời nhắn cho chúng tôi</h2>
 
-          <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+          <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <Form.Item
                 label="Họ và tên"
@@ -108,7 +134,7 @@ const ContactPage = () => {
             </Form.Item>
 
             <div className="contact-form-card__submit-row">
-              <Button htmlType="submit" className="btn-submit">
+              <Button htmlType="submit" className="btn-submit" loading={submitting}>
                 Gửi lời nhắn
               </Button>
             </div>
