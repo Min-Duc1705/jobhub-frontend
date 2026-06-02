@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { type: 'link', path: '/admin/companies', label: 'Công ty', icon: 'business' },
   { type: 'link', path: '/admin/skills', label: 'Kỹ năng', icon: 'psychology' },
+  { type: 'link', path: '/admin/contacts', label: 'Liên hệ', icon: 'contact_mail' },
   { type: 'link', path: '/admin/jobs', label: 'Tin tuyển dụng', icon: 'work' },
   {
     type: 'group',
@@ -48,6 +49,7 @@ const PATH_PERMISSIONS: Record<string, { method: string; apiPath: string; module
   '/admin/customers': { method: 'GET', apiPath: '/api/v1/customers', module: 'PROFILE' },
   '/admin/companies': { method: 'GET', apiPath: '/api/v1/companies', module: 'COMPANY' },
   '/admin/skills': { method: 'GET', apiPath: '/api/v1/skills', module: 'SKILL' },
+  '/admin/contacts': { method: 'GET', apiPath: '/api/v1/contacts', module: 'CONTACT' },
   '/admin/jobs': { method: 'GET', apiPath: '/api/v1/jobs', module: 'JOB' },
   '/admin/resumes': { method: 'GET', apiPath: '/api/v1/resumes', module: 'RESUME' },
   '/admin/applications': { method: 'GET', apiPath: '/api/v1/applications', module: 'APPLICATION' },

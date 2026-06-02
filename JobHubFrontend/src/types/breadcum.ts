@@ -46,4 +46,8 @@ export const ADMIN_BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
     { title: 'Hệ thống' },
     { title: 'Roles' },
   ],
+  contacts: [
+    { title: 'Trang chủ', href: '/admin/dashboard' },
+    { title: 'Liên hệ' },
+  ],
 }

@@ -78,4 +78,7 @@ export const All_PERMISSIONS = {
     UPDATE: { method: "PUT", apiPath: "/api/v1/skills/{id}", module: "SKILL" },
     DELETE: { method: "DELETE", apiPath: "/api/v1/skills/{id}", module: "SKILL" },
   },
+  CONTACTS: {
+    GET_PAGINATE: { method: "GET", apiPath: "/api/v1/contacts", module: "CONTACT" }
+  }
 };

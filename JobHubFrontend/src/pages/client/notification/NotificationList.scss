@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../../../styles/global' as *;
 
 // Local Design Tokens for premium aesthetics
@@ -173,7 +174,7 @@ $on-secondary-fixed-variant: #004785;
         box-shadow: 0 2px 4px rgba($tertiary, 0.1);
 
         &:hover {
-          background-color: darken($tertiary, 5%);
+          background-color: color.adjust($tertiary, $lightness: -5%);
           box-shadow: 0 4px 8px rgba($tertiary, 0.2);
         }
 
@@ -514,7 +515,7 @@ $on-secondary-fixed-variant: #004785;
           color: white;
           border: none;
           &:hover {
-            background-color: darken($primary, 5%);
+            background-color: color.adjust($primary, $lightness: -5%);
           }
         }
 
@@ -705,7 +706,7 @@ $on-secondary-fixed-variant: #004785;
       font-weight: 700 !important;
 
       &:hover {
-        background-color: darken($primary, 5%) !important;
+        background-color: color.adjust($primary, $lightness: -5%) !important;
       }
     }
   }
@@ -768,7 +769,7 @@ $on-secondary-fixed-variant: #004785;
       box-shadow: 0 4px 6px rgba($primary, 0.1);
 
       &:hover {
-        background-color: darken($primary, 5%);
+        background-color: color.adjust($primary, $lightness: -5%);
         box-shadow: 0 8px 12px rgba($primary, 0.15);
       }
     }

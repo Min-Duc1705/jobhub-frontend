@@ -33,6 +33,7 @@ import ResumeAdminTable   from '../components/admin/resume/resume.table'
 import ApplicationTable   from '../components/admin/application/application.table'
 import AccountTable       from '../components/admin/account/account.table'
 import JobTable           from '../components/admin/job/job.table'
+import ContactTable       from '../components/admin/contact/contact.table'
 import NotificationManagement from '../pages/admin/notifications/NotificationManagement'
 
 // ─── Public Pages (bỏ comment khi tạo file) ──────────────────────
@@ -168,6 +169,7 @@ const router = createBrowserRouter([
       { path: 'roles',        element: <RoleTable /> },
       { path: 'companies',    element: <CompanyTable /> },
       { path: 'skills',       element: <SkillTable /> },
+      { path: 'contacts',     element: <ContactTable /> },
       { path: 'resumes',      element: <ResumeAdminTable /> },
       { path: 'applications', element: <ApplicationTable /> },
       { path: 'jobs',         element: <JobTable /> },
