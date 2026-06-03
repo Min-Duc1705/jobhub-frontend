@@ -43,6 +43,19 @@ async function fetchPreviewBlobUrl(resumeId: string): Promise<string> {
   return URL.createObjectURL(blob);
 }
 
+/** Compact pill style helper for file type badges */
+const pillStyle = (bg: string, color: string, border: string): React.CSSProperties => ({
+  background: bg,
+  color,
+  fontSize: 11,
+  fontWeight: 600,
+  padding: '2px 8px',
+  borderRadius: 20,
+  border: `1px solid ${border}`,
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+});
+
 function getFileIcon(resume: IResume) {
   if (resume.isOnlineCv) return <GlobalOutlined style={{ color: '#7c3aed' }} />;
   const url = resume.url?.toLowerCase() ?? '';
@@ -564,61 +577,45 @@ export default function CvPreviewModal({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 8,
+                  gap: 10,
                   marginBottom: 12,
-                  padding: '10px 14px',
-                  background: 'rgba(124,58,237,0.10)',
+                  padding: '9px 14px',
+                  background: 'rgba(124,58,237,0.08)',
                   borderRadius: 10,
-                  border: '1px solid rgba(124,58,237,0.3)',
+                  border: '1px solid rgba(124,58,237,0.25)',
                 }}
               >
                 {/* File icon */}
-                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>
+                <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
                   {getFileIcon(selectedResume)}
                 </span>
 
-                {/* Title — truncate dài */}
+                {/* Title */}
                 <Text
                   ellipsis={{ tooltip: selectedResume.title }}
-                  style={{ color: '#e2d9f3', fontSize: 13, fontWeight: 500, flex: 1, minWidth: 0 }}
+                  style={{ color: '#ddd6fe', fontSize: 13, fontWeight: 500, flex: 1, minWidth: 0 }}
                 >
                   {selectedResume.title}
                 </Text>
 
-                {/* Pill badges */}
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                  {/* File type */}
-                  {(() => {
-                    if (selectedResume.isOnlineCv)
-                      return (
-                        <span style={{ background: '#3b0764', color: '#c4b5fd', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #6d28d9', whiteSpace: 'nowrap' }}>
-                          Online CV
-                        </span>
-                      );
-                    const u = selectedResume.url?.toLowerCase() ?? '';
-                    if (u.endsWith('.pdf'))
-                      return (
-                        <span style={{ background: '#450a0a', color: '#fca5a5', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #b91c1c', whiteSpace: 'nowrap' }}>
-                          PDF
-                        </span>
-                      );
-                    if (u.endsWith('.docx') || u.endsWith('.doc'))
-                      return (
-                        <span style={{ background: '#0c1e3d', color: '#93c5fd', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #1d4ed8', whiteSpace: 'nowrap' }}>
-                          Word
-                        </span>
-                      );
-                    return null;
-                  })()}
+                {/* File type label */}
+                {(() => {
+                  if (selectedResume.isOnlineCv)
+                    return <span style={pillStyle('#3b0764','#c4b5fd','#6d28d9')}>Online CV</span>;
+                  const u = selectedResume.url?.toLowerCase() ?? '';
+                  if (u.endsWith('.pdf'))
+                    return <span style={pillStyle('#2d0a0a','#fca5a5','#7f1d1d')}>PDF</span>;
+                  if (u.endsWith('.docx') || u.endsWith('.doc'))
+                    return <span style={pillStyle('#0a1628','#93c5fd','#1e3a5f')}>Word</span>;
+                  return null;
+                })()}
 
-                  {/* Default badge */}
-                  {selectedResume.isDefault && (
-                    <span style={{ background: '#451a03', color: '#fcd34d', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #92400e', whiteSpace: 'nowrap' }}>
-                      ★ Mặc định
-                    </span>
-                  )}
-                </div>
+                {/* Default: just a ★ star */}
+                {selectedResume.isDefault && (
+                  <span title="CV mặc định" style={{ color: '#fbbf24', fontSize: 14, lineHeight: 1, flexShrink: 0 }}>
+                    ★
+                  </span>
+                )}
               </div>
             )}
 
