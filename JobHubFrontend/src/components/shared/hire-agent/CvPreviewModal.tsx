@@ -496,11 +496,17 @@ export default function CvPreviewModal({
             options={resumes.map((r) => ({
               value: r.id,
               label: (
-                <Space size={4}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden' }}>
                   {getFileIcon(r)}
-                  <span style={{ fontSize: 12 }}>{r.title}</span>
-                  {r.isDefault && <Tag color="gold" style={{ fontSize: 10, padding: '0 4px' }}>Default</Tag>}
-                </Space>
+                  <span style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {r.title}
+                  </span>
+                  {r.isDefault && (
+                    <span style={{ background: '#451a03', color: '#fcd34d', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, border: '1px solid #92400e', flexShrink: 0 }}>
+                      ★
+                    </span>
+                  )}
+                </div>
               ),
             }))}
           />
@@ -558,24 +564,61 @@ export default function CvPreviewModal({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
                   gap: 8,
                   marginBottom: 12,
-                  padding: '8px 12px',
-                  background: 'rgba(124,58,237,0.08)',
-                  borderRadius: 8,
-                  border: '1px solid #3d2b6b',
+                  padding: '10px 14px',
+                  background: 'rgba(124,58,237,0.10)',
+                  borderRadius: 10,
+                  border: '1px solid rgba(124,58,237,0.3)',
                 }}
               >
-                {getFileIcon(selectedResume)}
-                <Text style={{ color: '#c4b5fd', fontSize: 13, flex: 1 }}>
+                {/* File icon */}
+                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>
+                  {getFileIcon(selectedResume)}
+                </span>
+
+                {/* Title — truncate dài */}
+                <Text
+                  ellipsis={{ tooltip: selectedResume.title }}
+                  style={{ color: '#e2d9f3', fontSize: 13, fontWeight: 500, flex: 1, minWidth: 0 }}
+                >
                   {selectedResume.title}
                 </Text>
-                {getFileTypeTag(selectedResume)}
-                {selectedResume.isDefault && (
-                  <Tag color="gold" style={{ fontSize: 11 }}>
-                    CV mặc định
-                  </Tag>
-                )}
+
+                {/* Pill badges */}
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                  {/* File type */}
+                  {(() => {
+                    if (selectedResume.isOnlineCv)
+                      return (
+                        <span style={{ background: '#3b0764', color: '#c4b5fd', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #6d28d9', whiteSpace: 'nowrap' }}>
+                          Online CV
+                        </span>
+                      );
+                    const u = selectedResume.url?.toLowerCase() ?? '';
+                    if (u.endsWith('.pdf'))
+                      return (
+                        <span style={{ background: '#450a0a', color: '#fca5a5', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #b91c1c', whiteSpace: 'nowrap' }}>
+                          PDF
+                        </span>
+                      );
+                    if (u.endsWith('.docx') || u.endsWith('.doc'))
+                      return (
+                        <span style={{ background: '#0c1e3d', color: '#93c5fd', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #1d4ed8', whiteSpace: 'nowrap' }}>
+                          Word
+                        </span>
+                      );
+                    return null;
+                  })()}
+
+                  {/* Default badge */}
+                  {selectedResume.isDefault && (
+                    <span style={{ background: '#451a03', color: '#fcd34d', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, border: '1px solid #92400e', whiteSpace: 'nowrap' }}>
+                      ★ Mặc định
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
