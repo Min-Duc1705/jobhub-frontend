@@ -24,6 +24,14 @@ const renderContentWithLinks = (text: string, isMe: boolean) => {
         trailingPunctuation = match[1];
         href = part.slice(0, -trailingPunctuation.length);
       }
+      
+      // Tự động chuyển đổi localhost sang origin hiện tại (Vercel hoặc bất kỳ tên miền nào khác)
+      if (href.startsWith('http://localhost:5173')) {
+        href = href.replace('http://localhost:5173', window.location.origin);
+      } else if (href.startsWith('https://localhost:5173')) {
+        href = href.replace('https://localhost:5173', window.location.origin);
+      }
+
       return (
         <Fragment key={index}>
           <a
