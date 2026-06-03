@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useAppDispatch } from '../../redux/hooks'
 import { fetchAccount, setAvatarUrl } from '../../redux/slices/authSlice'
 import { getMyProfileApi } from '../../services/profile-service'
+import { resolveChatUrl } from '../../utils/url'
 
 const SKIP_PATHS = ['/login', '/register', '/forgot-password']
 
@@ -22,7 +23,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch(fetchAccount()).then((action) => {
       if (fetchAccount.fulfilled.match(action)) {
         getMyProfileApi()
-          .then(res => dispatch(setAvatarUrl(res.data?.avatar ?? null)))
+          .then(res => {
+            // resolveChatUrl đổi domain cloudflare cũ → domain mới từ VITE_BACKEND_URL
+            const rawAvatar = res.data?.avatar ?? null
+            dispatch(setAvatarUrl(rawAvatar ? resolveChatUrl(rawAvatar) : null))
+          })
           .catch(() => {}) // bỏ qua nếu profile chưa tạo
       }
     })

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { App, DatePicker, Form, Input, InputNumber, Modal, Select } from 'antd'
+import { useEffect, useState, useRef } from 'react'
+import { App, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select } from 'antd'
 import dayjs from 'dayjs'
 import type { ICustomer } from '../../../types/customer'
 import { updateCustomerByIdApi } from '../../../services/customer-service'
@@ -25,18 +25,103 @@ const JOB_STATUS_OPTIONS = [
   { value: 'NOT_LOOKING',      label: 'Không tìm việc hiện tại' },
 ]
 
+// ── Vietnam Province / Ward types ──────────────────────────────────
+interface VietnamProvinceItem {
+  id: string
+  province: string
+  wards: { name: string; mergedFrom: string[] }[]
+}
+
+// ── Address helpers (đồng bộ với ProfileSettings) ──────────────────
+// Format: "addressDetail | ward | province"
+const SEP = ' | '
+const buildAddress = (parts: { province?: string; ward?: string; addressDetail?: string }) => {
+  const { province = '', ward = '', addressDetail = '' } = parts
+  return [addressDetail, ward, province].filter(Boolean).join(SEP) || undefined
+}
+const parseAddress = (raw: string | null | undefined) => {
+  if (!raw) return { province: undefined, ward: undefined, addressDetail: undefined }
+  const parts = raw.split(SEP)
+  // Format mới: "addressDetail | ward | province"
+  if (parts.length === 3) return {
+    addressDetail: parts[0] || undefined,
+    ward:          parts[1] || undefined,
+    province:      parts[2] || undefined,
+  }
+  // Legacy 4-part (district removed)
+  if (parts.length === 4) return {
+    addressDetail: parts[0] || undefined,
+    ward:          parts[1] || undefined,
+    province:      parts[3] || undefined,
+  }
+  // Legacy 2-part: "ward | province" (RegisterPage cũ chưa có addressDetail)
+  if (parts.length === 2) return {
+    addressDetail: undefined,
+    ward:          parts[0] || undefined,
+    province:      parts[1] || undefined,
+  }
+  // Plain string → put into addressDetail
+  return { addressDetail: raw, ward: undefined, province: undefined }
+}
+
+// ── Component ──────────────────────────────────────────────────────
 const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => {
   const [form]    = Form.useForm()
   const [loading, setLoading] = useState(false)
   const { notification } = App.useApp()
 
+  // ── Province / Ward state ─────────────────────────────────────
+  const [allProvinceData, setAllProvinceData] = useState<VietnamProvinceItem[]>([])
+  const [provinceOptions, setProvinceOptions] = useState<{ value: string; label: string }[]>([])
+  const [wardOptions,     setWardOptions]     = useState<{ value: string; label: string }[]>([])
+  const [loadingWards,    setLoadingWards]    = useState(false)
+  const provinceFetched = useRef(false)
+
+  // ── Fetch tỉnh/phường 1 lần khi mount ────────────────────────
+  useEffect(() => {
+    if (provinceFetched.current) return
+    provinceFetched.current = true
+    const load = async () => {
+      try {
+        const res  = await fetch('https://vietnamlabs.com/api/vietnamprovince')
+        const json = await res.json()
+        if (json.success && Array.isArray(json.data)) {
+          setAllProvinceData(json.data)
+          setProvinceOptions(
+            json.data.map((p: any) => ({ value: p.province, label: p.province }))
+          )
+        }
+      } catch {
+        console.warn('Vietnam Province API không khả dụng')
+      }
+    }
+    load()
+  }, [])
+
+  // ── Khi user chọn tỉnh → populate ward list ──────────────────
+  const selectProvince = (provinceName: string | undefined) => {
+    setWardOptions([])
+    if (!provinceName) return
+    setLoadingWards(true)
+    const found = allProvinceData.find(p => p.province === provinceName)
+    if (found) {
+      setWardOptions(found.wards.map(w => ({ value: w.name, label: w.name })))
+    }
+    setLoadingWards(false)
+  }
+
+  // ── Khi modal mở + data thay đổi → fill form ─────────────
   useEffect(() => {
     if (open && data) {
+      const addr = parseAddress(data.address)
+
       form.setFieldsValue({
         fullName:          data.fullName,
         phone:             data.phone,
         gender:            data.gender,
-        address:           data.address,
+        province:          addr.province,
+        ward:              addr.ward,
+        addressDetail:     addr.addressDetail,
         summary:           data.summary,
         yearsOfExperience: data.yearsOfExperience,
         expectedSalary:    data.expectedSalary,
@@ -44,8 +129,25 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
         position:          data.position,
         dateOfBirth:       data.dateOfBirth ? dayjs(data.dateOfBirth) : null,
       })
+
+      // Pre-load wards nếu tỉnh đã có
+      if (addr.province) selectProvince(addr.province)
     }
-  }, [open, data, form])
+  }, [open, data, form]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Race-condition: allProvinceData load xong sau khi modal đã fill
+  // → parse lại địa chỉ và populate ward list
+  useEffect(() => {
+    if (allProvinceData.length === 0 || !open || !data) return
+    const addr = parseAddress(data.address)
+    // Cập nhật lại province/ward vì lần đầu allProvinceData chưa có
+    form.setFieldsValue({
+      province:      addr.province,
+      ward:          addr.ward,
+      addressDetail: addr.addressDetail,
+    })
+    if (addr.province) selectProvince(addr.province)
+  }, [allProvinceData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOk = async () => {
     try {
@@ -56,7 +158,11 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
         fullName:          values.fullName,
         phone:             values.phone,
         gender:            values.gender,
-        address:           values.address,
+        address:           buildAddress({
+          province:      values.province,
+          ward:          values.ward,
+          addressDetail: values.addressDetail,
+        }),
         summary:           values.summary,
         yearsOfExperience: values.yearsOfExperience ?? null,
         expectedSalary:    values.expectedSalary ?? null,
@@ -82,6 +188,12 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
     }
   }
 
+  const handleCancel = () => {
+    onOpenChange(false)
+    form.resetFields()
+    setWardOptions([])
+  }
+
   const isCandidate = data?.type === 'CANDIDATE'
   const isEmployer  = data?.type === 'EMPLOYER'
 
@@ -90,50 +202,108 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
       title={`Cập nhật hồ sơ — ${data?.fullName ?? 'Customer'}`}
       open={open}
       onOk={handleOk}
-      onCancel={() => { onOpenChange(false); form.resetFields() }}
+      onCancel={handleCancel}
       okText="Lưu thay đổi"
       cancelText="Hủy"
       confirmLoading={loading}
-      width={640}
+      width={800}
       destroyOnHidden
     >
       <Form form={form} layout="vertical" autoComplete="off">
-        <Form.Item name="fullName" label="Họ và tên" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
-          <Input placeholder="Họ và tên" />
-        </Form.Item>
-
-        <Form.Item name="phone" label="Số điện thoại">
-          <Input placeholder="0xxxxxxxxx" />
-        </Form.Item>
+        {/* ── Hàng 1: Họ tên + SĐT ── */}
+        <Row gutter={12}>
+          <Col span={16}>
+            <Form.Item name="fullName" label="Họ và tên" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
+              <Input placeholder="Họ và tên" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item name="phone" label="Số điện thoại">
+              <Input placeholder="0xxxxxxxxx" />
+            </Form.Item>
+          </Col>
+        </Row>
 
         {isCandidate && (
           <>
-            <Form.Item name="gender" label="Giới tính">
-              <Select options={GENDER_OPTIONS} placeholder="Chọn giới tính" allowClear />
-            </Form.Item>
+            {/* ── Hàng 2: Giới tính + Ngày sinh + Trạng thái ── */}
+            <Row gutter={12}>
+              <Col span={8}>
+                <Form.Item name="gender" label="Giới tính">
+                  <Select options={GENDER_OPTIONS} placeholder="Chọn giới tính" allowClear />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="dateOfBirth" label="Ngày sinh">
+                  <DatePicker style={{ width: '100%' }} placeholder="DD/MM/YYYY" format="DD/MM/YYYY" />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="jobSearchStatus" label="Trạng thái tìm việc">
+                  <Select options={JOB_STATUS_OPTIONS} placeholder="Chọn trạng thái" allowClear />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Form.Item name="dateOfBirth" label="Ngày sinh">
-              <DatePicker style={{ width: '100%' }} placeholder="DD/MM/YYYY" format="DD/MM/YYYY" />
-            </Form.Item>
+            {/* ── Hàng 3: Tỉnh + Phường/Xã + Kinh nghiệm ── */}
+            <Row gutter={12}>
+              <Col span={8}>
+                <Form.Item name="province" label="Tỉnh / Thành phố">
+                  <Select
+                    showSearch
+                    placeholder="Chọn tỉnh"
+                    allowClear
+                    filterOption={(input, opt) =>
+                      String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={provinceOptions}
+                    onChange={(val) => {
+                      form.setFieldValue('ward', undefined)
+                      selectProvince(val)
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="ward" label="Phường / Xã">
+                  <Select
+                    showSearch
+                    placeholder={loadingWards ? 'Đang tải...' : 'Chọn phường / xã'}
+                    allowClear
+                    loading={loadingWards}
+                    disabled={wardOptions.length === 0 && !loadingWards}
+                    filterOption={(input, opt) =>
+                      String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={wardOptions}
+                    notFoundContent={loadingWards ? 'Đang tải...' : 'Chưa có dữ liệu'}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="yearsOfExperience" label="Kinh nghiệm">
+                  <InputNumber min={0} max={50} style={{ width: '100%' }} placeholder="0" addonAfter="năm" />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Form.Item name="address" label="Địa chỉ">
-              <Input placeholder="Địa chỉ" />
-            </Form.Item>
+            {/* ── Hàng 4: Địa chỉ chi tiết + Lương kỳ vọng ── */}
+            <Row gutter={12}>
+              <Col span={14}>
+                <Form.Item name="addressDetail" label="Địa chỉ chi tiết">
+                  <Input placeholder="Số nhà, tên đường, toà nhà..." />
+                </Form.Item>
+              </Col>
+              <Col span={10}>
+                <Form.Item name="expectedSalary" label="Lương kỳ vọng (VND)">
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="15,000,000" formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+                </Form.Item>
+              </Col>
+            </Row>
 
+            {/* ── Hàng 5: Giới thiệu ── */}
             <Form.Item name="summary" label="Giới thiệu bản thân">
               <TextArea rows={3} placeholder="Mô tả ngắn..." />
-            </Form.Item>
-
-            <Form.Item name="yearsOfExperience" label="Số năm kinh nghiệm">
-              <InputNumber min={0} max={50} style={{ width: '100%' }} placeholder="0" addonAfter="năm" />
-            </Form.Item>
-
-            <Form.Item name="expectedSalary" label="Mức lương kỳ vọng (VND)">
-              <InputNumber min={0} style={{ width: '100%' }} placeholder="15000000" formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
-            </Form.Item>
-
-            <Form.Item name="jobSearchStatus" label="Trạng thái tìm việc">
-              <Select options={JOB_STATUS_OPTIONS} placeholder="Chọn trạng thái" allowClear />
             </Form.Item>
           </>
         )}

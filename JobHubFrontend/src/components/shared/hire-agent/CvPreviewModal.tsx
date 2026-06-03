@@ -459,6 +459,7 @@ export default function CvPreviewModal({
       open={open}
       onCancel={onClose}
       footer={null}
+      closable={false}
       width={820}
       centered
       destroyOnClose

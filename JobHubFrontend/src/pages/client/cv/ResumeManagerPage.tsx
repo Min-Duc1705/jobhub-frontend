@@ -237,17 +237,6 @@ export default function ResumeManagerPage() {
                         >
                           Chỉnh sửa
                         </Button>
-                        {!resume.isDefault && (
-                          <Button
-                            className="rmp-card__overlay-btn"
-                            ghost
-                            icon={<span className="material-symbols-outlined">star</span>}
-                            onClick={() => handleSetDefault(resume.id)}
-                            style={{ color: '#FFD700', borderColor: '#FFD700' }}
-                          >
-                            Đặt mặc định
-                          </Button>
-                        )}
                       </>
                     ) : (
                       <Button
@@ -258,6 +247,18 @@ export default function ResumeManagerPage() {
                         target="_blank"
                       >
                         Tải xuống
+                      </Button>
+                    )}
+                    {/* Nút đặt mặc định — hiện cho CẢ 2 loại CV */}
+                    {!resume.isDefault && (
+                      <Button
+                        className="rmp-card__overlay-btn"
+                        ghost
+                        icon={<span className="material-symbols-outlined">star</span>}
+                        onClick={() => handleSetDefault(resume.id)}
+                        style={{ color: '#FFD700', borderColor: '#FFD700' }}
+                      >
+                        Đặt mặc định
                       </Button>
                     )}
                   </div>
@@ -317,14 +318,26 @@ export default function ResumeManagerPage() {
                       Chỉnh sửa
                     </Button>
                   ) : (
-                    <Button
-                      className="rmp-card__primary-btn"
-                      icon={<span className="material-symbols-outlined">download</span>}
-                      href={getResumeDownloadUrl(resume.id)}
-                      target="_blank"
-                    >
-                      Tải xuống
-                    </Button>
+                    <>
+                      <Button
+                        className="rmp-card__primary-btn"
+                        icon={<span className="material-symbols-outlined">download</span>}
+                        href={getResumeDownloadUrl(resume.id)}
+                        target="_blank"
+                      >
+                        Tải xuống
+                      </Button>
+                      {!resume.isDefault && (
+                        <Tooltip title="Đặt làm CV mặc định khi ứng tuyển">
+                          <Button
+                            className="rmp-card__icon-btn"
+                            icon={<span className="material-symbols-outlined">star</span>}
+                            onClick={() => handleSetDefault(resume.id)}
+                            style={{ color: '#f59e0b', borderColor: '#f59e0b' }}
+                          />
+                        </Tooltip>
+                      )}
+                    </>
                   )}
 
                   <Popconfirm

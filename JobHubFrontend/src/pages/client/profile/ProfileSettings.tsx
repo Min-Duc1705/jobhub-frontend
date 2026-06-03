@@ -62,6 +62,12 @@ const parseAddress = (raw: string | null | undefined) => {
     // skip parts[2] (district)
     province:      parts[3] || undefined,
   }
+  // Legacy 2-part format: "ward | province" (RegisterPage cũ chưa có addressDetail)
+  if (parts.length === 2) return {
+    addressDetail: undefined,
+    ward:          parts[0] || undefined,
+    province:      parts[1] || undefined,
+  }
   // Fully legacy plain string → put into addressDetail
   return { addressDetail: raw, ward: undefined, province: undefined }
 }

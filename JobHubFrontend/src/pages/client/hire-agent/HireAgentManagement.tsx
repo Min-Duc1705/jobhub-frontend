@@ -211,11 +211,22 @@ export default function HireAgentManagement() {
     if (!job) return;
     setCreateLoading(true);
     try {
+      // Gộp description + requirements + skills để CVIntelligenceService
+      // có đủ keyword kỹ năng bắt buộc khi tính Hard Skill Penalty
+      const skillNames = (job.skills || []).map((s: any) => s.name).join(', ');
+      const fullJobDescription = [
+        job.description || '',
+        job.requirements ? `Yêu cầu: ${job.requirements}` : '',
+        skillNames ? `Kỹ năng yêu cầu: ${skillNames}` : '',
+      ].filter(Boolean).join('\n\n') || job.name;
+
       await createCampaignApi({
         jobId: values.jobId,
         jobName: job.name,
-        jobDescription: job.description || job.name,
+        jobDescription: fullJobDescription,
         targetCount: values.targetCount,
+        jobLocation: job.location || '',          // Tỉnh/thành phố job
+        jobType: job.jobType || '',               // REMOTE/HYBRID/FULL_TIME/...
       });
       setCreateModalVisible(false);
       form.resetFields();

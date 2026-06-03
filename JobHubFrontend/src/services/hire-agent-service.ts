@@ -30,6 +30,8 @@ export interface ICreateCampaignRequest {
   jobName: string
   jobDescription: string
   targetCount: number
+  jobLocation?: string   // Tỉnh/thành phố job (VD: "Hồ Chí Minh")
+  jobType?: string       // REMOTE / HYBRID / FULL_TIME / PART_TIME / INTERNSHIP
 }
 
 /** Create automatic recruitment campaign for a job */

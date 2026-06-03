@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react'
-import { Form, Input, Button, type FormProps } from 'antd'
+import { useState, useEffect, useRef } from 'react'
+import { Form, Input, Button, Select, type FormProps } from 'antd'
 import { message } from '../../../utils/antd'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
 import { registerUser } from '../../../redux/slices/authSlice'
 import { verifyEmailApi, resendOtpApi } from '../../../services/auth-service'
 import './RegisterPage.scss'
+
+// ── Vietnam Province / Ward types ──────────────────────────────────
+interface VietnamProvinceItem {
+  id: string
+  province: string
+  wards: { name: string; mergedFrom: string[] }[]
+}
 
 type Role = 'candidate' | 'employer'
 type PasswordStrength = '' | 'weak' | 'medium' | 'strong'
@@ -14,6 +21,8 @@ interface RegisterFormValues {
   fullName: string
   email: string
   password: string
+  province?: string
+  ward?: string
 }
 
 interface OtpFormValues {
@@ -54,6 +63,47 @@ const RegisterPage = () => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
 
+  // ── Province / Ward từ vietnamlabs.com API ─────────────────────
+  const [allProvinceData, setAllProvinceData] = useState<VietnamProvinceItem[]>([])
+  const [provinceOptions, setProvinceOptions] = useState<{ value: string; label: string }[]>([])
+  const [wardOptions,     setWardOptions]     = useState<{ value: string; label: string }[]>([])
+  const [loadingWards,    setLoadingWards]    = useState(false)
+  const [form]                               = Form.useForm()
+
+  // Ref để tránh double-fetch trong StrictMode
+  const provinceFetched = useRef(false)
+
+  useEffect(() => {
+    if (provinceFetched.current) return
+    provinceFetched.current = true
+    const load = async () => {
+      try {
+        const res  = await fetch('https://vietnamlabs.com/api/vietnamprovince')
+        const json = await res.json()
+        if (json.success && Array.isArray(json.data)) {
+          setAllProvinceData(json.data)
+          setProvinceOptions(
+            json.data.map((p: any) => ({ value: p.province, label: p.province }))
+          )
+        }
+      } catch {
+        console.warn('Vietnam Province API không khả dụng')
+      }
+    }
+    load()
+  }, [])
+
+  const selectProvince = (provinceName: string | undefined) => {
+    setWardOptions([])
+    if (!provinceName) return
+    setLoadingWards(true)
+    const found = allProvinceData.find(p => p.province === provinceName)
+    if (found) {
+      setWardOptions(found.wards.map(w => ({ value: w.name, label: w.name })))
+    }
+    setLoadingWards(false)
+  }
+
   // Tự động gửi lại OTP khi được redirect từ LoginPage (tài khoản Pending)
   // dùng Set ngoài component để chống gọi 2 lần do React StrictMode
   useEffect(() => {
@@ -79,6 +129,12 @@ const RegisterPage = () => {
         username: values.fullName,
         password: values.password,
         role: role === 'candidate' ? 'CANDIDATE' : 'HR'
+      }
+
+      // Lưu address tạm vào sessionStorage để cập nhật sau khi login
+      if (role === 'candidate' && (values.province || values.ward)) {
+        const parts = [values.ward, values.province].filter(Boolean)
+        sessionStorage.setItem('pendingAddress', parts.join(', '))
       }
 
       const resultAction = await dispatch(registerUser(payload))
@@ -250,6 +306,7 @@ const RegisterPage = () => {
               </div>
 
               <Form
+                form={form}
                 layout="vertical"
                 onFinish={onFinish}
                 requiredMark={false}
@@ -343,6 +400,52 @@ const RegisterPage = () => {
                       </span>
                     </p>
                   </div>
+                )}
+
+                {/* ── Province + Ward (chỉ candidate) ── */}
+                {role === 'candidate' && (
+                  <>
+                    <Form.Item
+                      name="province"
+                      label="Tỉnh / Thành phố"
+                      rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Chọn tỉnh / thành phố"
+                        size="large"
+                        allowClear
+                        filterOption={(input, opt) =>
+                          String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={provinceOptions}
+                        onChange={(val) => {
+                          form.setFieldValue('ward', undefined)
+                          selectProvince(val)
+                        }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="ward"
+                      label="Xã / Phường / Thị trấn"
+                      rules={[{ required: true, message: 'Vui lòng chọn xã/phường' }]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder={loadingWards ? 'Đang tải...' : 'Chọn xã / phường / thị trấn'}
+                        size="large"
+                        allowClear
+                        loading={loadingWards}
+                        disabled={wardOptions.length === 0 && !loadingWards}
+                        filterOption={(input, opt) =>
+                          String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={wardOptions}
+                        notFoundContent={loadingWards ? 'Đang tải dữ liệu...' : 'Chưa có dữ liệu'}
+                      />
+                    </Form.Item>
+                  </>
                 )}
 
                 {/* ── Submit ── */}

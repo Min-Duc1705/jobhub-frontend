@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { loginApi, registerApi, getAccountApi, logoutApi } from '../../services/auth-service';
+import { updateMyProfileApi } from '../../services/profile-service';
 import type { LoginRequest, RegisterRequest, User, LoginResponse, ApiResponse } from '../../types/auth';
 
 interface AuthState {
@@ -112,6 +113,15 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.accessToken = action.payload.data.accessToken || null;
         state.user = action.payload.data.user;
+
+        // Nếu vừa đăng ký xong và có pendingAddress → tự lưu vào profile
+        const pendingAddress = sessionStorage.getItem('pendingAddress');
+        if (pendingAddress) {
+          sessionStorage.removeItem('pendingAddress');
+          updateMyProfileApi({ address: pendingAddress }).catch(() => {
+            // Không block UI nếu lỗi
+          });
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

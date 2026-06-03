@@ -10,6 +10,9 @@ export const getCustomersApi = (query: string): Promise<ApiResponse<PageResult<I
 export const getCustomerByIdApi = (id: string): Promise<ApiResponse<ICustomer>> =>
   axios.get(`/api/v1/customers/${id}`)
 
+export const updateMyProfileApi = (data: Partial<ICustomer>): Promise<ApiResponse<ICustomer>> =>
+  axios.put('/api/v1/customers/me', data)
+
 export const updateCustomerByIdApi = (id: string, data: Partial<ICustomer>): Promise<ApiResponse<ICustomer>> =>
   axios.put(`/api/v1/customers/${id}`, data)
 

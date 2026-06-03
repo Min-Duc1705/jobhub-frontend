@@ -1,6 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
-import { App, Breadcrumb, Tag } from 'antd'
+import { EyeOutlined } from '@ant-design/icons'
+import { App, Breadcrumb, Spin, Tag, Tooltip } from 'antd'
 import type { SortOrder } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
@@ -22,6 +23,38 @@ const ResumeAdminTable = () => {
   const actionRef = useRef<ActionType | null>(null)
   const pageRef   = useRef({ current: 1, pageSize: 10 })
   const { notification } = App.useApp()
+
+  const [previewingId, setPreviewingId] = useState<string | null>(null)
+
+  const handlePreview = async (record: IResume) => {
+    if (!record?.id) return
+    if (record.isOnlineCv) {
+      window.open(`/candidate/resume/builder/${record.id}`, '_blank')
+      return
+    }
+
+    setPreviewingId(record.id)
+    try {
+      const token   = localStorage.getItem('access_token')
+      const baseUrl = import.meta.env.VITE_BACKEND_URL ?? ''
+      const res = await fetch(`${baseUrl}/api/v1/resumes/${record.id}/preview`, {
+        headers:     token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      console.error(err)
+      notification.error({
+        message:     'Thất bại',
+        description: 'Không thể tải bản xem trước CV. Vui lòng thử lại.',
+        duration:    3,
+      })
+    } finally {
+      setPreviewingId(null)
+    }
+  }
 
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns: ProColumns<IResume>[] = [
@@ -47,13 +80,23 @@ const ResumeAdminTable = () => {
     {
       title: 'Loại',
       dataIndex: 'isOnlineCv',
-      width: 110,
+      width: 130,
       hideInSearch: true,
-      render: (_, r) => (
-        <Tag color={r.isOnlineCv ? 'blue' : 'default'}>
-          {r.isOnlineCv ? 'Online CV' : 'File CV'}
-        </Tag>
-      ),
+      render: (_, r) => {
+        const isLoading = previewingId === r.id
+        return (
+          <Tooltip title={r.isOnlineCv ? 'Xem Online CV (tab mới)' : 'Xem Preview CV dạng PDF (tab mới)'}>
+            <Tag
+              color={r.isOnlineCv ? 'blue' : 'default'}
+              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              onClick={() => handlePreview(r)}
+            >
+              {isLoading ? <Spin size="small" style={{ marginRight: 4 }} /> : <EyeOutlined />}
+              {r.isOnlineCv ? 'Online CV' : 'File CV'}
+            </Tag>
+          </Tooltip>
+        )
+      },
     },
     {
       title: 'Mặc định',
