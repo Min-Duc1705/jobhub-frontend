@@ -504,9 +504,9 @@
 
     .message-bubble__text {
       border-radius: 16px 16px 4px 16px;
-      background: $secondary-container;
+      background: $primary;
       color: #fff;
-      box-shadow: 0 3px 10px rgba($secondary-container, 0.2);
+      box-shadow: 0 3px 10px rgba($primary, 0.15);
     }
 
     .message-bubble__meta {

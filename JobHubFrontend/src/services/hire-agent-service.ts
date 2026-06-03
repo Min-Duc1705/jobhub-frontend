@@ -51,3 +51,7 @@ export const getCampaignByIdApi = (campaignId: string): Promise<ApiResponse<IHir
 /** Schedule a candidate interview for a campaign */
 export const scheduleInterviewApi = (campaignId: string, interviewDate: string): Promise<ApiResponse<IHireAgentConversation>> =>
   axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/schedule`, { interviewDate })
+
+/** Get current candidate's conversation details under a campaign */
+export const getMyConversationApi = (campaignId: string): Promise<ApiResponse<IHireAgentConversation>> =>
+  axios.get(`/api/v1/hire-agent/campaigns/${campaignId}/my-conversation`)

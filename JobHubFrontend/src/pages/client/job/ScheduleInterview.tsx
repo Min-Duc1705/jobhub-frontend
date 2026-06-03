@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, DatePicker, Button, Result, Typography, Spin, Row, Col, Space, Divider, Alert, message, Avatar } from 'antd';
 import { CalendarOutlined, CheckCircleOutlined, InfoCircleOutlined, UserOutlined, RobotOutlined, ArrowLeftOutlined, MessageOutlined } from '@ant-design/icons';
-import { getCampaignByIdApi, scheduleInterviewApi } from '../../../services/hire-agent-service';
-import type { IHireAgentCampaign } from '../../../services/hire-agent-service';
+import { getCampaignByIdApi, scheduleInterviewApi, getMyConversationApi } from '../../../services/hire-agent-service';
+import type { IHireAgentCampaign, IHireAgentConversation } from '../../../services/hire-agent-service';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 
@@ -13,20 +13,30 @@ export default function ScheduleInterview() {
   const { campaignId } = useParams<{ campaignId: string }>();
   
   const [campaign, setCampaign] = useState<IHireAgentCampaign | null>(null);
+  const [conversation, setConversation] = useState<IHireAgentConversation | null>(null);
   const [loading, setLoading] = useState(true);
   const [scheduling, setScheduling] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [successData, setSuccessData] = useState<{ interviewDate: string } | null>(null);
 
-  // Load Campaign details
+  // Load Campaign and Conversation details
   useEffect(() => {
-    const fetchCampaign = async () => {
+    const fetchData = async () => {
       if (!campaignId) return;
       try {
         setLoading(true);
-        const res = await getCampaignByIdApi(campaignId);
-        if (res.data) {
-          setCampaign(res.data);
+        const campaignRes = await getCampaignByIdApi(campaignId);
+        if (campaignRes.data) {
+          setCampaign(campaignRes.data);
+        }
+
+        try {
+          const convRes = await getMyConversationApi(campaignId);
+          if (convRes.data) {
+            setConversation(convRes.data);
+          }
+        } catch (convErr) {
+          console.warn('Lỗi khi lấy thông tin hội thoại ứng viên:', convErr);
         }
       } catch (err: any) {
         console.error('Lỗi khi lấy thông tin chiến dịch:', err);
@@ -36,7 +46,7 @@ export default function ScheduleInterview() {
       }
     };
 
-    fetchCampaign();
+    fetchData();
   }, [campaignId]);
 
   // Handle scheduling submit
@@ -96,6 +106,70 @@ export default function ScheduleInterview() {
             </Button>
           ]}
         />
+      </div>
+    );
+  }
+
+  if (conversation && conversation.status === 'Scheduled') {
+    const formattedDate = conversation.interviewDate
+      ? dayjs(conversation.interviewDate).format('DD/MM/YYYY HH:mm')
+      : 'Chưa rõ';
+
+    return (
+      <div style={{ padding: '60px 20px', maxWidth: 650, margin: '0 auto' }}>
+        <Card 
+          bordered={false} 
+          style={{ 
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)', 
+            borderRadius: 16,
+            overflow: 'hidden'
+          }}
+        >
+          <Result
+            status="info"
+            title={<Title level={3}>Bạn đã đặt lịch phỏng vấn!</Title>}
+            subTitle={
+              <div style={{ fontSize: 16 }}>
+                Bạn đã đặt lịch hẹn thành công cho vị trí{' '}
+                <Text strong style={{ color: '#096dd9' }}>{campaign.jobName}</Text>.
+              </div>
+            }
+            extra={[
+              <Card 
+                key="details"
+                style={{ 
+                  backgroundColor: '#e6f7ff', 
+                  border: '1px solid #91d5ff', 
+                  borderRadius: 12,
+                  marginBottom: 24,
+                  textAlign: 'left'
+                }}
+              >
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <CalendarOutlined style={{ fontSize: 24, color: '#1890ff', marginTop: 4 }} />
+                  <div>
+                    <div style={{ fontSize: 14, color: '#8c8c8c' }}>Thời gian đã hẹn:</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: '#2f54eb' }}>{formattedDate}</div>
+                    <div style={{ fontSize: 13, color: '#e62f2f', marginTop: 8, fontWeight: 500 }}>
+                      * Liên kết đặt lịch này đã được sử dụng và bị vô hiệu hóa. 
+                    </div>
+                    <div style={{ fontSize: 13, color: '#595959', marginTop: 4 }}>
+                      Nếu bạn muốn đổi lịch, vui lòng quay lại khung chat và nhắn tin với nội dung <Text code>đổi lịch</Text> để nhận liên kết mới.
+                    </div>
+                  </div>
+                </div>
+              </Card>,
+              <Space key="actions" size="middle">
+                <Button type="primary" size="large" icon={<MessageOutlined />}>
+                  <Link to="/chat">Vào khung chat</Link>
+                </Button>
+                <Button size="large">
+                  <Link to="/jobs">Về trang Tìm việc làm</Link>
+                </Button>
+              </Space>
+            ]}
+          />
+        </Card>
       </div>
     );
   }

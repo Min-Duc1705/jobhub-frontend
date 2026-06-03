@@ -1,6 +1,6 @@
 import React from 'react';
-import { Avatar, Button, Card, Empty, List, Space, Spin, Typography } from 'antd';
-import { CalendarOutlined, SyncOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Empty, List, Space, Spin, Tooltip, Typography } from 'antd';
+import { CalendarOutlined, FileTextOutlined, SyncOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { IHireAgentCampaign, IHireAgentConversation } from '../../../services/hire-agent-service';
 import { getConvStatusTag } from './hireAgentUtils';
@@ -14,6 +14,7 @@ interface CandidateListProps {
   candidateNames: Record<string, string>;
   selectedCampaign: IHireAgentCampaign;
   onSelectConversation: (conv: IHireAgentConversation) => void;
+  onViewCv: (conv: IHireAgentConversation) => void;
   onRefresh: () => void;
 }
 
@@ -24,6 +25,7 @@ export default function CandidateList({
   candidateNames,
   selectedCampaign,
   onSelectConversation,
+  onViewCv,
   onRefresh,
 }: CandidateListProps) {
   return (
@@ -104,9 +106,23 @@ export default function CandidateList({
                       </Text>
                     )}
                   </Space>
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    {dayjs(conv.createdAt).format('HH:mm DD/MM')}
-                  </Text>
+                  <Space size={4}>
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                      {dayjs(conv.createdAt).format('HH:mm DD/MM')}
+                    </Text>
+                    <Tooltip title="Xem CV ứng viên" placement="left">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<FileTextOutlined style={{ color: '#a78bfa' }} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewCv(conv);
+                        }}
+                        style={{ padding: '0 4px' }}
+                      />
+                    </Tooltip>
+                  </Space>
                 </div>
               </div>
             </List.Item>

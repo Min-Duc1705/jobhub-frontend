@@ -23,6 +23,7 @@ import CampaignList from '../../../components/shared/hire-agent/CampaignList';
 import CandidateList from '../../../components/shared/hire-agent/CandidateList';
 import ScreeningChatWindow from '../../../components/shared/hire-agent/ScreeningChatWindow';
 import CampaignLaunchModal from '../../../components/shared/hire-agent/CampaignLaunchModal';
+import CvPreviewModal from '../../../components/shared/hire-agent/CvPreviewModal';
 
 import './HireAgentManagement.scss';
 
@@ -47,6 +48,9 @@ export default function HireAgentManagement() {
   const [chatMessages, setChatMessages]             = useState<IMessageDto[]>([]);
   const [chatLoading, setChatLoading]               = useState(false);
   const [candidateNames, setCandidateNames]         = useState<Record<string, string>>({});
+
+  // CV Preview modal
+  const [cvPreviewConv, setCvPreviewConv]           = useState<IHireAgentConversation | null>(null);
 
   useEffect(() => { selectedCampaignRef.current = selectedCampaign; }, [selectedCampaign]);
 
@@ -293,6 +297,7 @@ export default function HireAgentManagement() {
                   candidateNames={candidateNames}
                   selectedCampaign={selectedCampaign}
                   onSelectConversation={handleSelectConversation}
+                  onViewCv={(conv) => setCvPreviewConv(conv)}
                   onRefresh={() => handleSelectCampaign(selectedCampaign)}
                 />
               </Col>
@@ -319,6 +324,14 @@ export default function HireAgentManagement() {
         form={form}
         onCancel={() => setCreateModalVisible(false)}
         onFinish={handleCreateCampaign}
+      />
+
+      {/* CV Preview modal */}
+      <CvPreviewModal
+        open={!!cvPreviewConv}
+        conversation={cvPreviewConv}
+        candidateName={cvPreviewConv ? (candidateNames[cvPreviewConv.candidateId] || 'Ứng viên') : ''}
+        onClose={() => setCvPreviewConv(null)}
       />
     </div>
   );

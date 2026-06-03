@@ -57,54 +57,54 @@ export default function CompanyFeatured({
         ) : featuredList.length === 0 ? (
           <Empty description="Chưa có dữ liệu" />
         ) : (
-          <>
-            <div
-              className="slideshow-track"
-              style={{ transform: `translateX(calc(-${slideIdx} * (280px + 24px)))` }}
-            >
-              {featuredList.map(c => (
-                <div key={c.id} className="featured-card company-card-hover">
-                  <div className="fc-logo-area">
-                    <div className="fc-logo-bg" />
-                    <img
-                      src={logoSrc(c)}
-                      alt={c.name}
-                      className="fc-logo"
-                      onError={e => { (e.target as HTMLImageElement).src = logoSrc({ ...c, logo: '' }) }}
-                    />
-                  </div>
-                  <h3 className="fc-name">{c.name}</h3>
-                  <div className="fc-tags">
-                    {companyTags(c).map(t => <span key={t} className="fc-tag">{t}</span>)}
-                    {companyTags(c).length === 0 && <span className="fc-tag">Công ty IT</span>}
-                  </div>
-                  <div className="fc-footer">
-                    {c.isVerified ? (
-                      <span className="fc-verified"><span className="fc-dot" />Đã xác minh</span>
-                    ) : (
-                      <span style={{ fontSize: 11, color: '#999' }}>Chờ xét duyệt</span>
-                    )}
-                    <button className="fc-jobs-btn" onClick={() => c.id && onNavigate(c.id)}>
-                      Xem việc làm
-                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward_ios</span>
-                    </button>
-                  </div>
+          <div
+            className="slideshow-track"
+            style={{ transform: `translateX(calc(-${slideIdx} * (280px + 24px)))` }}
+          >
+            {featuredList.map(c => (
+              <div key={c.id} className="featured-card company-card-hover">
+                <div className="fc-logo-area">
+                  <div className="fc-logo-bg" />
+                  <img
+                    src={logoSrc(c)}
+                    alt={c.name}
+                    className="fc-logo"
+                    onError={e => { (e.target as HTMLImageElement).src = logoSrc({ ...c, logo: '' }) }}
+                  />
                 </div>
-              ))}
-            </div>
-
-            <div className="slideshow-dots">
-              {featuredList.map((_, i) => (
-                <button
-                  key={i}
-                  className={`slideshow-dot${i === slideIdx ? ' active' : ''}`}
-                  onClick={() => { setSlideIdx(i) }}
-                />
-              ))}
-            </div>
-          </>
+                <h3 className="fc-name">{c.name}</h3>
+                <div className="fc-tags">
+                  {companyTags(c).map(t => <span key={t} className="fc-tag">{t}</span>)}
+                  {companyTags(c).length === 0 && <span className="fc-tag">Công ty IT</span>}
+                </div>
+                <div className="fc-footer">
+                  {c.isVerified ? (
+                    <span className="fc-verified"><span className="fc-dot" />Đã xác minh</span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: '#999' }}>Chờ xét duyệt</span>
+                  )}
+                  <button className="fc-jobs-btn" onClick={() => c.id && onNavigate(c.id)}>
+                    Xem việc làm
+                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward_ios</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
+
+      {featuredList.length > 1 && (
+        <div className="slideshow-dots">
+          {featuredList.map((_, i) => (
+            <button
+              key={i}
+              className={`slideshow-dot${i === slideIdx ? ' active' : ''}`}
+              onClick={() => { setSlideIdx(i) }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

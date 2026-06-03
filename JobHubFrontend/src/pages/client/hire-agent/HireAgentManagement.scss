@@ -346,18 +346,23 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
       &.bubble--candidate {
-        background-color: #ffffff;
+        background-color: $surface-container-lowest;
         color: $on-surface;
         border-bottom-left-radius: 2px;
-        border: 1px solid rgba($outline-variant, 0.6);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba($outline-variant, 0.4);
       }
 
       &.bubble--agent {
-        background: $secondary-container;
-        color: #ffffff;
+        background: $primary;
+        color: #fff !important;
         border-bottom-right-radius: 2px;
-        box-shadow: 0 3px 10px rgba($secondary-container, 0.25);
+        box-shadow: 0 3px 10px rgba($primary, 0.15);
+
+        // Force white text on Ant Design Typography components
+        .ant-typography,
+        p, span, div {
+          color: #fff !important;
+        }
       }
 
       .bubble-time {
