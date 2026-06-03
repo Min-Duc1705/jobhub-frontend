@@ -17,7 +17,10 @@
 
     :global(.ant-breadcrumb-link a) {
       color: $secondary;
-      &:hover { text-decoration: underline; }
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
@@ -141,7 +144,7 @@
   .campaign-card {
     border-radius: 14px;
     border: 1px solid rgba($outline-variant, 0.5);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     height: calc(100vh - 320px);
     min-height: 480px;
     display: flex;
@@ -154,11 +157,13 @@
       min-height: 50px;
       flex-shrink: 0;
     }
+
     .ant-card-head-title {
       font-size: 14px;
       font-weight: 600;
       color: $on-surface;
     }
+
     .ant-card-body {
       flex: 1;
       overflow-y: auto;
@@ -229,7 +234,7 @@
   .candidate-card {
     border-radius: 14px;
     border: 1px solid rgba($outline-variant, 0.5);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     height: calc(100vh - 320px);
     min-height: 480px;
     display: flex;
@@ -242,6 +247,7 @@
       min-height: 50px;
       flex-shrink: 0;
     }
+
     .ant-card-body {
       flex: 1;
       overflow-y: auto;
@@ -271,7 +277,7 @@
   .chat-card {
     border-radius: 14px;
     border: 1px solid rgba($outline-variant, 0.5);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     height: calc(100vh - 320px);
     min-height: 480px;
     display: flex;
@@ -284,6 +290,7 @@
       min-height: 50px;
       flex-shrink: 0;
     }
+
     .ant-card-body {
       flex: 1;
       display: flex;
@@ -322,8 +329,13 @@
     display: flex;
     margin-bottom: 10px;
 
-    &.left  { justify-content: flex-start; }
-    &.right { justify-content: flex-end; }
+    &.left {
+      justify-content: flex-start;
+    }
+
+    &.right {
+      justify-content: flex-end;
+    }
 
     .bubble {
       max-width: 78%;
@@ -331,28 +343,34 @@
       border-radius: 14px;
       font-size: 13px;
       line-height: 1.55;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
       &.bubble--candidate {
-        background: #ffffff;
-        color: #1e1e2e;
+        background-color: #ffffff;
+        color: $on-surface;
         border-bottom-left-radius: 2px;
-        border: 1px solid #ececec;
+        border: 1px solid rgba($outline-variant, 0.6);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
       }
 
       &.bubble--agent {
-        background: linear-gradient(135deg, rgba($primary, 0.08) 0%, rgba($secondary, 0.14) 100%);
-        color: $primary;
+        background: $secondary-container;
+        color: #ffffff;
         border-bottom-right-radius: 2px;
-        border: 1px solid rgba($secondary, 0.18);
+        box-shadow: 0 3px 10px rgba($secondary-container, 0.25);
       }
 
       .bubble-time {
         display: block;
         font-size: 10px;
-        color: $outline;
+        color: rgba(#fff, 0.55);
         margin-top: 5px;
         text-align: right;
+
+        // Candidate bubble: darker time text
+        .bubble--candidate & {
+          color: $outline;
+        }
       }
     }
   }
@@ -392,7 +410,11 @@
     display: flex;
     gap: 10px;
 
-    .info-icon { color: #722ed1; margin-top: 2px; flex-shrink: 0; }
+    .info-icon {
+      color: #722ed1;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
 
     .info-title {
       display: block;

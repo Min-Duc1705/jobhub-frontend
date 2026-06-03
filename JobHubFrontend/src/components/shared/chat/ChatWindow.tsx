@@ -38,7 +38,7 @@ const renderContentWithLinks = (text: string, isMe: boolean) => {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: isMe ? '#91d5ff' : '#1890ff',
+              color: isMe ? '#91d5ff' : '#005daa',
               textDecoration: 'underline',
               wordBreak: 'break-all'
             }}

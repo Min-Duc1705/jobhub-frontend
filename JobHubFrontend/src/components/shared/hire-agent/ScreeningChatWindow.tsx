@@ -106,7 +106,7 @@ export default function ScreeningChatWindow({
       ) : (
         <>
           {/* ── Messages canvas ── */}
-          <div className="chat-messages-canvas">
+          <div ref={chatBottomRef} className="chat-messages-canvas">
             {chatLoading ? (
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <Spin />
@@ -155,7 +155,6 @@ export default function ScreeningChatWindow({
                 );
               })
             )}
-            <div ref={chatBottomRef} />
           </div>
 
           {/* ── Footer status bar ── */}

@@ -90,7 +90,15 @@ export default function HireAgentManagement() {
           setChatMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             const updated = [...prev, newMsg].sort((a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix());
-            setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            setTimeout(() => {
+              const container = chatBottomRef.current;
+              if (container) {
+                container.scrollTo({
+                  top: container.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }, 100);
             return updated;
           });
         }
@@ -182,7 +190,15 @@ export default function HireAgentManagement() {
     } catch (err) { console.error(err); }
     finally {
       setChatLoading(false);
-      setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      setTimeout(() => {
+        const container = chatBottomRef.current;
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
     }
   };
 
