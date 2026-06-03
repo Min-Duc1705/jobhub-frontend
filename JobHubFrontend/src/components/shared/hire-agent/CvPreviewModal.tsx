@@ -515,7 +515,7 @@ export default function CvPreviewModal({
                     {r.title}
                   </span>
                   {r.isDefault && (
-                    <span style={{ background: '#451a03', color: '#fcd34d', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, border: '1px solid #92400e', flexShrink: 0 }}>
+                    <span title="CV mặc định" style={{ color: '#fbbf24', fontSize: 13, lineHeight: 1, flexShrink: 0 }}>
                       ★
                     </span>
                   )}
