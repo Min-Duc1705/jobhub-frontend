@@ -1,14 +1,387 @@
-import React, { useMemo } from 'react';
-import { Avatar, Button, Divider, Modal, Space, Tag, Tooltip, Typography } from 'antd';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  CopyOutlined,
+  Avatar,
+  Button,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
+import {
+  DownloadOutlined,
   FileTextOutlined,
+  FilePdfOutlined,
+  FileWordOutlined,
+  GlobalOutlined,
   UserOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
 } from '@ant-design/icons';
-import { message } from '../../../utils/antd';
 import type { IHireAgentConversation } from '../../../services/hire-agent-service';
+import { getMyResumesApi } from '../../../services/resume-service';
+import type { IResume } from '../../../types/resume-builder';
 
 const { Text, Title } = Typography;
+
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL as string) || 'http://localhost:5000';
+
+/** Fetch file preview qua API (có Bearer token) rồi trả blob URL */
+async function fetchPreviewBlobUrl(resumeId: string): Promise<string> {
+  const token = localStorage.getItem('access_token') ?? '';
+  const res = await fetch(`${BACKEND_URL}/api/v1/resumes/${resumeId}/preview`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'ngrok-skip-browser-warning': 'true',
+    },
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`Preview API trả về ${res.status}`);
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
+function getFileIcon(resume: IResume) {
+  if (resume.isOnlineCv) return <GlobalOutlined style={{ color: '#7c3aed' }} />;
+  const url = resume.url?.toLowerCase() ?? '';
+  if (url.endsWith('.pdf')) return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
+  if (url.endsWith('.docx') || url.endsWith('.doc'))
+    return <FileWordOutlined style={{ color: '#1677ff' }} />;
+  return <FileTextOutlined style={{ color: '#faad14' }} />;
+}
+
+function getFileTypeTag(resume: IResume) {
+  if (resume.isOnlineCv)
+    return (
+      <Tag color="purple" style={{ fontSize: 11, border: 'none' }}>
+        Online CV
+      </Tag>
+    );
+  const url = resume.url?.toLowerCase() ?? '';
+  if (url.endsWith('.pdf'))
+    return (
+      <Tag color="red" style={{ fontSize: 11, border: 'none' }}>
+        PDF
+      </Tag>
+    );
+  if (url.endsWith('.docx') || url.endsWith('.doc'))
+    return (
+      <Tag color="blue" style={{ fontSize: 11, border: 'none' }}>
+        Word
+      </Tag>
+    );
+  return null;
+}
+
+// ── Render Online CV từ contentJson ─────────────────────────────────────────
+
+function OnlineCvViewer({ resume }: { resume: IResume }) {
+  if (!resume.contentJson) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 0', color: '#888' }}>
+        <GlobalOutlined style={{ fontSize: 40, marginBottom: 12 }} />
+        <p>Không có dữ liệu nội dung CV này.</p>
+      </div>
+    );
+  }
+
+  let content: any = {};
+  try {
+    content = JSON.parse(resume.contentJson);
+  } catch {
+    return <p style={{ color: '#f87171', padding: 20 }}>Không đọc được nội dung CV.</p>;
+  }
+
+  const p = content.personal ?? {};
+
+  return (
+    <div
+      style={{
+        fontFamily: "'Inter', sans-serif",
+        color: '#e5e7eb',
+        lineHeight: 1.7,
+        padding: '0 4px',
+      }}
+    >
+      {/* Personal */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg,#3b0764,#1e1b4b)',
+          borderRadius: 10,
+          padding: '18px 20px',
+          marginBottom: 16,
+        }}
+      >
+        <Title level={4} style={{ color: '#fff', margin: 0 }}>
+          {p.fullName || '—'}
+        </Title>
+        {p.title && (
+          <Text style={{ color: '#c4b5fd', fontSize: 13 }}>{p.title}</Text>
+        )}
+        <div style={{ marginTop: 8, fontSize: 12, color: '#a78bfa' }}>
+          {[p.email, p.phone, p.location].filter(Boolean).join(' · ')}
+        </div>
+        {p.summary && (
+          <p style={{ fontSize: 12.5, color: '#d4d4f7', marginTop: 8 }}>{p.summary}</p>
+        )}
+      </div>
+
+      {/* Experience */}
+      {content.experiences?.length > 0 && (
+        <Section title="Kinh nghiệm làm việc">
+          {content.experiences.map((exp: any) => (
+            <div key={exp.id} style={{ marginBottom: 12 }}>
+              <Text strong style={{ color: '#e2e8f0', fontSize: 13 }}>
+                {exp.position}
+              </Text>{' '}
+              <Text style={{ color: '#94a3b8', fontSize: 12 }}>tại {exp.company}</Text>
+              <div style={{ fontSize: 11, color: '#64748b' }}>
+                {exp.startDate} – {exp.endDate}
+              </div>
+              {exp.description && (
+                <p style={{ fontSize: 12.5, color: '#cbd5e1', margin: '4px 0' }}>
+                  {exp.description}
+                </p>
+              )}
+              {exp.bullets?.length > 0 && (
+                <ul style={{ paddingLeft: 18, margin: '4px 0' }}>
+                  {exp.bullets.map((b: string, i: number) => (
+                    <li key={i} style={{ fontSize: 12.5, color: '#cbd5e1' }}>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {/* Education */}
+      {content.education?.length > 0 && (
+        <Section title="Học vấn">
+          {content.education.map((edu: any) => (
+            <div key={edu.id} style={{ marginBottom: 10 }}>
+              <Text strong style={{ color: '#e2e8f0', fontSize: 13 }}>
+                {edu.degree}
+              </Text>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                {edu.school} · {edu.startYear}–{edu.endYear}
+                {edu.gpa ? ` · GPA ${edu.gpa}` : ''}
+              </div>
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {/* Skills */}
+      {content.skills?.length > 0 && (
+        <Section title="Kỹ năng">
+          {content.skills.map((sg: any) => (
+            <div key={sg.id} style={{ marginBottom: 8 }}>
+              <Text style={{ fontSize: 12, color: '#a78bfa', fontWeight: 600 }}>
+                {sg.category}:
+              </Text>{' '}
+              <Text style={{ fontSize: 12, color: '#cbd5e1' }}>
+                {sg.items?.join(', ')}
+              </Text>
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {/* Projects */}
+      {content.projects?.length > 0 && (
+        <Section title="Dự án">
+          {content.projects.map((pr: any) => (
+            <div key={pr.id} style={{ marginBottom: 10 }}>
+              <Text strong style={{ color: '#e2e8f0', fontSize: 13 }}>
+                {pr.name}
+              </Text>
+              {pr.description && (
+                <p style={{ fontSize: 12.5, color: '#cbd5e1', margin: '2px 0' }}>
+                  {pr.description}
+                </p>
+              )}
+              {pr.tags?.length > 0 && (
+                <Space size={4} wrap style={{ marginTop: 4 }}>
+                  {pr.tags.map((t: string) => (
+                    <Tag key={t} style={{ fontSize: 11, background: '#1e1b4b', borderColor: '#4f46e5', color: '#a5b4fc' }}>
+                      {t}
+                    </Tag>
+                  ))}
+                </Space>
+              )}
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {/* Certifications */}
+      {content.certifications?.length > 0 && (
+        <Section title="Chứng chỉ">
+          {content.certifications.map((c: any) => (
+            <div key={c.id} style={{ marginBottom: 6 }}>
+              <Text style={{ color: '#e2e8f0', fontSize: 13 }}>{c.name}</Text>
+              <Text style={{ color: '#64748b', fontSize: 12 }}>
+                {' '}· {c.issuer}, {c.year}
+              </Text>
+            </div>
+          ))}
+        </Section>
+      )}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div
+        style={{
+          borderLeft: '3px solid #7c3aed',
+          paddingLeft: 10,
+          marginBottom: 8,
+        }}
+      >
+        <Text
+          strong
+          style={{ fontSize: 12, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em' }}
+        >
+          {title}
+        </Text>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── PDF / Word viewer ────────────────────────────────────────────────────────
+
+function FileViewer({ resume }: { resume: IResume }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(100);
+  const prevUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setBlobUrl(null);
+
+    fetchPreviewBlobUrl(resume.id)
+      .then((url) => {
+        if (!cancelled) {
+          // Revoke old blob to avoid memory leak
+          if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+          prevUrlRef.current = url;
+          setBlobUrl(url);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message ?? 'Không thể tải file CV.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resume.id]);
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 420, gap: 12 }}>
+        <Spin size="large" />
+        <Text style={{ color: '#888', fontSize: 13 }}>Đang tải file CV...</Text>
+      </div>
+    );
+  }
+
+  if (error || !blobUrl) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px', color: '#888' }}>
+        <FilePdfOutlined style={{ fontSize: 40, color: '#f87171', marginBottom: 12 }} />
+        <p style={{ color: '#f87171' }}>Không thể xem trước file CV.</p>
+        <p style={{ fontSize: 12 }}>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Zoom controls */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: 6,
+          padding: '6px 0 10px',
+        }}
+      >
+        <Tooltip title="Thu nhỏ">
+          <Button
+            icon={<ZoomOutOutlined />}
+            size="small"
+            type="text"
+            style={{ color: '#a78bfa' }}
+            onClick={() => setZoom((z) => Math.max(50, z - 10))}
+            disabled={zoom <= 50}
+          />
+        </Tooltip>
+        <Text style={{ color: '#888', fontSize: 12, minWidth: 36, textAlign: 'center' }}>
+          {zoom}%
+        </Text>
+        <Tooltip title="Phóng to">
+          <Button
+            icon={<ZoomInOutlined />}
+            size="small"
+            type="text"
+            style={{ color: '#a78bfa' }}
+            onClick={() => setZoom((z) => Math.min(200, z + 10))}
+            disabled={zoom >= 200}
+          />
+        </Tooltip>
+      </div>
+
+      <div
+        style={{
+          overflow: 'auto',
+          maxHeight: '62vh',
+          border: '1px solid #2e2e4d',
+          borderRadius: 8,
+          background: '#fff',
+        }}
+      >
+        <iframe
+          src={blobUrl}
+          title="CV Preview"
+          style={{
+            width: `${zoom}%`,
+            minHeight: 600,
+            border: 'none',
+            display: 'block',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Main Modal ───────────────────────────────────────────────────────────────
 
 interface CvPreviewModalProps {
   open: boolean;
@@ -17,132 +390,84 @@ interface CvPreviewModalProps {
   onClose: () => void;
 }
 
-/**
- * Render cvText thành các đoạn có định dạng.
- * Dòng ALL CAPS hoặc có dấu ":" cuối → xem là tiêu đề section.
- */
-const renderCvContent = (text: string) => {
-  if (!text?.trim()) {
-    return (
-      <div style={{ textAlign: 'center', color: '#aaa', padding: '40px 0' }}>
-        <FileTextOutlined style={{ fontSize: 32, marginBottom: 8 }} />
-        <p>Không có nội dung CV.</p>
-      </div>
-    );
-  }
-
-  const lines = text.split('\n');
-  const elements: React.ReactNode[] = [];
-  let bulletBuffer: string[] = [];
-
-  const flushBullets = (key: string) => {
-    if (bulletBuffer.length === 0) return;
-    elements.push(
-      <ul key={`ul-${key}`} style={{ paddingLeft: 20, margin: '4px 0 12px' }}>
-        {bulletBuffer.map((b, i) => (
-          <li key={i} style={{ fontSize: 13.5, lineHeight: 1.7, color: '#d0d0d0' }}>
-            {b}
-          </li>
-        ))}
-      </ul>
-    );
-    bulletBuffer = [];
-  };
-
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      flushBullets(String(idx));
-      return;
-    }
-
-    // Detect section heading: ALL CAPS or ends with ":"
-    const isHeading =
-      (trimmed === trimmed.toUpperCase() && trimmed.length > 2 && !/^\d/.test(trimmed)) ||
-      (trimmed.endsWith(':') && trimmed.length < 60);
-
-    // Detect bullet point
-    const isBullet = /^[-•*▪]\s+/.test(trimmed) || /^\d+\.\s/.test(trimmed);
-
-    if (isHeading) {
-      flushBullets(String(idx));
-      elements.push(
-        <div key={idx} style={{ margin: '16px 0 6px' }}>
-          <Text
-            strong
-            style={{
-              fontSize: 13,
-              color: '#a78bfa',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-            }}
-          >
-            {trimmed.replace(/:$/, '')}
-          </Text>
-          <Divider style={{ margin: '6px 0', borderColor: '#3d3d5c' }} />
-        </div>
-      );
-    } else if (isBullet) {
-      bulletBuffer.push(trimmed.replace(/^[-•*▪]\s+/, '').replace(/^\d+\.\s/, ''));
-    } else {
-      flushBullets(String(idx));
-      elements.push(
-        <p key={idx} style={{ fontSize: 13.5, lineHeight: 1.75, color: '#d0d0d0', margin: '3px 0' }}>
-          {trimmed}
-        </p>
-      );
-    }
-  });
-
-  flushBullets('end');
-  return elements;
-};
-
 export default function CvPreviewModal({
   open,
   conversation,
   candidateName,
   onClose,
 }: CvPreviewModalProps) {
-  const cvText = conversation?.cvText ?? '';
+  const [resumes, setResumes]           = useState<IResume[]>([]);
+  const [resumesLoading, setResumesLoading] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
 
-  const wordCount = useMemo(
-    () => cvText.trim().split(/\s+/).filter(Boolean).length,
-    [cvText]
-  );
+  const selectedResume = resumes.find((r) => r.id === selectedResumeId) ?? null;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(cvText).then(() => {
-      message.success('Đã sao chép nội dung CV!');
-    });
-  };
+  // Fetch resumes khi mở modal
+  useEffect(() => {
+    if (!open || !conversation?.candidateId) return;
+    setResumesLoading(true);
+    setResumes([]);
+    setSelectedResumeId(null);
+
+    getMyResumesApi(conversation.candidateId)
+      .then((res) => {
+        const list = res.data?.result ?? [];
+        setResumes(list);
+        // Ưu tiên CV mặc định, nếu không có thì lấy CV đầu tiên
+        const defaultCv = list.find((r) => r.isDefault) ?? list[0] ?? null;
+        setSelectedResumeId(defaultCv?.id ?? null);
+      })
+      .catch(console.error)
+      .finally(() => setResumesLoading(false));
+  }, [open, conversation?.candidateId]);
+
+  const handleDownload = useCallback(() => {
+    if (!selectedResume) return;
+    const token = localStorage.getItem('access_token') ?? '';
+    const url = `${BACKEND_URL}/api/v1/resumes/${selectedResume.id}/download`;
+    // Fetch rồi trigger download
+    fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' },
+      credentials: 'include',
+    })
+      .then((r) => r.blob())
+      .then((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = selectedResume.title || 'CV';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(console.error);
+  }, [selectedResume]);
 
   return (
     <Modal
       open={open}
       onCancel={onClose}
       footer={null}
-      width={760}
+      width={820}
       centered
       destroyOnClose
       styles={{
         content: {
-          background: '#1a1a2e',
+          background: '#13111e',
           borderRadius: 16,
           padding: 0,
           overflow: 'hidden',
           border: '1px solid #2e2e4d',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
         },
         header: { display: 'none' },
         body: { padding: 0 },
-        mask: { backdropFilter: 'blur(4px)' },
+        mask: { backdropFilter: 'blur(6px)' },
       }}
     >
       {/* ── Header ── */}
       <div
         style={{
           background: 'linear-gradient(135deg, #3b0764 0%, #1e1b4b 100%)',
-          padding: '20px 24px 16px',
+          padding: '18px 24px 14px',
           display: 'flex',
           alignItems: 'center',
           gap: 14,
@@ -150,82 +475,126 @@ export default function CvPreviewModal({
         }}
       >
         <Avatar
-          size={48}
+          size={44}
           icon={<UserOutlined />}
-          style={{ background: 'rgba(167,139,250,0.2)', border: '2px solid #7c3aed' }}
+          style={{ background: 'rgba(167,139,250,0.2)', border: '2px solid #7c3aed', flexShrink: 0 }}
         />
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <Title level={5} style={{ color: '#fff', margin: 0, fontSize: 15 }}>
             {candidateName || 'Ứng viên'}
           </Title>
-          <Space size={6} style={{ marginTop: 4 }}>
-            <Tag
-              icon={<FileTextOutlined />}
-              color="purple"
-              style={{ fontSize: 11, border: 'none' }}
-            >
-              CV được AI phân tích
-            </Tag>
-            {wordCount > 0 && (
-              <Text style={{ fontSize: 11, color: '#888' }}>
-                ~{wordCount} từ
-              </Text>
-            )}
-          </Space>
+          <Text style={{ fontSize: 12, color: '#a78bfa' }}>Hồ sơ CV</Text>
         </div>
-        <Space>
-          <Tooltip title="Sao chép toàn bộ CV">
-            <Button
-              icon={<CopyOutlined />}
-              size="small"
-              onClick={handleCopy}
-              style={{
-                background: 'rgba(124,58,237,0.15)',
-                border: '1px solid #7c3aed',
-                color: '#a78bfa',
-              }}
-            >
-              Copy
-            </Button>
-          </Tooltip>
+
+        {/* CV selector dropdown */}
+        {resumes.length > 1 && (
+          <Select
+            size="small"
+            value={selectedResumeId}
+            onChange={setSelectedResumeId}
+            style={{ width: 200 }}
+            options={resumes.map((r) => ({
+              value: r.id,
+              label: (
+                <Space size={4}>
+                  {getFileIcon(r)}
+                  <span style={{ fontSize: 12 }}>{r.title}</span>
+                  {r.isDefault && <Tag color="gold" style={{ fontSize: 10, padding: '0 4px' }}>Default</Tag>}
+                </Space>
+              ),
+            }))}
+          />
+        )}
+
+        {/* Actions */}
+        <Space size={6}>
+          {selectedResume && !selectedResume.isOnlineCv && (
+            <Tooltip title="Tải xuống CV">
+              <Button
+                icon={<DownloadOutlined />}
+                size="small"
+                onClick={handleDownload}
+                style={{
+                  background: 'rgba(124,58,237,0.15)',
+                  border: '1px solid #7c3aed',
+                  color: '#a78bfa',
+                }}
+              />
+            </Tooltip>
+          )}
           <Button
             type="text"
             onClick={onClose}
-            style={{ color: '#888', fontWeight: 600, fontSize: 18, lineHeight: 1 }}
+            style={{ color: '#888', fontWeight: 700, fontSize: 18, lineHeight: 1, padding: '0 6px' }}
           >
             ×
           </Button>
         </Space>
       </div>
 
-      {/* ── CV Content ── */}
+      {/* ── Body ── */}
       <div
         style={{
-          padding: '20px 28px 28px',
-          maxHeight: '70vh',
-          overflowY: 'auto',
-          background: '#1a1a2e',
+          padding: '16px 24px 24px',
+          background: '#13111e',
+          minHeight: 300,
         }}
-        className="cv-preview-scroll"
       >
-        {/* Raw text fallback notice */}
-        <div
-          style={{
-            background: 'rgba(124,58,237,0.08)',
-            border: '1px solid #3d2b6b',
-            borderRadius: 8,
-            padding: '8px 14px',
-            marginBottom: 16,
-            fontSize: 12,
-            color: '#888',
-          }}
-        >
-          📄 Đây là nội dung văn bản CV mà AI đã trích xuất và sử dụng để phỏng vấn ứng viên.
-        </div>
+        {resumesLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
+            <Spin size="large" />
+            <Text style={{ color: '#888', fontSize: 13 }}>Đang tải danh sách CV...</Text>
+          </div>
+        ) : resumes.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#888' }}>
+            <FileTextOutlined style={{ fontSize: 44, marginBottom: 12, color: '#4f46e5' }} />
+            <p style={{ fontSize: 14 }}>Ứng viên chưa có CV nào trong hệ thống.</p>
+          </div>
+        ) : (
+          <>
+            {/* CV info bar */}
+            {selectedResume && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 12,
+                  padding: '8px 12px',
+                  background: 'rgba(124,58,237,0.08)',
+                  borderRadius: 8,
+                  border: '1px solid #3d2b6b',
+                }}
+              >
+                {getFileIcon(selectedResume)}
+                <Text style={{ color: '#c4b5fd', fontSize: 13, flex: 1 }}>
+                  {selectedResume.title}
+                </Text>
+                {getFileTypeTag(selectedResume)}
+                {selectedResume.isDefault && (
+                  <Tag color="gold" style={{ fontSize: 11 }}>
+                    CV mặc định
+                  </Tag>
+                )}
+              </div>
+            )}
 
-        <div style={{ fontFamily: "'Inter', sans-serif" }}>
-          {renderCvContent(cvText)}
-        </div>
+            {/* Viewer */}
+            {selectedResume?.isOnlineCv ? (
+              <div
+                style={{
+                  maxHeight: '68vh',
+                  overflowY: 'auto',
+                  padding: '4px 2px',
+                }}
+              >
+                <OnlineCvViewer resume={selectedResume} />
+              </div>
+            ) : selectedResume ? (
+              <FileViewer resume={selectedResume} />
+            ) : null}
+          </>
+        )}
       </div>
     </Modal>
   );
