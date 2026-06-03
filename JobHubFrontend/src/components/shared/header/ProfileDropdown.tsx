@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
+import './ProfileDropdown.scss'
 
 interface Props {
   user: any
-  isHR: boolean
-  isCandidate: boolean
+  isHR?: boolean
+  isCandidate?: boolean
   jobsOpen: boolean
   setJobsOpen: React.Dispatch<React.SetStateAction<boolean>>
   onLogout: () => void
@@ -12,8 +13,8 @@ interface Props {
 
 const ProfileDropdown = ({
   user,
-  isHR,
-  isCandidate,
+  isHR: propIsHR,
+  isCandidate: propIsCandidate,
   jobsOpen,
   setJobsOpen,
   onLogout,
@@ -21,6 +22,8 @@ const ProfileDropdown = ({
 }: Props) => {
   const navigate = useNavigate()
   const isAdmin = user?.role?.name?.toUpperCase() === 'ADMIN'
+  const isHR = propIsHR !== undefined ? propIsHR : user?.role?.name?.toUpperCase() === 'HR'
+  const isCandidate = propIsCandidate !== undefined ? propIsCandidate : (user?.role?.name?.toUpperCase() === 'CANDIDATE' || (!isHR && !isAdmin && !!user))
 
   return (
     <div className="ant-dropdown-menu" style={{ margin: 0 }}>
@@ -66,6 +69,17 @@ const ProfileDropdown = ({
           >
             <span className="material-symbols-outlined nav-menu-icon">work</span>
             <span>Quản lý Jobs (HR)</span>
+          </div>
+          <div
+            className="ant-dropdown-menu-item"
+            onClick={() => {
+              navigate('/hr/hire-agent')
+              onClose()
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <span className="material-symbols-outlined nav-menu-icon">smart_toy</span>
+            <span>AI Recruiter (Agent)</span>
           </div>
           <div className="nav-dropdown-divider" />
         </>

@@ -20,6 +20,7 @@ import JobApplicationsPage   from '../pages/client/job-application/JobApplicatio
 import AppliedJobsPage       from '../pages/client/job-candidate/AppliedJobsPage'
 import ChatPage              from '../pages/client/chat/ChatPage'
 import NotificationList      from '../pages/client/notification/NotificationList'
+import ScheduleInterview      from '../pages/client/job/ScheduleInterview'
 
 import AdminLayout      from '../layout/admin/AdminLayout'
 import RoleBasedRoute   from '../components/auth/RoleBasedRoute'
@@ -35,6 +36,7 @@ import AccountTable       from '../components/admin/account/account.table'
 import JobTable           from '../components/admin/job/job.table'
 import ContactTable       from '../components/admin/contact/contact.table'
 import NotificationManagement from '../pages/admin/notifications/NotificationManagement'
+import HireAgentManagement from '../pages/client/hire-agent/HireAgentManagement'
 
 // ─── Public Pages (bỏ comment khi tạo file) ──────────────────────
 // import HomePage from '../pages/client/HomePage'
@@ -85,6 +87,14 @@ const router = createBrowserRouter([
       { path: '/about', element: <AboutPage /> },
       { path: '/contact', element: <ContactPage /> },
       { path: '/chat', element: <ChatPage /> },
+      {
+        path: '/schedule/:campaignId',
+        element: (
+          <RoleBasedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ScheduleInterview />
+          </RoleBasedRoute>
+        )
+      },
       { path: '/candidate/profile', element: <ProfileSettings /> },
       { path: '/candidate/resume', element: <ResumeManagerPage /> },
       { path: '/candidate/resume/builder/:id', element: <ResumeBuilderPage /> },
@@ -127,6 +137,14 @@ const router = createBrowserRouter([
         element: (
           <RoleBasedRoute allowedRoles={['HR', 'ADMIN']}>
             <JobApplicationsPage />
+          </RoleBasedRoute>
+        )
+      },
+      {
+        path: '/hr/hire-agent',
+        element: (
+          <RoleBasedRoute allowedRoles={['HR', 'ADMIN']}>
+            <HireAgentManagement />
           </RoleBasedRoute>
         )
       },

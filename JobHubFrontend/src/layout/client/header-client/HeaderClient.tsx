@@ -371,8 +371,6 @@ const HeaderClient = () => {
                 popupRender={() => (
                   <ProfileDropdown
                     user={user}
-                    isHR={isHR}
-                    isCandidate={isCandidate}
                     jobsOpen={jobsOpen}
                     setJobsOpen={setJobsOpen}
                     onLogout={handleLogout}

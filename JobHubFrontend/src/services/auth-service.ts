@@ -48,3 +48,12 @@ export const resetPasswordApi = (email: string, otpCode: string, newPassword: st
 export const updateUsernameApi = (username: string): Promise<ApiResponse<any>> => {
   return axios.put('/api/v1/auth/username', { username });
 };
+
+export const loginGoogleApi = (accessToken: string): Promise<ApiResponse<LoginResponse>> => {
+  return axios.post('/api/v1/auth/google', { accessToken });
+};
+
+export const loginGithubApi = (code: string): Promise<ApiResponse<LoginResponse>> => {
+  return axios.post('/api/v1/auth/github', { code });
+};
+

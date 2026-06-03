@@ -46,6 +46,7 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
     { label: 'Khách hàng', path: '/admin/customers', icon: 'person', category: 'Người dùng' },
     { label: 'Công ty', path: '/admin/companies', icon: 'business', category: 'Doanh nghiệp' },
     { label: 'Kỹ năng', path: '/admin/skills', icon: 'psychology', category: 'Dữ liệu' },
+    { label: 'Liên hệ (Hỗ trợ khách hàng)', path: '/admin/contacts', icon: 'contact_mail', category: 'Hỗ trợ' },
     { label: 'Tin tuyển dụng', path: '/admin/jobs', icon: 'work', category: 'Tuyển dụng' },
     { label: 'Quản lý CV', path: '/admin/resumes', icon: 'article', category: 'CV & Ứng tuyển' },
     { label: 'Đơn ứng tuyển', path: '/admin/applications', icon: 'assignment', category: 'CV & Ứng tuyển' },
@@ -239,8 +240,6 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
             popupRender={() => (
               <ProfileDropdown
                 user={user}
-                isHR={user?.role?.name === 'HR'}
-                isCandidate={user?.role?.name === 'CANDIDATE'}
                 jobsOpen={jobsOpen}
                 setJobsOpen={setJobsOpen}
                 onLogout={handleLogout}

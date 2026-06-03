@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, Fragment } from 'react'
 import { Avatar, Button, Spin, Input, Popover, List } from 'antd'
 import { message } from '../../../utils/antd'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +8,42 @@ import { uploadResumeFileApi, getMyResumesApi } from '../../../services/resume-s
 import { getJobsApi } from '../../../services/job-service'
 import { useAppSelector } from '../../../redux/hooks'
 import { POPULAR_EMOJIS, CANDIDATE_TEMPLATES, HR_TEMPLATES } from './chat-features'
+import { resolveChatUrl } from '../../../utils/url'
+
+const renderContentWithLinks = (text: string, isMe: boolean) => {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      let href = part;
+      let trailingPunctuation = '';
+      const match = part.match(/([.,;:?!]+)$/);
+      if (match) {
+        trailingPunctuation = match[1];
+        href = part.slice(0, -trailingPunctuation.length);
+      }
+      return (
+        <Fragment key={index}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: isMe ? '#91d5ff' : '#1890ff',
+              textDecoration: 'underline',
+              wordBreak: 'break-all'
+            }}
+          >
+            {href}
+          </a>
+          {trailingPunctuation}
+        </Fragment>
+      );
+    }
+    return part;
+  });
+};
 
 interface ChatWindowProps {
   activeConversation: IConversationDto | null
@@ -458,23 +494,23 @@ const ChatWindow = ({
                           <div className="message-bubble__text">
                             {m.type?.toLowerCase() === 'image' ? (
                               <img 
-                                src={m.content} 
+                                src={resolveChatUrl(m.content)} 
                                 alt="Shared Image" 
                                 style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', cursor: 'pointer' }}
-                                onClick={() => window.open(m.content, '_blank')}
+                                onClick={() => window.open(resolveChatUrl(m.content), '_blank')}
                               />
                             ) : m.type?.toLowerCase() === 'file' ? (
                               <a 
-                                href={m.content} 
+                                href={resolveChatUrl(m.content)} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isMe ? '#fff' : 'inherit', textDecoration: 'underline' }}
                               >
                                 <span className="material-symbols-outlined">description</span>
-                                {m.content.split('/').pop() || 'Tài liệu đính kèm'}
+                                {resolveChatUrl(m.content).split('/').pop() || 'Tài liệu đính kèm'}
                               </a>
                             ) : (
-                              m.content
+                              renderContentWithLinks(m.content, isMe)
                             )}
                           </div>
                           <div className="message-bubble__meta">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Avatar, Input, Button, Spin, Popover, List } from 'antd'
 import { message } from '../../../utils/antd'
@@ -14,6 +14,43 @@ import { uploadCompanyPublicImageApi } from '../../../services/company-service'
 import { uploadResumeFileApi, getMyResumesApi } from '../../../services/resume-service'
 import { getJobsApi } from '../../../services/job-service'
 import { POPULAR_EMOJIS, CANDIDATE_TEMPLATES, HR_TEMPLATES } from './chat-features'
+import { resolveChatUrl } from '../../../utils/url'
+
+const renderContentWithLinks = (text: string, isMe: boolean) => {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      let href = part;
+      let trailingPunctuation = '';
+      const match = part.match(/([.,;:?!]+)$/);
+      if (match) {
+        trailingPunctuation = match[1];
+        href = part.slice(0, -trailingPunctuation.length);
+      }
+      return (
+        <Fragment key={index}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: isMe ? '#91d5ff' : '#1890ff',
+              textDecoration: 'underline',
+              wordBreak: 'break-all'
+            }}
+          >
+            {href}
+          </a>
+          {trailingPunctuation}
+        </Fragment>
+      );
+    }
+    return part;
+  });
+};
+
 import './FloatingChatWidget.scss'
 
 interface IFloatingConv {
@@ -628,23 +665,23 @@ const FloatingChatWidget = () => {
                     <div className="floating-msg__text">
                       {m.type?.toLowerCase() === 'image' ? (
                         <img 
-                          src={m.content} 
+                          src={resolveChatUrl(m.content)} 
                           alt="Shared Image" 
                           style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', cursor: 'pointer' }}
-                          onClick={() => window.open(m.content, '_blank')}
+                          onClick={() => window.open(resolveChatUrl(m.content), '_blank')}
                         />
                       ) : m.type?.toLowerCase() === 'file' ? (
                         <a 
-                          href={m.content} 
+                          href={resolveChatUrl(m.content)} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', gap: '6px', color: isMe ? '#fff' : 'inherit', textDecoration: 'underline' }}
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>description</span>
-                          <span style={{ fontSize: '12px', wordBreak: 'break-all' }}>{m.content.split('/').pop() || 'Tài liệu'}</span>
+                          <span style={{ fontSize: '12px', wordBreak: 'break-all' }}>{resolveChatUrl(m.content).split('/').pop() || 'Tài liệu'}</span>
                         </a>
                       ) : (
-                        m.content
+                        renderContentWithLinks(m.content, isMe)
                       )}
                     </div>
                     <div className="floating-msg__time">
