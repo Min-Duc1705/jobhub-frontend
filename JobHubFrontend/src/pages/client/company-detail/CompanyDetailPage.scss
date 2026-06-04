@@ -615,6 +615,28 @@
   }
 }
 
+// Shimmer loading overlay khi đang gọi AI
+.cd-ai-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: cd-shimmer-slide 1.4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: 14px;
+}
+
+@keyframes cd-shimmer-slide {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .cd-ai-content { position: relative; z-index: 1; }
 
 .cd-ai-header {
@@ -627,6 +649,7 @@
     font-size: 18px;
     color: #a5c8ff;
     font-variation-settings: 'FILL' 1;
+    animation: cd-ai-sparkle 2.4s ease-in-out infinite;
   }
 
   .cd-ai-label {
@@ -635,7 +658,26 @@
     color: rgba(255,255,255,0.55);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    flex: 1; // đẩy confidence badge sang phải
   }
+}
+
+// Badge hiện độ tin cậy của AI
+.cd-ai-confidence {
+  font-size: 11px;
+  font-weight: 700;
+  color: #003a8c;
+  background: linear-gradient(135deg, #a5c8ff, #d4e3ff);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes cd-ai-sparkle {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.2); opacity: 0.8; }
 }
 
 .cd-ai-title {
@@ -659,11 +701,61 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid rgba(255,255,255,0.1);
 
   .cd-salary-label { font-size: 11px; color: rgba(255,255,255,0.55); }
-  .cd-salary-range { font-size: 16px; font-weight: 700; color: #a5c8ff; }
+
+  .cd-salary-range {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a5c8ff;
+    transition: opacity 0.3s;
+
+    // Pulsing khi đang tải kết quả AI
+    &.cd-salary-loading {
+      opacity: 0.5;
+      animation: cd-salary-pulse 1s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes cd-salary-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+// Hint message (đăng nhập / bổ sung hồ sơ / nguồn data)
+.cd-ai-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255, 220, 120, 0.9);          // Màu vàng: cảnh báo / gợi ý
+  background: rgba(255, 200, 50, 0.08);
+  border: 1px solid rgba(255, 200, 50, 0.2);
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+
+  .material-symbols-outlined {
+    font-size: 15px;
+    flex-shrink: 0;
+    color: rgba(255, 220, 120, 0.8);
+    font-variation-settings: 'FILL' 1;
+  }
+
+  // ── Variant thành công: khi AI đã trích xuất được skills từ CV ──────────
+  &.cd-ai-hint--success {
+    color: rgba(130, 240, 170, 0.95);       // Màu xanh lá: thành công
+    background: rgba(50, 200, 100, 0.08);
+    border-color: rgba(50, 200, 100, 0.25);
+
+    .material-symbols-outlined {
+      color: rgba(100, 230, 140, 0.9);
+    }
+  }
 }
 
 .cd-btn-ai {
@@ -680,10 +772,15 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.15s;
+  margin-top: 4px;
 
   .material-symbols-outlined { font-size: 17px; }
-  &:hover { background: #d4e3ff; }
+  &:hover {
+    background: #d4e3ff;
+    transform: translateY(-1px);
+  }
+  &:active { transform: translateY(0); }
 }
 
 // ── Benefits ─────────────────────────────────────────────────────────────────

@@ -1,12 +1,44 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Empty } from 'antd'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../../../redux/store'
 import { getCompanyByIdApi } from '../../../services/company-service'
 import { getJobsApi } from '../../../services/job-service'
+import { getCustomerByIdApi } from '../../../services/customer-service'
+import { getMyResumesApi } from '../../../services/resume-service'
+import { predictSalaryApi } from '../../../services/ai-service'
 import type { ICompany } from '../../../types/company'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
+import type { ResumeContent } from '../../../types/resume-builder'
 import './CompanyDetailPage.scss'
+
+// ── Bộ từ khóa kỹ thuật dùng để extract skills từ CV text thô ─────────────────
+const TECH_KEYWORDS = [
+  'JavaScript','TypeScript','Python','Java','C#','C++','Go','Rust','Kotlin','Swift',
+  'React','Vue','Angular','Next.js','Nuxt','Svelte','HTML','CSS','SCSS','Tailwind',
+  'Node.js','Express','NestJS','Spring','Django','FastAPI','Flask','Laravel','ASP.NET',
+  'PostgreSQL','MySQL','MongoDB','Redis','Elasticsearch','SQLite','Oracle','SQL Server',
+  'Docker','Kubernetes','AWS','Azure','GCP','Terraform','CI/CD','Jenkins','GitHub Actions',
+  'Git','Linux','Nginx','Apache','GraphQL','REST','gRPC','WebSocket','RabbitMQ','Kafka',
+  'TensorFlow','PyTorch','Pandas','NumPy','Scikit-learn','OpenCV','LangChain',
+  'Figma','Agile','Scrum','JIRA','Confluence','Photoshop',
+]
+
+/** Trích xuất skills từ text thô của CV bằng keyword matching */
+const extractSkillsFromText = (text: string): string[] => {
+  if (!text) return []
+  const found = new Set<string>()
+  const lower = text.toLowerCase()
+  for (const kw of TECH_KEYWORDS) {
+    // Tìm kiếm có word boundary để tránh false positive
+    if (lower.includes(kw.toLowerCase())) {
+      found.add(kw)
+    }
+  }
+  return [...found]
+}
 
 const COMPANY_SIZE_LABEL: Record<string, string> = {
   STARTUP:    'Startup',
@@ -36,10 +68,20 @@ const CompanyDetailPage = () => {
   const navigate = useNavigate()
   const initFetched = useRef(false)
 
+  // ── Redux auth ─────────────────────────────────────────────────────────────
+  const currentUser = useSelector((s: RootState) => s.auth.user)
+
   const [company, setCompany] = useState<ICompany | null>(null)
   const [jobs,    setJobs]    = useState<IJob[]>([])
   const [loading, setLoading] = useState(true)
   const [slideIndex, setSlideIndex] = useState(0)  // gallery slideshow index
+
+  // ── AI Premium salary prediction ───────────────────────────────────────────
+  const [aiSalaryRange, setAiSalaryRange] = useState<string>('')
+  const [loadingAi,     setLoadingAi]     = useState<boolean>(false)
+  const [aiConfidence,  setAiConfidence]  = useState<number | null>(null)
+  const [aiHint,        setAiHint]        = useState<string | null>(null)
+  const [aiVisible,     setAiVisible]     = useState<boolean>(false)  // Ẩn card cho đến khi có dữ liệu
 
   // ── Lightbox
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -82,6 +124,154 @@ const CompanyDetailPage = () => {
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  // ── AI Salary Prediction Effect ─────────────────────────────────────────────
+  useEffect(() => {
+    if (loading) return   // Chờ dữ liệu company + jobs nạp xong
+
+    // ── Trường hợp 1: Chưa đăng nhập ─────────────────────────────────────────
+    if (!currentUser) {
+      const pubJobs = jobs.filter(j => j.status === 'PUBLISHED')
+      const validJobs = pubJobs.filter(
+        j => !j.isSalaryNegotiable && j.salaryMin && j.salaryMax
+      )
+      if (validJobs.length > 0) {
+        // Chỉ hiện card khi có dữ liệu lương thực tế từ các job
+        const avgMin = validJobs.reduce((acc, j) => acc + (j.salaryMin ?? 0), 0) / validJobs.length
+        const avgMax = validJobs.reduce((acc, j) => acc + (j.salaryMax ?? 0), 0) / validJobs.length
+        const toM = (v: number) => (v / 1_000_000).toFixed(0) + 'M'
+        setAiSalaryRange(`${toM(avgMin)} – ${toM(avgMax)} đ`)
+        setAiHint('Đăng nhập để xem dự đoán cá nhân hóa')
+        setAiConfidence(null)
+        setAiVisible(true)
+      } else {
+        // Không có dữ liệu lương → ẩn luôn
+        setAiVisible(false)
+      }
+      return
+    }
+
+    // ── Trường hợp 2: Đã đăng nhập → gọi AI ──────────────────────────────────
+    const fetchPersonalizedPrediction = async () => {
+      setLoadingAi(true)
+      setAiHint(null)
+      try {
+        // Lấy song song: profile + danh sách CV
+        const [profileRes, resumeRes] = await Promise.all([
+          getCustomerByIdApi(currentUser.id),
+          getMyResumesApi(currentUser.id).catch(() => null),
+        ])
+        const profile = profileRes.data
+
+        if (!profile) {
+          setAiSalaryRange('15M – 35M đ')
+          setAiHint('Hoàn thiện hồ sơ để nâng độ chính xác')
+          return
+        }
+
+        const yearsExp  = profile.yearsOfExperience ?? 0
+        const location  = profile.address || company?.address || 'Hồ Chí Minh'
+        const jobTitle  = profile.summary?.trim() || 'Software Engineer'
+
+        // Suy luận level từ số năm kinh nghiệm
+        let level = 'JUNIOR'
+        if (yearsExp <= 1)      level = 'FRESHER'
+        else if (yearsExp <= 3) level = 'JUNIOR'
+        else if (yearsExp <= 5) level = 'MIDDLE'
+        else                    level = 'SENIOR'
+
+        // ─────────────────────────────────────────────────────────────────────
+        // CHIẾN LƯỢC TRÍCH XUẤT SKILLS: CV-first, profile là fallback
+        // Ưu tiên 1: contentJson của Online CV Builder (cấu trúc có sẵn)
+        // Ưu tiên 2: extractedText từ CV PDF upload (keyword matching)
+        // Ưu tiên 3: profile.skills thủ công
+        // ─────────────────────────────────────────────────────────────────────
+        let skills: string[] = []
+        let skillSource: 'cv_online' | 'cv_pdf' | 'profile' | 'none' = 'none'
+
+        const resumes = resumeRes?.data?.result ?? []
+        // Ưu tiên CV mặc định, nếu không có thì lấy CV mới nhất
+        const defaultCv = resumes.find(r => r.isDefault) ?? resumes[0] ?? null
+
+        if (defaultCv) {
+          // Ưu tiên 1: Online CV Builder có contentJson
+          if (defaultCv.isOnlineCv && defaultCv.contentJson) {
+            try {
+              const content = JSON.parse(defaultCv.contentJson) as ResumeContent
+              // Flatten tất cả skill items từ mọi nhóm kỹ năng
+              const cvSkills = content.skills
+                ?.flatMap(g => g.items)
+                .filter(Boolean)
+                .map(s => s.trim())
+                .filter(s => s.length > 0)
+              if (cvSkills && cvSkills.length > 0) {
+                skills = cvSkills.slice(0, 30)   // Giới hạn 30 skills để gọi API
+                skillSource = 'cv_online'
+              }
+            } catch {
+              // JSON parse fail → thử extractedText
+            }
+          }
+
+          // Ưu tiên 2: CV PDF có extractedText → dùng keyword matching
+          if (skills.length === 0 && defaultCv.extractedText) {
+            const extracted = extractSkillsFromText(defaultCv.extractedText)
+            if (extracted.length > 0) {
+              skills = extracted
+              skillSource = 'cv_pdf'
+            }
+          }
+        }
+
+        // Ưu tiên 3: profile.skills thủ công (fallback cuối)
+        if (skills.length === 0) {
+          const profileSkills = profile.skills?.map((s: { skillName: string }) => s.skillName) ?? []
+          if (profileSkills.length > 0) {
+            skills = profileSkills
+            skillSource = 'profile'
+          }
+        }
+
+        // ── Không có skills từ bất kỳ nguồn nào → Ẩn card
+        if (skills.length === 0) {
+          setAiVisible(false)
+          return
+        }
+
+        // ── Gọi AI predict ────────────────────────────────────────────────────
+        const aiRes = await predictSalaryApi({
+          job_title:           jobTitle,
+          years_of_experience: yearsExp,
+          skill_set:           skills,
+          location:            location,
+          level:               level,
+        })
+
+        setAiSalaryRange(
+          `${aiRes.min_salary.toFixed(0)}M – ${aiRes.max_salary.toFixed(0)}M đ`
+        )
+        setAiConfidence(aiRes.confidence ? Math.round(aiRes.confidence * 100) : null)
+        setAiVisible(true)
+
+        // Hiện nguồn data đã dùng
+        const sourceLabel =
+          skillSource === 'cv_online' ? `Phân tích từ CV online (${skills.length} kỹ năng)` :
+          skillSource === 'cv_pdf'    ? `Trích xuất từ CV PDF (${skills.length} kỹ năng)` :
+                                        `Từ hồ sơ cá nhân (${skills.length} kỹ năng)`
+        setAiHint(sourceLabel)
+
+      } catch (err) {
+        console.warn('Lỗi dự đoán lương Premium:', err)
+        setAiSalaryRange('15M – 35M đ')
+        setAiHint('Không thể kết nối AI, hiển thị ước tính mặc định')
+      } finally {
+        setLoadingAi(false)
+      }
+    }
+
+    fetchPersonalizedPrediction()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, company, loading])
 
   const logoSrc = (c: ICompany) =>
     c.logo?.trim()
@@ -395,26 +585,56 @@ const CompanyDetailPage = () => {
         {/* RIGHT: Sidebar */}
         <aside className="cd-sidebar">
 
-          {/* AI Card */}
-          <div className="cd-ai-card">
-            <div className="cd-ai-glow" />
-            <div className="cd-ai-content">
-              <div className="cd-ai-header">
-                <span className="material-symbols-outlined cd-ai-icon">auto_awesome</span>
-                <span className="cd-ai-label">JobHub AI Premium</span>
+          {/* AI Card — chỉ hiện khi có dữ liệu thực tế (CV / skills / lương job) */}
+          {aiVisible && (
+            <div className="cd-ai-card">
+              <div className="cd-ai-glow" />
+              {/* Shimmer overlay khi đang tải */}
+              {loadingAi && <div className="cd-ai-shimmer" />}
+              <div className="cd-ai-content">
+                <div className="cd-ai-header">
+                  <span className="material-symbols-outlined cd-ai-icon">auto_awesome</span>
+                  <span className="cd-ai-label">JobHub AI Premium</span>
+                  {aiConfidence !== null && (
+                    <span className="cd-ai-confidence">{aiConfidence}% tin cậy</span>
+                  )}
+                </div>
+                <h3 className="cd-ai-title">Dự đoán Lương</h3>
+                <p className="cd-ai-desc">
+                  {currentUser
+                    ? 'Mức lương ước tính dựa trên kỹ năng & kinh nghiệm của bạn tại công ty này.'
+                    : 'Đăng nhập để xem dự đoán lương cá nhân hóa bằng AI.'}
+                </p>
+                <div className="cd-salary-preview">
+                  <span className="cd-salary-label">Ước tính</span>
+                  <span className={`cd-salary-range ${loadingAi ? 'cd-salary-loading' : ''}`}>
+                    {loadingAi ? 'Đang phân tích...' : aiSalaryRange}
+                  </span>
+                </div>
+
+                {/* Hint message — 2 variants: success (data source) vs warning */}
+                {aiHint && !loadingAi && (() => {
+                  const isSuccess = aiHint.includes('kỹ năng')
+                  return (
+                    <div className={`cd-ai-hint ${isSuccess ? 'cd-ai-hint--success' : ''}`}>
+                      <span className="material-symbols-outlined">
+                        {isSuccess ? 'check_circle' : 'info'}
+                      </span>
+                      {aiHint}
+                    </div>
+                  )
+                })()}
+
+                <button
+                  className="cd-btn-ai"
+                  onClick={() => currentUser ? navigate('/salary-predict') : navigate('/login')}
+                >
+                  {currentUser ? 'Chạy báo cáo cá nhân' : 'Đăng nhập để xem ngay'}
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </button>
               </div>
-              <h3 className="cd-ai-title">Dự đoán Lương</h3>
-              <p className="cd-ai-desc">Xem mức lương tiềm năng tại công ty này dựa trên kỹ năng và kinh nghiệm của bạn.</p>
-              <div className="cd-salary-preview">
-                <span className="cd-salary-label">Ước tính</span>
-                <span className="cd-salary-range">15M – 35M đ</span>
-              </div>
-              <button className="cd-btn-ai">
-                Chạy báo cáo cá nhân
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </button>
             </div>
-          </div>
+          )}
 
           {/* Phúc lợi */}
           <section id="cd-benefits" className="cd-sidebar-card">
