@@ -58,7 +58,12 @@ export default function CandidateList({
         />
       ) : (
         <List
-          dataSource={conversations}
+          dataSource={[...conversations].sort((a, b) => {
+            const scoreA = a.matchingScore ?? 0;
+            const scoreB = b.matchingScore ?? 0;
+            if (scoreB !== scoreA) return scoreB - scoreA;
+            return dayjs(b.createdAt).unix() - dayjs(a.createdAt).unix();
+          })}
           renderItem={(conv) => (
             <List.Item
               onClick={() => onSelectConversation(conv)}
