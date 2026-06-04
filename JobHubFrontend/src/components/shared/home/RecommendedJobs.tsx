@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Spin, Empty } from 'antd'
+import { Spin } from 'antd'
 import type { IJob } from '../../../types/job'
 import HomeJobCard from './HomeJobCard'
 
@@ -8,9 +8,10 @@ interface RecommendedJobsProps {
   savedJobIds: Set<string>
   onToggleSave: (e: React.MouseEvent, job: IJob) => void;
   loading: boolean
+  isAIRecommended?: boolean  // true = dữ liệu từ AI, false = fallback từ newest jobs
 }
 
-const RecommendedJobs = ({ jobs, savedJobIds, onToggleSave, loading }: RecommendedJobsProps) => {
+const RecommendedJobs = ({ jobs, savedJobIds, onToggleSave, loading, isAIRecommended = false }: RecommendedJobsProps) => {
   const navigate = useNavigate()
 
   return (
@@ -21,7 +22,11 @@ const RecommendedJobs = ({ jobs, savedJobIds, onToggleSave, loading }: Recommend
             <span className="material-symbols-outlined">auto_awesome</span>
             AI Đề Xuất
           </h2>
-          <p className="home-jobs__desc">Các vị trí phù hợp nhất dựa trên hồ sơ của bạn.</p>
+          <p className="home-jobs__desc">
+            {isAIRecommended
+              ? 'Các vị trí phù hợp nhất dựa trên hồ sơ của bạn.'
+              : 'Các vị trí việc làm nổi bật đang tuyển dụng.'}
+          </p>
         </div>
         <Link to="/jobs" className="home-jobs__link">
           Xem tất cả <span className="material-symbols-outlined">arrow_forward</span>
@@ -32,8 +37,6 @@ const RecommendedJobs = ({ jobs, savedJobIds, onToggleSave, loading }: Recommend
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <Spin size="large" />
         </div>
-      ) : jobs.length === 0 ? (
-        <Empty description="Không tìm thấy công việc đề xuất nào" style={{ padding: '40px 0' }} />
       ) : (
         <div className="home-jobs__grid">
           {jobs.map(job => (

@@ -90,6 +90,7 @@ const HomePage = () => {
   const [loadingCompanies, setLoadingCompanies] = useState(false)
   const [loadingRecommended, setLoadingRecommended] = useState(false)
   const [loadingNewest, setLoadingNewest] = useState(false)
+  const [isAIRecommended, setIsAIRecommended] = useState(false) // true = có data AI thật
 
   // ── Provinces (dùng hook cache chung — chỉ fetch 1 lần toàn app)
   const { options: provinceOptions, loading: loadingProvinces } = useProvinceNames()
@@ -144,6 +145,7 @@ const HomePage = () => {
             if (cached) {
               try {
                 setRecommendedJobs(JSON.parse(cached))
+                setIsAIRecommended(true)
                 setLoadingRecommended(false)
                 return
               } catch (e) {
@@ -162,6 +164,7 @@ const HomePage = () => {
             const recJobs = recRes.data ?? []
             if (recJobs.length > 0) {
               setRecommendedJobs(recJobs)
+              setIsAIRecommended(true)
               sessionStorage.setItem(cacheKey, JSON.stringify(recJobs))
               setLoadingRecommended(false)
               return
@@ -173,9 +176,10 @@ const HomePage = () => {
       }
 
       // Fallback: dùng lại newestJobs nếu đã có (tránh gọi jobs API lần 3)
+      setIsAIRecommended(false)
       setRecommendedJobs(prev => {
         if (prev.length > 0) return prev
-        return []
+        return [] // sẽ được fill bởi useEffect phía dưới khi newestJobs có dữ liệu
       })
       setLoadingRecommended(false)
     }
@@ -199,9 +203,10 @@ const HomePage = () => {
   // Khi newestJobs load xong mà recommendedJobs vẫn rỗng → dùng newestJobs làm fallback
   useEffect(() => {
     if (newestJobs.length > 0 && recommendedJobs.length === 0 && !loadingRecommended) {
-      setRecommendedJobs(newestJobs.slice(0, 3))
+      setIsAIRecommended(false)
+      setRecommendedJobs(newestJobs.slice(0, 6))
     }
-  }, [newestJobs]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [newestJobs, loadingRecommended]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Shared Toggle Save Handler
   const handleToggleSave = async (e: React.MouseEvent, job: IJob) => {
@@ -259,6 +264,7 @@ const HomePage = () => {
         savedJobIds={savedJobIds}
         onToggleSave={handleToggleSave}
         loading={loadingRecommended}
+        isAIRecommended={isAIRecommended}
       />
 
       {/* NEWEST JOBS SECTION */}
