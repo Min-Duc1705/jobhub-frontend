@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Button, Card, Spin, Tooltip, Typography } from 'antd';
+import { Button, Card, Spin, Tag, Tooltip, Typography } from 'antd';
 import {
   CalendarOutlined,
   CheckCircleOutlined,
@@ -159,11 +159,26 @@ export default function ScreeningChatWindow({
 
           {/* ── Footer status bar ── */}
           <div className="chat-footer">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Trạng thái:
-              </Text>
-              {getConvStatusTag(selectedConversation.status)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Trạng thái:
+                </Text>
+                {getConvStatusTag(selectedConversation.status)}
+              </div>
+              {selectedConversation.matchingScore !== undefined && selectedConversation.matchingScore > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    AI Match:
+                  </Text>
+                  <Tag 
+                    color={selectedConversation.matchingScore >= 70 ? 'success' : selectedConversation.matchingScore >= 50 ? 'warning' : 'default'} 
+                    style={{ fontSize: 11, margin: 0 }}
+                  >
+                    {selectedConversation.matchingScore.toFixed(1)}%
+                  </Tag>
+                </div>
+              )}
             </div>
 
             {selectedConversation.status === 'Passed' && (

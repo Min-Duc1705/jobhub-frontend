@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Button, Card, Empty, List, Space, Spin, Tooltip, Typography } from 'antd';
+import { Avatar, Button, Card, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { CalendarOutlined, FileTextOutlined, SyncOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { IHireAgentCampaign, IHireAgentConversation } from '../../../services/hire-agent-service';
@@ -90,7 +90,17 @@ export default function CandidateList({
                   }}
                 >
                   <Space direction="vertical" size={2}>
-                    {getConvStatusTag(conv.status)}
+                    <Space size={6}>
+                      {getConvStatusTag(conv.status)}
+                      {conv.matchingScore !== undefined && conv.matchingScore > 0 && (
+                        <Tag 
+                          color={conv.matchingScore >= 70 ? 'success' : conv.matchingScore >= 50 ? 'warning' : 'default'} 
+                          style={{ fontSize: 10, margin: 0, padding: '0 4px', lineHeight: '16px' }}
+                        >
+                          Match: {conv.matchingScore.toFixed(0)}%
+                        </Tag>
+                      )}
+                    </Space>
                     {conv.status === 'Scheduled' && conv.interviewDate && (
                       <Text
                         style={{

@@ -19,6 +19,7 @@ export interface IHireAgentConversation {
   candidateId: string
   cvText: string
   status: 'Screening' | 'Passed' | 'Failed' | 'Scheduled'
+  matchingScore?: number
   lastQuestionAt: string
   createdAt: string
   candidateName?: string
