@@ -81,8 +81,8 @@ const FloatingChatWidget = () => {
   const [inputText, setInputText] = useState('')
   const [loading, setLoading] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
-  // Dùng shared hook conversations (cache chung với HeaderClient)
-  const { conversations: allConversations } = useConversations(!!currentUserId)
+  // Dùng shared hook conversations (cache chung với HeaderClient) — truyền userId string
+  const { conversations: allConversations } = useConversations(currentUserId || null)
 
   // Singleton Chat Hub — dùng chung connection với HeaderClient và ChatPage
   const { connection } = useChatHub(currentUserId || null)

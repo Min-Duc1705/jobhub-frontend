@@ -96,8 +96,8 @@ const HeaderClient = () => {
   const [notifications, setNotifications] = useState<INotification[]>([])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [isRinging, setIsRinging] = useState(false)
-  // Chat unread count — dùng shared hook (cache chung với FloatingChatWidget)
-  const { totalUnread: chatUnreadCount } = useConversations(isAuthenticated)
+  // Chat unread count — chỉ enable khi đã có user object thật (tránh gọi API khi mới có token, chưa có user)
+  const { totalUnread: chatUnreadCount } = useConversations(user?.id)
   const unreadCount = notifications.filter(n => !n.isRead).length
 
   // Singleton Chat Hub — chia sẻ connection với FloatingChatWidget, ChatPage
