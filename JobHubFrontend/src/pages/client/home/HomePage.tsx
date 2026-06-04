@@ -102,29 +102,30 @@ const HomePage = () => {
     navigate(`/jobs?${params.toString()}`)
   }
 
-  // ── Fetch companies & newest jobs on mount
+  // ── Fetch companies & newest jobs song song khi mount
   useEffect(() => {
     setLoadingCompanies(true)
-    getVerifiedCompaniesApi('pageNumber=1&pageSize=6')
-      .then(res => setCompanies(res.data?.result ?? []))
-      .catch(() => { })
-      .finally(() => setLoadingCompanies(false))
-
     setLoadingNewest(true)
-    getJobsApi('pageNumber=1&pageSize=6&sortBy=createdDate&isDescending=true')
-      .then(res => setNewestJobs(res.data?.result ?? []))
-      .catch(() => { })
-      .finally(() => setLoadingNewest(false))
+
+    Promise.all([
+      getVerifiedCompaniesApi('pageNumber=1&pageSize=6')
+        .then(res => setCompanies(res.data?.result ?? []))
+        .catch(() => {})
+        .finally(() => setLoadingCompanies(false)),
+
+      getJobsApi('pageNumber=1&pageSize=6&sortBy=createdDate&isDescending=true')
+        .then(res => setNewestJobs(res.data?.result ?? []))
+        .catch(() => {})
+        .finally(() => setLoadingNewest(false)),
+    ])
   }, [])
+
 
   // ── Fetch AI recommendations (reactive to user login)
   // Dùng useRef để chỉ fetch recommendation 1 lần cho mỗi userId (tránh effect re-run khi user object refresh)
-  const recFetchedForRef = useState<string | null>(null)
-  const [recFetchedFor, setRecFetchedFor] = recFetchedForRef
+  const [recFetchedFor, setRecFetchedFor] = useState<string | null>(null)
 
   useEffect(() => {
-    // Chờ auth state resolve xong (user = null nghĩa là chưa check, undefined = chưa login)
-    // Skip nếu đã fetch cho user này rồi
     const currentKey = user?.id ?? '__guest__'
     if (recFetchedFor === currentKey) return
 
@@ -172,28 +173,14 @@ const HomePage = () => {
       }
 
       // Fallback: dùng lại newestJobs nếu đã có (tránh gọi jobs API lần 3)
-      // Nếu newestJobs chưa load xong thì chờ thêm 1 chút
       setRecommendedJobs(prev => {
         if (prev.length > 0) return prev
-        // newestJobs sẽ được set sau — dùng [] tạm
         return []
       })
       setLoadingRecommended(false)
     }
 
-    fetchRecommendations()
-  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Khi newestJobs load xong mà recommendedJobs vẫn rỗng → dùng newestJobs làm fallback
-  useEffect(() => {
-    if (newestJobs.length > 0 && recommendedJobs.length === 0 && !loadingRecommended) {
-      setRecommendedJobs(newestJobs.slice(0, 3))
-    }
-  }, [newestJobs]) // eslint-disable-line react-hooks/exhaustive-deps
-
-
-  // ── Fetch saved jobs (only once for logged in user)
-  useEffect(() => {
+    // Chạy song song: recommendations + savedJobs (không phụ thuộc nhau)
     const fetchSaved = async () => {
       if (!user?.id) {
         setSavedJobIds(new Set())
@@ -205,8 +192,16 @@ const HomePage = () => {
         setSavedJobIds(ids)
       } catch { }
     }
-    fetchSaved()
-  }, [user?.id])
+
+    Promise.all([fetchRecommendations(), fetchSaved()])
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Khi newestJobs load xong mà recommendedJobs vẫn rỗng → dùng newestJobs làm fallback
+  useEffect(() => {
+    if (newestJobs.length > 0 && recommendedJobs.length === 0 && !loadingRecommended) {
+      setRecommendedJobs(newestJobs.slice(0, 3))
+    }
+  }, [newestJobs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Shared Toggle Save Handler
   const handleToggleSave = async (e: React.MouseEvent, job: IJob) => {
