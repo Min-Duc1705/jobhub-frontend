@@ -48,3 +48,14 @@ img, svg {
   font-size: 14px;
   line-height: 1.6;
 }
+
+// ─── Material Symbols Outlined Icon fallback styling ─────────────────
+.material-symbols-outlined {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  vertical-align: middle;
+  font-size: 24px;
+  user-select: none;
+}
