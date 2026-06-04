@@ -1,18 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Form, Input, Button, Select, type FormProps } from 'antd'
 import { message } from '../../../utils/antd'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
 import { registerUser } from '../../../redux/slices/authSlice'
 import { verifyEmailApi, resendOtpApi } from '../../../services/auth-service'
+import { useProvinces } from '../../../hooks/useProvinces'
 import './RegisterPage.scss'
-
-// ── Vietnam Province / Ward types ──────────────────────────────────
-interface VietnamProvinceItem {
-  id: string
-  province: string
-  wards: { name: string; mergedFrom: string[] }[]
-}
 
 type Role = 'candidate' | 'employer'
 type PasswordStrength = '' | 'weak' | 'medium' | 'strong'
@@ -63,44 +57,17 @@ const RegisterPage = () => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
 
-  // ── Province / Ward từ vietnamlabs.com API ─────────────────────
-  const [allProvinceData, setAllProvinceData] = useState<VietnamProvinceItem[]>([])
-  const [provinceOptions, setProvinceOptions] = useState<{ value: string; label: string }[]>([])
-  const [wardOptions,     setWardOptions]     = useState<{ value: string; label: string }[]>([])
-  const [loadingWards,    setLoadingWards]    = useState(false)
-  const [form]                               = Form.useForm()
-
-  // Ref để tránh double-fetch trong StrictMode
-  const provinceFetched = useRef(false)
-
-  useEffect(() => {
-    if (provinceFetched.current) return
-    provinceFetched.current = true
-    const load = async () => {
-      try {
-        const res  = await fetch('https://vietnamlabs.com/api/vietnamprovince')
-        const json = await res.json()
-        if (json.success && Array.isArray(json.data)) {
-          setAllProvinceData(json.data)
-          setProvinceOptions(
-            json.data.map((p: any) => ({ value: p.province, label: p.province }))
-          )
-        }
-      } catch {
-        console.warn('Vietnam Province API không khả dụng')
-      }
-    }
-    load()
-  }, [])
+  // ── Province / Ward (shared hook — cache toàn module) ──────────────────────────────────
+  const { provinceOptions, getWards } = useProvinces()
+  const [wardOptions, setWardOptions] = useState<{ value: string; label: string }[]>([])
+  const [loadingWards, setLoadingWards] = useState(false)
+  const [form] = Form.useForm()
 
   const selectProvince = (provinceName: string | undefined) => {
     setWardOptions([])
     if (!provinceName) return
     setLoadingWards(true)
-    const found = allProvinceData.find(p => p.province === provinceName)
-    if (found) {
-      setWardOptions(found.wards.map(w => ({ value: w.name, label: w.name })))
-    }
+    setWardOptions(getWards(provinceName))
     setLoadingWards(false)
   }
 

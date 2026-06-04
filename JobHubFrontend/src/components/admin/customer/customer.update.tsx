@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { App, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select } from 'antd'
 import dayjs from 'dayjs'
 import type { ICustomer } from '../../../types/customer'
 import { updateCustomerByIdApi } from '../../../services/customer-service'
+import { useProvinces } from '../../../hooks/useProvinces'
 
 const { TextArea } = Input
 
@@ -70,43 +71,17 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
   const [loading, setLoading] = useState(false)
   const { notification } = App.useApp()
 
-  // ── Province / Ward state ─────────────────────────────────────
-  const [allProvinceData, setAllProvinceData] = useState<VietnamProvinceItem[]>([])
-  const [provinceOptions, setProvinceOptions] = useState<{ value: string; label: string }[]>([])
-  const [wardOptions,     setWardOptions]     = useState<{ value: string; label: string }[]>([])
-  const [loadingWards,    setLoadingWards]    = useState(false)
-  const provinceFetched = useRef(false)
+  // ── Province / Ward state (dùng shared hook — cache toàn module) ────────────────────────
+  const { provinceOptions, getWards } = useProvinces()
+  const [wardOptions, setWardOptions] = useState<{ value: string; label: string }[]>([])
+  const [loadingWards, setLoadingWards] = useState(false)
 
-  // ── Fetch tỉnh/phường 1 lần khi mount ────────────────────────
-  useEffect(() => {
-    if (provinceFetched.current) return
-    provinceFetched.current = true
-    const load = async () => {
-      try {
-        const res  = await fetch('https://vietnamlabs.com/api/vietnamprovince')
-        const json = await res.json()
-        if (json.success && Array.isArray(json.data)) {
-          setAllProvinceData(json.data)
-          setProvinceOptions(
-            json.data.map((p: any) => ({ value: p.province, label: p.province }))
-          )
-        }
-      } catch {
-        console.warn('Vietnam Province API không khả dụng')
-      }
-    }
-    load()
-  }, [])
-
-  // ── Khi user chọn tỉnh → populate ward list ──────────────────
+  // ── Khi user chọn tỉnh → populate ward list ────────────────────────────────
   const selectProvince = (provinceName: string | undefined) => {
     setWardOptions([])
     if (!provinceName) return
     setLoadingWards(true)
-    const found = allProvinceData.find(p => p.province === provinceName)
-    if (found) {
-      setWardOptions(found.wards.map(w => ({ value: w.name, label: w.name })))
-    }
+    setWardOptions(getWards(provinceName))
     setLoadingWards(false)
   }
 
@@ -135,19 +110,6 @@ const UpdateCustomerModal = ({ open, onOpenChange, data, onSuccess }: Props) => 
     }
   }, [open, data, form]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Race-condition: allProvinceData load xong sau khi modal đã fill
-  // → parse lại địa chỉ và populate ward list
-  useEffect(() => {
-    if (allProvinceData.length === 0 || !open || !data) return
-    const addr = parseAddress(data.address)
-    // Cập nhật lại province/ward vì lần đầu allProvinceData chưa có
-    form.setFieldsValue({
-      province:      addr.province,
-      ward:          addr.ward,
-      addressDetail: addr.addressDetail,
-    })
-    if (addr.province) selectProvince(addr.province)
-  }, [allProvinceData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOk = async () => {
     try {

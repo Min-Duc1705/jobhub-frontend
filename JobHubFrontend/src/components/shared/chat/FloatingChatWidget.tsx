@@ -7,9 +7,9 @@ import { useAppSelector } from '../../../redux/hooks'
 import {
   getChatHistoryApi,
   sendChatMessageApi,
-  getConversationsApi,
   type IMessageDto
 } from '../../../services/chat-service'
+import { useConversations } from '../../../hooks/useConversations'
 import { uploadCompanyPublicImageApi } from '../../../services/company-service'
 import { uploadResumeFileApi, getMyResumesApi } from '../../../services/resume-service'
 import { getJobsApi } from '../../../services/job-service'
@@ -81,6 +81,8 @@ const FloatingChatWidget = () => {
   const [inputText, setInputText] = useState('')
   const [loading, setLoading] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  // Dùng shared hook conversations (cache chung với HeaderClient)
+  const { conversations: allConversations } = useConversations(!!currentUserId)
 
   const [connection, setConnection] = useState<HubConnection | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -448,26 +450,12 @@ const FloatingChatWidget = () => {
     }
   }, [activeConv, location.pathname, currentUserId])
 
-  // 4. Fetch initial unread count from server
+  // 4. Sync unread count từ shared conversations cache (không gọi API thêm)
   useEffect(() => {
-    if (!activeConv || !currentUserId) return
-
-    const fetchUnreadCount = async () => {
-      try {
-        const res = await getConversationsApi()
-        if (res && res.data) {
-          const matching = res.data.find(c => c.id === activeConv.conversationId)
-          if (matching) {
-            setUnreadCount(matching.unreadCount)
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching unread count for floating chat:', err)
-      }
-    }
-
-    fetchUnreadCount()
-  }, [activeConv, currentUserId])
+    if (!activeConv) return
+    const matching = allConversations.find(c => c.id === activeConv.conversationId)
+    if (matching) setUnreadCount(matching.unreadCount)
+  }, [activeConv, allConversations])
 
   const scrollToBottom = () => {
     setTimeout(() => {

@@ -20,6 +20,7 @@ import {
 } from '../../../services/profile-service'
 import type { CustomerProfile, CustomerSkillDto, SkillOption } from '../../../types/profile'
 import { getVerifiedCompaniesApi } from '../../../services/company-service'
+import { useProvinces } from '../../../hooks/useProvinces'
 import './ProfileSettings.scss'
 
 const { TextArea } = Input
@@ -133,16 +134,10 @@ const ProfileSettings = () => {
   // ── Notifications (UI only, extend later)
   const [notif, setNotif] = useState({ newJobs: true, recruiter: true, newsletter: false })
 
-  // ── Ward (Phường/Xã) + Province data from vietnamlabs.com API
-  interface VietnamProvinceItem {
-    id: string
-    province: string
-    wards: { name: string; mergedFrom: string[] }[]
-  }
-  const [allProvinceData, setAllProvinceData] = useState<VietnamProvinceItem[]>([])
-  const [provinceOptions,  setProvinceOptions]  = useState<{ value: string; label: string }[]>([])
-  const [wardOptions,   setWardOptions]   = useState<{ value: string; label: string }[]>([])
-  const [loadingWards,  setLoadingWards]  = useState(false)
+  // ── Province / Ward (shared hook — cache toàn module, chỉ fetch 1 lần) ──────────────────────
+  const { provinceOptions, getWards } = useProvinces()
+  const [wardOptions,  setWardOptions]  = useState<{ value: string; label: string }[]>([])
+  const [loadingWards, setLoadingWards] = useState(false)
   const [companyOptions, setCompanyOptions] = useState<{ value: string; label: string }[]>([])
 
   // ── Profile strength
@@ -151,40 +146,19 @@ const ProfileSettings = () => {
   useEffect(() => { setStrength(calcStrength(watched ?? {}, skills)) }, [watched, skills])
   const { rank, color } = strengthRank(strength)
 
-  // ── Fetch tất cả tỉnh/phường từ vietnamlabs.com khi mount ──────────
-  useEffect(() => {
-    const loadProvinces = async () => {
-      try {
-        const res  = await fetch('https://vietnamlabs.com/api/vietnamprovince')
-        const json = await res.json()
-        if (json.success && Array.isArray(json.data)) {
-          setAllProvinceData(json.data)
-          setProvinceOptions(
-            json.data.map((p: any) => ({ value: p.province, label: p.province }))
-          )
-        }
-      } catch {
-        // Fallback: để trống — user có thể nhập tay
-        console.warn('Vietnam Province API không khả dụng')
-      }
-    }
-    loadProvinces()
-  }, [])
-
-  // ── Khi user chọn tỉnh → lọc phường/xã từ cache ─────────────────
+  // ── Khi user chọn tỉnh → populate ward list từ cache
   const selectProvince = (provinceName: string | undefined) => {
     setWardOptions([])
     if (!provinceName) return
-    const found = allProvinceData.find(p => p.province === provinceName)
-    if (found) {
-      setWardOptions(found.wards.map(w => ({ value: w.name, label: w.name })))
-    }
+    setLoadingWards(true)
+    setWardOptions(getWards(provinceName))
+    setLoadingWards(false)
   }
 
-  // Khi allProvinceData v\u1eeba load xong, n\u1ebfu form \u0111\u00e3 c\u00f3 t\u1ec9nh \u2192 populate ward lu\u00f4n
-  // (x\u1eed l\u00fd race-condition: profile load xong tr\u01b0\u1edbc khi province API tr\u1ea3 v\u1ec1)
+  // Khi provinceOptions load xong (hook cache ready) → populate ward nếu form đã có tỉnh
+  // (xử lý race-condition: profile load xong trước khi province hook trả về)
   useEffect(() => {
-    if (allProvinceData.length === 0) return
+    if (provinceOptions.length === 0) return
     const currentProvince = form.getFieldValue('province')
     if (currentProvince) selectProvince(currentProvince)
   }, [allProvinceData]) // eslint-disable-line react-hooks/exhaustive-deps

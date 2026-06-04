@@ -13,7 +13,7 @@ import {
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../../services/notification-service'
-import { getConversationsApi } from '../../../services/chat-service'
+import { useConversations } from '../../../hooks/useConversations'
 import './HeaderClient.scss'
 
 const NAV_LINKS = [
@@ -94,7 +94,8 @@ const HeaderClient = () => {
   const [notifications, setNotifications] = useState<INotification[]>([])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [isRinging, setIsRinging] = useState(false)
-  const [chatUnreadCount, setChatUnreadCount] = useState(0)
+  // Chat unread count — dùng shared hook (cache chung với FloatingChatWidget)
+  const { totalUnread: chatUnreadCount } = useConversations(isAuthenticated)
   const unreadCount = notifications.filter(n => !n.isRead).length
 
   // Stable notification fetch function
@@ -139,21 +140,6 @@ const HeaderClient = () => {
     }
 
     fetchNotifications()
-
-    // 1.5. Fetch initial chat unread count
-    const fetchChatUnreadCount = async () => {
-      try {
-        const res = await getConversationsApi()
-        if (res && res.data) {
-          const totalUnread = res.data.reduce((acc: number, c: any) => acc + c.unreadCount, 0)
-          setChatUnreadCount(totalUnread)
-        }
-      } catch (err) {
-        console.error('Error fetching chat unread count:', err)
-      }
-    }
-
-    fetchChatUnreadCount()
 
     // 2. Setup SignalR connection - kết nối trực tiếp đến NotificationService
     const token = localStorage.getItem('access_token')

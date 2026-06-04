@@ -4,7 +4,7 @@ import { Select, Pagination, Spin, Empty, App } from 'antd'
 import type { IJob, JobType, JobLevel } from '../../../types/job'
 import { getJobsApi, getSavedJobsApi, saveJobApi, unsaveJobApi } from '../../../services/job-service'
 import { useAppSelector } from '../../../redux/hooks'
-
+import { useProvinceNames } from '../../../hooks/useProvinces'
 import JobHeroSearch from '../../../components/shared/job-list/JobHeroSearch'
 import JobListFilters from '../../../components/shared/job-list/JobListFilters'
 import JobCard from '../../../components/shared/job-list/JobCard'
@@ -49,52 +49,8 @@ const JobList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [loading,     setLoading]     = useState(false)
 
-  // ── Provinces API state
-  const [provinceOptions, setProvinceOptions] = useState<any[]>([])
-  const [loadingProvinces, setLoadingProvinces] = useState(false)
-
-  // Fetch Vietnam provinces
-  useEffect(() => {
-    setLoadingProvinces(true)
-    fetch('https://provinces.open-api.vn/api/v2/p/')
-      .then(res => res.json())
-      .then((data: any[]) => {
-        const cleanProvinceName = (name: string) => name.replace(/^(Thành phố|Tỉnh)\s+/i, '').trim();
-        const options = data.map((province: any) => {
-          const cleaned = cleanProvinceName(province.name);
-          return {
-            label: cleaned,
-            value: cleaned,
-          };
-        })
-        options.unshift({
-          label: 'Tất cả địa điểm',
-          value: '',
-        })
-        options.push({
-          label: 'Remote',
-          value: 'Remote',
-        })
-        options.push({
-          label: 'Khác',
-          value: 'Khác',
-        })
-        setProvinceOptions(options)
-      })
-      .catch(err => {
-        console.warn('Lỗi khi tải danh sách tỉnh thành:', err)
-        setProvinceOptions([
-          { label: 'Tất cả địa điểm', value: '' },
-          { label: 'Hà Nội', value: 'Hà Nội' },
-          { label: 'TP.HCM', value: 'TP.HCM' },
-          { label: 'Đà Nẵng', value: 'Đà Nẵng' },
-          { label: 'Hải Phòng', value: 'Hải Phòng' },
-          { label: 'Khác', value: 'Khác' },
-          { label: 'Remote', value: 'Remote' },
-        ])
-      })
-      .finally(() => setLoadingProvinces(false))
-  }, [])
+  // ── Provinces (shared hook — cache toàn module, chỉ fetch 1 lần toàn app)
+  const { options: provinceOptions, loading: loadingProvinces } = useProvinceNames()
 
   // Fetch user's saved job IDs
   useEffect(() => {

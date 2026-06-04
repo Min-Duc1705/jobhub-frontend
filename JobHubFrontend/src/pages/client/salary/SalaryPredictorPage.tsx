@@ -4,6 +4,7 @@ import type { SalaryPredictResponse, TrendResponse } from '../../../services/ai-
 import { getTrendApi, predictSalaryApi } from '../../../services/ai-service'
 import { getSkillsDropdownApi } from '../../../services/skill-service'
 import type { ISkill } from '../../../types/skill'
+import { useProvinceNames } from '../../../hooks/useProvinces'
 import './SalaryPredictorPage.scss'
 
 const LEVELS = [
@@ -40,54 +41,17 @@ const SalaryPredictorPage = () => {
   const [trend, setTrend] = useState<TrendResponse | null>(null)
 
   const [skillsList, setSkillsList] = useState<ISkill[]>([])
-  const [provinceOptions, setProvinceOptions] = useState<any[]>([])
-  const [loadingProvinces, setLoadingProvinces] = useState(false)
+  // Dùng shared hook (cache toàn module) — không gọi lại API khi đã có dữ liậu
+  const { options: provinceOptions, loading: loadingProvinces } = useProvinceNames(false)
 
   useEffect(() => {
-    // 1. Fetch skills dropdown
+    // Fetch skills dropdown
     getSkillsDropdownApi()
       .then(res => {
         const list = res.data ?? res ?? []
         setSkillsList(list)
       })
       .catch(err => console.warn('Lỗi khi tải skills:', err))
-
-    // 2. Fetch Vietnam provinces
-    setLoadingProvinces(true)
-    fetch('https://provinces.open-api.vn/api/v2/p/')
-      .then(res => res.json())
-      .then((data: any[]) => {
-        const cleanProvinceName = (name: string) => name.replace(/^(Thành phố|Tỉnh)\s+/i, '').trim();
-        const options = data.map((province: any) => {
-          const cleaned = cleanProvinceName(province.name);
-          return {
-            label: cleaned,
-            value: cleaned,
-          };
-        })
-        // Thêm Remote và Khác
-        options.push({
-          label: 'Remote',
-          value: 'Remote',
-        })
-        options.push({
-          label: 'Khác',
-          value: 'Khác',
-        })
-        setProvinceOptions(options)
-      })
-      .catch(err => {
-        console.warn('Lỗi khi tải danh sách tỉnh thành:', err)
-        setProvinceOptions([
-          { label: 'Hà Nội', value: 'Hà Nội' },
-          { label: 'TP.HCM', value: 'TP.HCM' },
-          { label: 'Đà Nẵng', value: 'Đà Nẵng' },
-          { label: 'Hải Phòng', value: 'Hải Phòng' },
-          { label: 'Khác', value: 'Khác' },
-          { label: 'Remote', value: 'Remote' },
-        ])
-      })
-      .finally(() => setLoadingProvinces(false))
   }, [])
 
   const onFinish = async (values: SalaryFormValues) => {
