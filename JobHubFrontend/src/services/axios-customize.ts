@@ -77,27 +77,40 @@ instance.interceptors.request.use(
   }
 );
 
-// Tự động thay thế localhost:9000 bằng URL public của Backend qua Ngrok
-const replaceLocalhostMinio = (obj: any): any => {
+// Tự động thay thế localhost:9000 và domain trycloudflare.com bằng URL public từ VITE_BACKEND_URL
+const normalizeBackendUrl = (obj: any): any => {
   if (obj === null || obj === undefined) return obj;
 
   if (typeof obj === "string") {
-    if (obj.startsWith("http://localhost:9000")) {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
-      const cleanBackendUrl = backendUrl.endsWith("/") ? backendUrl.slice(0, -1) : backendUrl;
-      return obj.replace("http://localhost:9000", cleanBackendUrl);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+    const cleanBackendUrl = backendUrl.endsWith("/") ? backendUrl.slice(0, -1) : backendUrl;
+
+    // Thay localhost:9000 (MinIO internal)
+    if (obj.startsWith("http://localhost:9000") || obj.startsWith("http://127.0.0.1:9000")) {
+      return obj.replace(/https?:\/\/(localhost|127\.0\.0\.1):9000/i, cleanBackendUrl);
     }
+
+    // Thay bất kỳ domain trycloudflare.com nào → dùng VITE_BACKEND_URL hiện tại
+    if (obj.includes("trycloudflare.com")) {
+      try {
+        const parsed = new URL(obj);
+        return `${cleanBackendUrl}${parsed.pathname}${parsed.search}`;
+      } catch {
+        return obj.replace(/https?:\/\/[a-zA-Z0-9\-]+\.trycloudflare\.com/i, cleanBackendUrl);
+      }
+    }
+
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => replaceLocalhostMinio(item));
+    return obj.map(item => normalizeBackendUrl(item));
   }
 
   if (typeof obj === "object") {
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        obj[key] = replaceLocalhostMinio(obj[key]);
+        obj[key] = normalizeBackendUrl(obj[key]);
       }
     }
     return obj;
@@ -105,6 +118,10 @@ const replaceLocalhostMinio = (obj: any): any => {
 
   return obj;
 };
+
+// Alias để tương thích ngược với code cũ dùng replaceLocalhostMinio
+const replaceLocalhostMinio = normalizeBackendUrl;
+
 
 // ── Response interceptor ─────────────────────────────────────────────────────
 instance.interceptors.response.use(
