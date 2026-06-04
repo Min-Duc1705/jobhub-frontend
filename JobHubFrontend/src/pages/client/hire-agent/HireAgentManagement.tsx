@@ -145,6 +145,24 @@ export default function HireAgentManagement() {
     });
   });
 
+  useChatHubEvent(chatConnection, 'CampaignStatusChanged', (payload: { campaignId: string; status: 'Active' | 'Completed' }) => {
+    setCampaigns((prev) =>
+      prev.map((c) => (c.id === payload.campaignId ? { ...c, status: payload.status } : c))
+    );
+    setSelectedCampaign((curr) => {
+      if (curr && curr.id === payload.campaignId) {
+        return { ...curr, status: payload.status };
+      }
+      return curr;
+    });
+  });
+
+  useChatHubEvent(chatConnection, 'CampaignConversationsUpdated', (payload: { campaignId: string }) => {
+    if (selectedCampaignRef.current && selectedCampaignRef.current.id === payload.campaignId) {
+      handleSelectCampaign(selectedCampaignRef.current);
+    }
+  });
+
 
   const handleSelectCampaign = async (campaign: IHireAgentCampaign) => {
     setSelectedCampaign(campaign)
