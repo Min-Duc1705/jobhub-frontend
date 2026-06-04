@@ -97,23 +97,34 @@ const CompanyRegisterPage = () => {
         customIndustry?: string
       }
 
-      // 1. Upload images if selected
+      // 1. Upload tất cả ảnh song song (logo + cover + activities cùng lúc)
       let logoUrl: string | undefined
       let coverUrl: string | undefined
       const activityUrls: string[] = []
 
+      const uploadTasks: Promise<void>[] = []
+
       if (logoFile) {
-        const res = await uploadCompanyPublicImageApi(logoFile)
-        logoUrl = res.data?.url
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(logoFile)
+            .then(res => { logoUrl = res.data?.url })
+        )
       }
       if (coverFile) {
-        const res = await uploadCompanyPublicImageApi(coverFile)
-        coverUrl = res.data?.url
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(coverFile)
+            .then(res => { coverUrl = res.data?.url })
+        )
       }
       for (const f of activityFiles) {
-        const res = await uploadCompanyPublicImageApi(f)
-        if (res.data?.url) activityUrls.push(res.data.url)
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(f)
+            .then(res => { if (res.data?.url) activityUrls.push(res.data.url) })
+        )
       }
+
+      await Promise.all(uploadTasks)
+
 
       setUploadingImg(false)
 

@@ -54,26 +54,30 @@ export default function HireAgentManagement() {
 
   useEffect(() => { selectedCampaignRef.current = selectedCampaign; }, [selectedCampaign]);
 
-  // ── Data loading ──────────────────────────────────────────────────────────────
+  // ── Data loading (song song) ───────────────────────────────────────────────────
   const loadCampaigns = async () => {
-    setCampaignsLoading(true);
+    setCampaignsLoading(true)
     try {
-      const res = await getCampaignsApi();
-      if (res.data) setCampaigns(res.data);
-    } catch (err) { console.error(err); }
-    finally { setCampaignsLoading(false); }
-  };
+      const res = await getCampaignsApi()
+      if (res.data) setCampaigns(res.data)
+    } catch (err) { console.error(err) }
+    finally { setCampaignsLoading(false) }
+  }
 
   const loadJobs = async () => {
-    if (!user?.id) return;
+    if (!user?.id) return
     try {
-      const sp = new URLSearchParams({ pageNumber: '1', pageSize: '100', customerId: user.id, status: 'PUBLISHED' });
-      const res = await getJobsApi(sp.toString());
-      if (res.data?.result) setJobs(res.data.result);
-    } catch (err) { console.error(err); }
-  };
+      const sp = new URLSearchParams({ pageNumber: '1', pageSize: '100', customerId: user.id, status: 'PUBLISHED' })
+      const res = await getJobsApi(sp.toString())
+      if (res.data?.result) setJobs(res.data.result)
+    } catch (err) { console.error(err) }
+  }
 
-  useEffect(() => { loadCampaigns(); loadJobs(); }, [user?.id]);
+  // Tải campaigns + jobs song song khi mount
+  useEffect(() => {
+    Promise.all([loadCampaigns(), loadJobs()])
+  }, [user?.id])
+
 
   // ── SignalR ───────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -159,30 +163,47 @@ export default function HireAgentManagement() {
 
   // ── Event handlers ────────────────────────────────────────────────────────────
   const handleSelectCampaign = async (campaign: IHireAgentCampaign) => {
-    setSelectedCampaign(campaign);
-    setSelectedConversation(null);
-    setChatMessages([]);
-    setConversationsLoading(true);
+    setSelectedCampaign(campaign)
+    setSelectedConversation(null)
+    setChatMessages([])
+    setConversationsLoading(true)
     try {
-      const res = await getCampaignConversationsApi(campaign.id);
+      const res = await getCampaignConversationsApi(campaign.id)
       if (res.data) {
-        setConversations(res.data);
-        res.data.forEach((c) => fetchCandidateName(c.candidateId));
+        setConversations(res.data)
+        // Fetch tên tất cả candidates song song (không dùng forEach tuần tự)
+        const unknownIds = res.data
+          .map((c) => c.candidateId)
+          .filter((id, idx, arr) => arr.indexOf(id) === idx && !candidateNames[id])
+        if (unknownIds.length > 0) {
+          Promise.all(
+            unknownIds.map(id =>
+              getCustomerByIdApi(id)
+                .then(r => ({ id, name: r.data?.fullName || 'Candidate' }))
+                .catch(() => ({ id, name: `Ứng viên (${id.slice(0, 6)})` }))
+            )
+          ).then(results => {
+            const patch: Record<string, string> = {}
+            results.forEach(({ id, name }) => { patch[id] = name })
+            setCandidateNames(prev => ({ ...prev, ...patch }))
+          })
+        }
       }
-    } catch (err) { console.error(err); }
-    finally { setConversationsLoading(false); }
-  };
+    } catch (err) { console.error(err) }
+    finally { setConversationsLoading(false) }
+  }
 
   const fetchCandidateName = async (id: string) => {
-    if (candidateNames[id]) return;
+    if (candidateNames[id]) return
     try {
-      const res = await getCustomerByIdApi(id);
+      const res = await getCustomerByIdApi(id)
       if (res.data?.fullName)
-        setCandidateNames((prev) => ({ ...prev, [id]: res.data.fullName || 'Candidate' }));
+        setCandidateNames((prev) => ({ ...prev, [id]: res.data.fullName || 'Candidate' }))
     } catch {
-      setCandidateNames((prev) => ({ ...prev, [id]: `Ứng viên (${id.slice(0, 6)})` }));
+      setCandidateNames((prev) => ({ ...prev, [id]: `Ứng viên (${id.slice(0, 6)})` }))
     }
-  };
+  }
+
 
   const handleSelectConversation = async (conv: IHireAgentConversation) => {
     setSelectedConversation(conv);

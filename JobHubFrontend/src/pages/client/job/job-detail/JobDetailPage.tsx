@@ -42,7 +42,7 @@ const JobDetailPage = () => {
   const [applyOpen,      setApplyOpen]      = useState(false)
   const [alreadyApplied, setAlreadyApplied] = useState(false)
 
-  // ── Fetch job + company + similar ──────────────────────────────
+  // ── Fetch job + company + similar (song song) ─────────────────
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -51,31 +51,29 @@ const JobDetailPage = () => {
         const j = res.data
         if (!j) { navigate('/jobs'); return }
         setJob(j)
-        if (j.companyId) {
-          getCompanyByIdApi(j.companyId)
-            .then(cr => setCompany(cr.data ?? null))
-            .catch(() => {})
-        }
 
-        // Lấy công việc tương tự dựa trên kỹ năng (skills) hoặc từ khóa tiêu đề, fallback về cùng công ty
+        // Song song: fetch company + similar jobs cùng lúc
         const skillIds = j.skills?.map(s => s.id) ?? []
-        const queryParams = skillIds.length > 0
-          ? skillIds.map(id => `skillIds=${id}`).join('&')
+        const similarQuery = skillIds.length > 0
+          ? skillIds.map(sid => `skillIds=${sid}`).join('&')
           : `searchTerm=${encodeURIComponent(j.name.split(' ')[0])}`
 
-        getJobsApi(`${queryParams}&pageSize=10&sortBy=createdDate&isDescending=true`)
-          .then(sr => {
-            const list = (sr.data?.result ?? []).filter(s => s.id !== j.id)
-            if (list.length > 0) {
-              setSimilar(list.slice(0, 3))
-            } else {
-              // Fallback: việc làm cùng công ty
-              getJobsApi(`companyId=${j.companyId}&pageSize=4&sortBy=createdDate&isDescending=true`)
-                .then(cr => setSimilar((cr.data?.result ?? []).filter(s => s.id !== j.id).slice(0, 3)))
-                .catch(() => {})
-            }
-          })
-          .catch(() => {})
+        Promise.all([
+          j.companyId ? getCompanyByIdApi(j.companyId).catch(() => null) : Promise.resolve(null),
+          getJobsApi(`${similarQuery}&pageSize=10&sortBy=createdDate&isDescending=true`).catch(() => null),
+        ]).then(([companyRes, similarRes]) => {
+          if (companyRes) setCompany(companyRes.data ?? null)
+
+          const list = (similarRes?.data?.result ?? []).filter((s: any) => s.id !== j.id)
+          if (list.length > 0) {
+            setSimilar(list.slice(0, 3))
+          } else if (j.companyId) {
+            // Fallback: việc làm cùng công ty
+            getJobsApi(`companyId=${j.companyId}&pageSize=4&sortBy=createdDate&isDescending=true`)
+              .then(cr => setSimilar((cr.data?.result ?? []).filter((s: any) => s.id !== j.id).slice(0, 3)))
+              .catch(() => {})
+          }
+        })
       })
       .catch(() => {
         notification.error({ message: 'Không tìm thấy tin tuyển dụng', duration: 3 })
@@ -84,44 +82,32 @@ const JobDetailPage = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  // ── Kiểm tra đã ứng tuyển chưa ────────────────────────────────
+  // ── Song song: kiểm tra đã ứng tuyển + đã lưu + ghi nhận tương tác ──
   useEffect(() => {
-    if (!id || !currentUser) return
-    getApplicationsApi(`jobId=${id}&customerId=${currentUser.id}&pageSize=1`)
-      .then(res => setAlreadyApplied((res.data?.meta?.total ?? 0) > 0))
-      .catch(() => {})
-  }, [id, currentUser])
+    if (!id) return
 
-  // ── Kiểm tra đã lưu chưa ──────────────────────────────────────
-  useEffect(() => {
-    if (!id || !currentUser) {
+    // Track VIEW + CLICK song song (fire-and-forget)
+    if (currentUser?.id) {
+      Promise.all([
+        trackJobInteractionApi({ customer_id: currentUser.id, job_id: id, interaction_type: 'VIEW' }),
+        trackJobInteractionApi({ customer_id: currentUser.id, job_id: id, interaction_type: 'CLICK' }),
+      ]).catch(() => {})
+    }
+
+    if (!currentUser) {
       setSaved(false)
       return
     }
-    getSavedJobsApi('pageNumber=1&pageSize=1000')
-      .then(res => {
-        const savedList = res.data?.result ?? []
-        const isJobSaved = savedList.some((sj: any) => sj.jobId === id)
-        setSaved(isJobSaved)
-      })
-      .catch(() => {})
-  }, [id, currentUser])
 
-  // ── Ghi nhận tương tác VIEW & CLICK ───────────────────────────
-  useEffect(() => {
-    if (id && currentUser?.id) {
-      trackJobInteractionApi({
-        customer_id: currentUser.id,
-        job_id: id,
-        interaction_type: 'VIEW'
-      }).catch(() => {})
-
-      trackJobInteractionApi({
-        customer_id: currentUser.id,
-        job_id: id,
-        interaction_type: 'CLICK'
-      }).catch(() => {})
-    }
+    // Song song: check applied + check saved
+    Promise.all([
+      getApplicationsApi(`jobId=${id}&customerId=${currentUser.id}&pageSize=1`).catch(() => null),
+      getSavedJobsApi('pageNumber=1&pageSize=1000').catch(() => null),
+    ]).then(([appRes, savedRes]) => {
+      setAlreadyApplied((appRes?.data?.meta?.total ?? 0) > 0)
+      const savedList = savedRes?.data?.result ?? []
+      setSaved(savedList.some((sj: any) => sj.jobId === id))
+    })
   }, [id, currentUser?.id])
 
   // ── Open apply modal (auth guard) ─────────────────────────────

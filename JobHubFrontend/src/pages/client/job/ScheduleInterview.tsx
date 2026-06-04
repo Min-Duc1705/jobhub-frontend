@@ -19,34 +19,28 @@ export default function ScheduleInterview() {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [successData, setSuccessData] = useState<{ interviewDate: string } | null>(null);
 
-  // Load Campaign and Conversation details
+  // Load Campaign and Conversation details — song song (cả 2 đều dùng campaignId, không phụ thuộc nhau)
   useEffect(() => {
-    const fetchData = async () => {
-      if (!campaignId) return;
-      try {
-        setLoading(true);
-        const campaignRes = await getCampaignByIdApi(campaignId);
-        if (campaignRes.data) {
-          setCampaign(campaignRes.data);
-        }
+    if (!campaignId) return;
+    setLoading(true);
 
-        try {
-          const convRes = await getMyConversationApi(campaignId);
-          if (convRes.data) {
-            setConversation(convRes.data);
-          }
-        } catch (convErr) {
-          console.warn('Lỗi khi lấy thông tin hội thoại ứng viên:', convErr);
-        }
-      } catch (err: any) {
-        console.error('Lỗi khi lấy thông tin chiến dịch:', err);
+    Promise.allSettled([
+      getCampaignByIdApi(campaignId),
+      getMyConversationApi(campaignId),
+    ]).then(([campaignResult, convResult]) => {
+      if (campaignResult.status === 'fulfilled' && campaignResult.value.data) {
+        setCampaign(campaignResult.value.data);
+      } else if (campaignResult.status === 'rejected') {
+        console.error('Lỗi khi lấy thông tin chiến dịch:', campaignResult.reason);
         message.error('Không thể tải thông tin chiến dịch tuyển dụng.');
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
+      if (convResult.status === 'fulfilled' && convResult.value.data) {
+        setConversation(convResult.value.data);
+      } else if (convResult.status === 'rejected') {
+        console.warn('Lỗi khi lấy thông tin hội thoại ứng viên:', convResult.reason);
+      }
+    }).finally(() => setLoading(false));
   }, [campaignId]);
 
   // Handle scheduling submit

@@ -13,7 +13,8 @@ import {
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../../services/notification-service'
-import { useConversations } from '../../../hooks/useConversations'
+import { useConversations, invalidateConversationsCache } from '../../../hooks/useConversations'
+
 import './HeaderClient.scss'
 
 const NAV_LINKS = [
@@ -198,7 +199,7 @@ const HeaderClient = () => {
 
     chatConnection.on('ReceiveMessage', (msg: any) => {
       if (msg.senderId.toLowerCase() !== user.id.toLowerCase()) {
-        fetchChatUnreadCount()
+        invalidateConversationsCache()
 
         // Hiển thị thông báo khi không ở trang chat
         if (window.location.pathname !== '/chat') {
@@ -220,7 +221,7 @@ const HeaderClient = () => {
     })
 
     chatConnection.on('ConversationRead', () => {
-      fetchChatUnreadCount()
+      invalidateConversationsCache()
     })
 
     chatConnection.start()

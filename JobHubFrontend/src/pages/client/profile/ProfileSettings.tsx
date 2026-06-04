@@ -161,7 +161,8 @@ const ProfileSettings = () => {
     if (provinceOptions.length === 0) return
     const currentProvince = form.getFieldValue('province')
     if (currentProvince) selectProvince(currentProvince)
-  }, [allProvinceData]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [provinceOptions]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // Alias cho các nơi g\u1ecdi fetchWards(addr.province) trong loadData
   const fetchWards = selectProvince

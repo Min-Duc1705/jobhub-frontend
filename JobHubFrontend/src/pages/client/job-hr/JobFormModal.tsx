@@ -51,30 +51,35 @@ const JobFormModal = ({ open, data, onClose, onSuccess }: Props) => {
 
   const isEdit = !!data
 
-  // ── Load skills ──────────────────────────────────────────────────────────
+  // ── Load skills + company profile song song khi modal mở ───────────────────
   useEffect(() => {
     if (!open) return
-    getSkillsDropdownApi().then(r => setSkills(r.data ?? [])).catch(() => {})
-  }, [open])
 
-  // ── Load company của HR từ profile (chỉ khi create mode) ─────────────────
-  useEffect(() => {
-    if (!open || isEdit) return
-    setCompanyLoading(true)
-    getMyProfileApi()
-      .then(async res => {
-        const companyId = res.data?.companyId
-        if (companyId) {
-          const compRes = await getCompanyByIdApi(companyId)
-          const comp = compRes.data ?? null
-          setMyCompany(comp)
-          form.setFieldValue('companyId', companyId)
-        } else {
-          setMyCompany(null)
-        }
-      })
-      .catch(() => setMyCompany(null))
-      .finally(() => setCompanyLoading(false))
+    // Skills không phụ thuộc profile → gọi song song
+    const skillsPromise = getSkillsDropdownApi()
+      .then(r => setSkills(r.data ?? []))
+      .catch(() => {})
+
+    // Company chỉ cần fetch khi create mode (isEdit = false)
+    const companyPromise = (!isEdit)
+      ? (setCompanyLoading(true),
+        getMyProfileApi()
+          .then(async res => {
+            const companyId = res.data?.companyId
+            if (companyId) {
+              const compRes = await getCompanyByIdApi(companyId)
+              setMyCompany(compRes.data ?? null)
+              form.setFieldValue('companyId', companyId)
+            } else {
+              setMyCompany(null)
+            }
+          })
+          .catch(() => setMyCompany(null))
+          .finally(() => setCompanyLoading(false)))
+      : Promise.resolve()
+
+    // Chạy song song
+    Promise.all([skillsPromise, companyPromise])
   }, [open, isEdit])
 
   // ── Populate form khi mở ─────────────────────────────────────────────────

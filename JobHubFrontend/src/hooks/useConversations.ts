@@ -40,7 +40,7 @@ async function _fetch(force = false) {
   _promise = getConversationsApi()
     .then(res => {
       if (res?.data) {
-        _conversations = res.data
+        _conversations = res.data as unknown as IConversationSummary[]
       }
     })
     .catch(() => {})
