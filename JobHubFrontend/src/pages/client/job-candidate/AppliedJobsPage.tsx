@@ -96,18 +96,18 @@ const AppliedJobsPage = () => {
     }
   }
 
-  // Fetch initial data
+  // Load applications + saved jobs song song khi user login (không phụ thuộc nhau)
   useEffect(() => {
-    if (user?.id) {
-      fetchApplications()
-    }
+    if (!user?.id) return
+    Promise.all([fetchApplications(), fetchSavedJobs(savedPage, savedPageSize)])
   }, [user?.id])
 
+  // Fetch saved jobs khi đổi trang/page size (không cần fetch applications lại)
   useEffect(() => {
-    if (user?.id) {
-      fetchSavedJobs(savedPage, savedPageSize)
-    }
-  }, [user?.id, savedPage, savedPageSize])
+    if (!user?.id) return
+    fetchSavedJobs(savedPage, savedPageSize)
+  }, [savedPage, savedPageSize]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // ── Resolve Job Details ─────────────────────────────────────────────────────
   // Fetch detailed job info for applications to display company names/logos/locations

@@ -113,27 +113,28 @@ const JobApplicationsPage = () => {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Load job info + existing AI scores song song (cả 2 chỉ cần jobId, không phụ thuộc nhau)
   useEffect(() => {
     if (!jobId) return
     setJobLoading(true)
-    getJobByIdApi(jobId)
-      .then(res => setJob(res.data ?? null))
-      .catch(() => notification.error({ message: 'Không tìm thấy tin tuyển dụng', duration: 2 }))
-      .finally(() => setJobLoading(false))
 
-    // Tải các kết quả chấm điểm AI đã lưu từ MongoDB
-    getCvAnalysesApi(jobId)
-      .then(res => {
-        const analyses = res.data ?? []
-        const resultsMap = analyses.reduce<Record<string, CvScoringResult>>((acc, item) => {
-          if (item.application_id) acc[item.application_id] = item
-          return acc
-        }, {})
-        setAiResults(resultsMap)
-      },)
-      .catch(() => {
-        console.warn('Không thể tải lịch sử chấm điểm AI')
-      })
+    Promise.all([
+      getJobByIdApi(jobId)
+        .then(res => setJob(res.data ?? null))
+        .catch(() => notification.error({ message: 'Không tìm thấy tin tuyển dụng', duration: 2 }))
+        .finally(() => setJobLoading(false)),
+
+      getCvAnalysesApi(jobId)
+        .then(res => {
+          const analyses = res.data ?? []
+          const resultsMap = analyses.reduce<Record<string, CvScoringResult>>((acc, item) => {
+            if (item.application_id) acc[item.application_id] = item
+            return acc
+          }, {})
+          setAiResults(resultsMap)
+        })
+        .catch(() => console.warn('Không thể tải lịch sử chấm điểm AI')),
+    ])
   }, [jobId])
 
   const fetchApplications = async (
