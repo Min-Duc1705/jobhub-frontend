@@ -19,13 +19,17 @@ const RecommendedJobs = ({ jobs, savedJobIds, onToggleSave, loading, isAIRecomme
       <div className="home-jobs__header">
         <div>
           <h2 className="home-jobs__title">
-            <span className="material-symbols-outlined">auto_awesome</span>
-            AI Đề Xuất
+            {isAIRecommended ? (
+              <span className="material-symbols-outlined">auto_awesome</span>
+            ) : (
+              <span className="material-symbols-outlined" style={{ color: '#f97316' }}>trending_up</span>
+            )}
+            {isAIRecommended ? 'AI Đề Xuất' : 'Việc Làm Phổ Biến'}
           </h2>
           <p className="home-jobs__desc">
             {isAIRecommended
               ? 'Các vị trí phù hợp nhất dựa trên hồ sơ của bạn.'
-              : 'Các vị trí việc làm nổi bật đang tuyển dụng.'}
+              : 'Những công việc IT đang được quan tâm nhiều nhất.'}
           </p>
         </div>
         <Link to="/jobs" className="home-jobs__link">
