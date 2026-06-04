@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
-import { App, Breadcrumb, Button, Popconfirm, Space, Tag, Tooltip } from 'antd'
+import { App, Breadcrumb, Button, Popconfirm, Select, Space, Tag, Tooltip } from 'antd'
 import type { SortOrder } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
@@ -19,6 +19,8 @@ import {
   JOB_LEVEL_LABEL, JOB_TYPE_LABEL,
 } from '../../../types/job'
 import { getAdminJobsApi, deleteJobApi } from '../../../services/job-service'
+import { getCompaniesApi } from '../../../services/company-service'
+import type { ICompany } from '../../../types/company'
 
 const JOB_CATEGORY_LABEL: Record<string, string> = {
   Engineering: 'Kỹ thuật & Công nghệ',
@@ -36,6 +38,25 @@ const JobTable = () => {
   const [openUpdate, setOpenUpdate] = useState(false)
   const [openDetail, setOpenDetail] = useState(false)
   const [editRow,    setEditRow]    = useState<IJob | null>(null)
+
+  // ── Danh sách công ty cho filter ──────────────────────────────────────────
+  const [companies,        setCompanies]        = useState<ICompany[]>([])
+  const [companySearching, setCompanySearching] = useState(false)
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setCompanySearching(true)
+      try {
+        const res = await getCompaniesApi('pageNumber=1&pageSize=200')
+        setCompanies(res.data?.result ?? [])
+      } catch {
+        /* ignore */
+      } finally {
+        setCompanySearching(false)
+      }
+    }
+    fetchCompanies()
+  }, [])
 
   const reload = () => actionRef.current?.reload()
 
@@ -68,6 +89,23 @@ const JobTable = () => {
       dataIndex: 'name',
       ellipsis: true,
       width: 220,
+    },
+    {
+      title: 'Công ty',
+      dataIndex: 'companyId',
+      width: 200,
+      ellipsis: true,
+      renderFormItem: () => (
+        <Select
+          showSearch
+          allowClear
+          loading={companySearching}
+          placeholder="Tìm theo công ty..."
+          optionFilterProp="label"
+          options={companies.map(c => ({ value: c.id, label: c.name }))}
+        />
+      ),
+      render: (_, r) => r.companyName ?? '—',
     },
     {
       title: 'Ngành nghề',
@@ -213,9 +251,10 @@ const JobTable = () => {
     sp.set('pageNumber', String(params.current  ?? 1))
     sp.set('pageSize',   String(params.pageSize ?? 10))
 
-    if (params.name)     sp.set('searchTerm', params.name)
-    if (params.status)   sp.set('status',     params.status)
-    if (params.category) sp.set('category',   params.category)
+    if (params.name)      sp.set('searchTerm', params.name)
+    if (params.status)    sp.set('status',     params.status)
+    if (params.category)  sp.set('category',   params.category)
+    if (params.companyId) sp.set('companyId',  params.companyId)
 
     const sortEntry = sort ? Object.entries(sort).find(([, o]) => !!o) : null
     if (sortEntry) {

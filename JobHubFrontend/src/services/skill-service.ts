@@ -4,10 +4,8 @@ import type { ISkill, SkillBody } from '../types/skill'
 
 // ── Skill APIs → JobService /api/v1/skills ────────────────────────────────────
 
-/** Lấy danh sách kỹ năng (dropdown) — public */
 export const getSkillsDropdownApi = (): Promise<ApiResponse<ISkill[]>> =>
-  axios.get('/api/v1/skills?pageSize=200&isDescending=false')
-    .then((r: any) => ({ ...r, data: r.data?.result ?? r.data }))
+  axios.get('/api/v1/skills/dropdown')
 
 /** Lấy danh sách kỹ năng (phân trang, admin) */
 export const getSkillsApi = (query: string): Promise<ApiResponse<PageResult<ISkill>>> =>
