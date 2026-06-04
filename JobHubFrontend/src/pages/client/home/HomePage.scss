@@ -503,8 +503,12 @@ $on-secondary-fixed-variant: #004785;
     transition: all 0.2s ease;
 
     .material-symbols-outlined {
-      font-size: 13px;
+      font-size: 14px;
+      line-height: 1;
+      vertical-align: middle;
       color: #0284c7;
+      display: flex;
+      align-items: center;
     }
 
     &:hover {
