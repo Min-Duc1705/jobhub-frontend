@@ -122,69 +122,80 @@ const HomePage = () => {
   }, [])
 
 
-  // ── Fetch AI recommendations (reactive to user login)
-  // Dùng useRef để chỉ fetch recommendation 1 lần cho mỗi userId (tránh effect re-run khi user object refresh)
+  // ── Fetch AI recommendations chạy NGẦM (background worker)
+  // Hiển thị "Việc làm phổ biến" (newestJobs) ngay lập tức,
+  // khi AI xong thì tự động chuyển sang "AI Đề Xuất" — không block UI
   const [recFetchedFor, setRecFetchedFor] = useState<string | null>(null)
 
+  // Khi newestJobs load xong → hiển thị ngay "Việc làm phổ biến" làm mặc định
+  useEffect(() => {
+    if (newestJobs.length > 0 && recommendedJobs.length === 0) {
+      setIsAIRecommended(false)
+      setRecommendedJobs(newestJobs.slice(0, 6))
+    }
+  }, [newestJobs]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Background worker: fetch AI recommendations mà KHÔNG block loading state
   useEffect(() => {
     const currentKey = user?.id ?? '__guest__'
     if (recFetchedFor === currentKey) return
+    setRecFetchedFor(currentKey)
 
-    const fetchRecommendations = async () => {
-      setLoadingRecommended(true)
-      setRecFetchedFor(currentKey)
+    // Không set loadingRecommended = true → section vẫn hiển thị "Việc làm phổ biến"
+    const runAiRecommendationsInBackground = async () => {
+      if (!user?.id) return // Guest: không cần AI
+
       try {
-        if (user?.id) {
-          const resumesRes = await getMyResumesApi(user.id)
-          const resumes = resumesRes.data?.result ?? []
-          const defaultResume = resumes.find(r => r.isDefault) || resumes[0]
+        const resumesRes = await getMyResumesApi(user.id)
+        const resumes = resumesRes.data?.result ?? []
+        const defaultResume = resumes.find(r => r.isDefault) || resumes[0]
+        if (!defaultResume) return
 
-          if (defaultResume) {
-            const cacheKey = `job-recs-${user.id}-${defaultResume.id}`
-            const cached = sessionStorage.getItem(cacheKey)
-            if (cached) {
-              try {
-                setRecommendedJobs(JSON.parse(cached))
-                setIsAIRecommended(true)
-                setLoadingRecommended(false)
-                return
-              } catch (e) {
-                // ignore
-              }
-            }
-
-            const cvText = buildCvText({
-              id: '',
-              customerId: user.id,
-              resume: defaultResume,
-              coverLetter: ''
-            }, defaultResume)
-
-            const recRes = await getJobRecommendationsApi({ cv_text: cvText, customer_id: user.id })
-            const recJobs = recRes.data ?? []
-            if (recJobs.length > 0) {
-              setRecommendedJobs(recJobs)
+        // Kiểm tra cache trước (sessionStorage)
+        const cacheKey = `job-recs-${user.id}-${defaultResume.id}`
+        const cached = sessionStorage.getItem(cacheKey)
+        if (cached) {
+          try {
+            const cachedJobs = JSON.parse(cached)
+            if (cachedJobs.length > 0) {
+              setRecommendedJobs(cachedJobs)
               setIsAIRecommended(true)
-              sessionStorage.setItem(cacheKey, JSON.stringify(recJobs))
-              setLoadingRecommended(false)
               return
             }
-          }
+          } catch { /* cache lỗi, bỏ qua */ }
+        }
+
+        // Gọi AI API ngầm (không await bên ngoài — chạy hoàn toàn background)
+        const cvText = buildCvText({
+          id: '',
+          customerId: user.id,
+          resume: defaultResume,
+          coverLetter: ''
+        }, defaultResume)
+
+        const recRes = await getJobRecommendationsApi({ cv_text: cvText, customer_id: user.id })
+        const recJobs = recRes.data ?? []
+        if (recJobs.length > 0) {
+          // Lưu cache và cập nhật UI — chuyển từ "Phổ biến" sang "AI Đề Xuất"
+          sessionStorage.setItem(cacheKey, JSON.stringify(recJobs))
+          setRecommendedJobs(recJobs)
+          setIsAIRecommended(true)
         }
       } catch (err) {
-        console.warn('Lỗi khi gợi ý việc làm AI, chuyển sang chế độ dự phòng:', err)
+        // Lỗi 503 hoặc bất kỳ lỗi API: im lặng, giữ nguyên "Việc làm phổ biến"
+        console.warn('[AI Rec] Background worker thất bại, giữ nguyên Việc làm phổ biến:', err)
       }
-
-      // Fallback: dùng lại newestJobs nếu đã có (tránh gọi jobs API lần 3)
-      setIsAIRecommended(false)
-      setRecommendedJobs(prev => {
-        if (prev.length > 0) return prev
-        return [] // sẽ được fill bởi useEffect phía dưới khi newestJobs có dữ liệu
-      })
-      setLoadingRecommended(false)
     }
 
-    // Chạy song song: recommendations + savedJobs (không phụ thuộc nhau)
+    // Chờ newestJobs render xong (100ms) rồi mới chạy background worker
+    const timer = setTimeout(() => {
+      runAiRecommendationsInBackground()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch saved jobs song song với render ban đầu
+  useEffect(() => {
     const fetchSaved = async () => {
       if (!user?.id) {
         setSavedJobIds(new Set())
@@ -196,17 +207,8 @@ const HomePage = () => {
         setSavedJobIds(ids)
       } catch { }
     }
-
-    Promise.all([fetchRecommendations(), fetchSaved()])
+    fetchSaved()
   }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Khi newestJobs load xong mà recommendedJobs vẫn rỗng → dùng newestJobs làm fallback
-  useEffect(() => {
-    if (newestJobs.length > 0 && recommendedJobs.length === 0 && !loadingRecommended) {
-      setIsAIRecommended(false)
-      setRecommendedJobs(newestJobs.slice(0, 6))
-    }
-  }, [newestJobs, loadingRecommended]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Shared Toggle Save Handler
   const handleToggleSave = async (e: React.MouseEvent, job: IJob) => {
