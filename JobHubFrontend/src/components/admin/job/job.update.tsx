@@ -54,20 +54,21 @@ const UpdateJobModal = ({ open, onOpenChange, data, onSuccess }: Props) => {
 
   const currency = Form.useWatch('salaryCurrency', form) ?? 'VND'
 
-  // ── Load companies & skills ──────────────────────────────────────────────
+  // ── Load companies & skills song song khi modal mở ─────────────────────
   useEffect(() => {
     if (!open) return
-
     setCompaniesLoading(true)
-    getCompaniesApi('pageSize=200')
-      .then(res => setCompanies(res.data?.result ?? []))
-      .catch(() => {})
-      .finally(() => setCompaniesLoading(false))
-
-    getSkillsDropdownApi()
-      .then(res => setSkills(res.data ?? []))
-      .catch(() => {})
+    Promise.all([
+      getCompaniesApi('pageSize=200')
+        .then(res => setCompanies(res.data?.result ?? []))
+        .catch(() => {})
+        .finally(() => setCompaniesLoading(false)),
+      getSkillsDropdownApi()
+        .then(res => setSkills(res.data ?? []))
+        .catch(() => {}),
+    ])
   }, [open])
+
 
   // ── Prefill form data ────────────────────────────────────────────────────
   useEffect(() => {
