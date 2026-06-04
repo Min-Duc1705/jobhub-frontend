@@ -64,46 +64,41 @@ const CompanyList = () => {
     }
   }
 
-  // Run ONCE on mount
+  // Run ONCE on mount — fetch paginated list & featured list song song
   useEffect(() => {
     if (initFetched.current) return
     initFetched.current = true
 
-    // Gọi API lấy danh sách công ty trang đầu tiên
     setLoading(true)
+    setLoadingFeatured(true)
+
     const pageParams = new URLSearchParams({
       pageNumber:   '1',
       pageSize:     String(PAGE_SIZE),
       sortBy:       'createdDate',
       isDescending: 'true',
     })
-    getVerifiedCompaniesApi(pageParams.toString())
-      .then(res => {
-        setCompanies(res.data?.result ?? [])
-        setTotal(res.data?.meta?.total ?? 0)
-      })
-      .catch(() => {
-        setCompanies([])
-        setTotal(0)
-      })
-      .finally(() => setLoading(false))
-
-    // Gọi API lấy danh sách công ty nổi bật song song
-    setLoadingFeatured(true)
     const featuredParams = new URLSearchParams({
       pageNumber:   '1',
       pageSize:     String(FEATURED_COUNT),
       sortBy:       'name',
       isDescending: 'false',
     })
-    getVerifiedCompaniesApi(featuredParams.toString())
-      .then(res => {
-        setFeaturedList(res.data?.result ?? [])
-      })
-      .catch(err => {
-        console.error('Failed to fetch featured companies:', err)
-      })
-      .finally(() => setLoadingFeatured(false))
+
+    Promise.all([
+      getVerifiedCompaniesApi(pageParams.toString())
+        .then(res => {
+          setCompanies(res.data?.result ?? [])
+          setTotal(res.data?.meta?.total ?? 0)
+        })
+        .catch(() => { setCompanies([]); setTotal(0) })
+        .finally(() => setLoading(false)),
+
+      getVerifiedCompaniesApi(featuredParams.toString())
+        .then(res => setFeaturedList(res.data?.result ?? []))
+        .catch(err => console.error('Failed to fetch featured companies:', err))
+        .finally(() => setLoadingFeatured(false)),
+    ])
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
