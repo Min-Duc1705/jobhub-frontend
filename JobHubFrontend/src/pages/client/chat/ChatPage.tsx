@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { notification } from 'antd'
 import { useAppSelector } from '../../../redux/hooks'
-import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr'
+import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub'
 import {
   getConversationsApi,
   getChatHistoryApi,
@@ -39,8 +39,8 @@ const ChatPage = () => {
   // Profiles cache (to resolve Guid IDs to names and avatars)
   const [profiles, setProfiles] = useState<Record<string, { name: string; avatar?: string }>>({})
 
-  // SignalR state
-  const [connection, setConnection] = useState<HubConnection | null>(null)
+  // SignalR — dùng singleton connection (không tạo connection riêng)
+  const { connection } = useChatHub(currentUserId || null)
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement | null>(null)
@@ -175,87 +175,54 @@ const ChatPage = () => {
     }
   }, [activeConversation, connection])
 
-  // 3. Connect to SignalR ChatHub
-  useEffect(() => {
-    if (!currentUserId) return
-
-    const token = localStorage.getItem('access_token')
-    const socketUrl = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || 'http://localhost:5008'
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(`${socketUrl}/ws/chat`, {
-        accessTokenFactory: () => token || ''
+  // 3. Lắng nghe ReceiveMessage từ singleton connection
+  useChatHubEvent(connection, 'ReceiveMessage', (msg: IMessageDto) => {
+    const activeConv = activeConversationRef.current
+    if (activeConv && msg.conversationId === activeConv.id) {
+      setMessages(prev => {
+        if (prev.some(m => m.id === msg.id)) return prev
+        return [...prev, msg]
       })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build()
-
-    newConnection.start()
-      .then(() => {
-        console.log('SignalR Connected to ChatHub')
-        setConnection(newConnection)
-      })
-      .catch(err => console.error('SignalR ChatHub connection failed:', err))
-
-    // Handle receiving messages in real-time
-    newConnection.on('ReceiveMessage', (msg: IMessageDto) => {
-      const activeConv = activeConversationRef.current
-      // Check if message belongs to active conversation
-      if (activeConv && msg.conversationId === activeConv.id) {
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev
-          return [...prev, msg]
-        })
-        scrollToBottom()
-
-        // Gửi báo nhận đã đọc nếu đang xem cuộc hội thoại này
-        if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
-          newConnection.invoke('MarkConversationAsRead', activeConv.id, msg.senderId)
-            .catch(err => console.error('Auto mark read error:', err))
-        }
+      scrollToBottom()
+      if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
+        connection?.invoke('MarkConversationAsRead', activeConv.id, msg.senderId)
+          .catch(err => console.error('Auto mark read error:', err))
       }
-
-      // Cập nhật cuộc hội thoại hiển thị ở sidebar
-      setConversations(prev => {
-        const index = prev.findIndex(c => c.id === msg.conversationId)
-        if (index !== -1) {
-          const updated = [...prev]
-          const isCurrentActive = activeConv && activeConv.id === msg.conversationId
-          updated[index] = {
-            ...updated[index],
-            lastMessageContent: msg.content,
-            lastMessageAt: msg.createdAt,
-            unreadCount: isCurrentActive || msg.senderId.toLowerCase() === currentUserId.toLowerCase()
-              ? 0
-              : updated[index].unreadCount + 1
-          }
-          return updated.sort((a, b) => {
-            const dateA = new Date(a.lastMessageAt || a.createdAt).getTime()
-            const dateB = new Date(b.lastMessageAt || b.createdAt).getTime()
-            return dateB - dateA
-          })
-        } else {
-          fetchConversations()
-          return prev
-        }
-      })
-    })
-
-    // Handle real-time read receipt updates
-    newConnection.on('ConversationRead', (data: { conversationId: string; readerId: string }) => {
-      const activeConv = activeConversationRef.current
-      if (activeConv && activeConv.id === data.conversationId) {
-        setMessages(prev => prev.map(m => 
-          m.senderId.toLowerCase() === currentUserId.toLowerCase() ? { ...m, isRead: true } : m
-        ))
-      }
-    })
-
-    return () => {
-      newConnection.stop()
-        .then(() => console.log('SignalR ChatHub disconnected'))
-        .catch(err => console.error('SignalR stop error:', err))
     }
-  }, [currentUserId])
+    setConversations(prev => {
+      const index = prev.findIndex(c => c.id === msg.conversationId)
+      if (index !== -1) {
+        const updated = [...prev]
+        const isCurrentActive = activeConversationRef.current?.id === msg.conversationId
+        updated[index] = {
+          ...updated[index],
+          lastMessageContent: msg.content,
+          lastMessageAt: msg.createdAt,
+          unreadCount: isCurrentActive || msg.senderId.toLowerCase() === currentUserId.toLowerCase()
+            ? 0
+            : updated[index].unreadCount + 1
+        }
+        return updated.sort((a, b) => {
+          const dateA = new Date(a.lastMessageAt || a.createdAt).getTime()
+          const dateB = new Date(b.lastMessageAt || b.createdAt).getTime()
+          return dateB - dateA
+        })
+      } else {
+        fetchConversations()
+        return prev
+      }
+    })
+  })
+
+  // 3b. Lắng nghe ConversationRead từ singleton connection
+  useChatHubEvent(connection, 'ConversationRead', (data: { conversationId: string; readerId: string }) => {
+    const activeConv = activeConversationRef.current
+    if (activeConv && activeConv.id === data.conversationId) {
+      setMessages(prev => prev.map(m =>
+        m.senderId.toLowerCase() === currentUserId.toLowerCase() ? { ...m, isRead: true } : m
+      ))
+    }
+  })
 
   const scrollToBottom = () => {
     setTimeout(() => {

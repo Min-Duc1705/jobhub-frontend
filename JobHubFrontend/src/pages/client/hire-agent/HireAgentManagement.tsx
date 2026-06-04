@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Breadcrumb, Button, Col, Form, Row } from 'antd';
 import { PlusOutlined, RobotOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub';
 import dayjs from 'dayjs';
 
 import { useAppSelector } from '../../../redux/hooks';
@@ -79,89 +79,73 @@ export default function HireAgentManagement() {
   }, [user?.id])
 
 
-  // ── SignalR ───────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!user?.id) return;
-    const token = localStorage.getItem('access_token');
-    const socketUrl = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || 'http://localhost:5008';
+  // ── SignalR (singleton) ────────────────────────────────────────────────────
+  const { connection: chatConnection } = useChatHub(user?.id ?? null);
 
-    const connection = new HubConnectionBuilder()
-      .withUrl(`${socketUrl}/ws/chat`, { accessTokenFactory: () => token || '' })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
-      .build();
-
-    connection.on('ReceiveMessage', (newMsg: IMessageDto) => {
-      // Update active chat window
-      setSelectedConversation((curr) => {
-        if (curr?.conversationId === newMsg.conversationId) {
-          setChatMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            const updated = [...prev, newMsg].sort((a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix());
-            setTimeout(() => {
-              const container = chatBottomRef.current;
-              if (container) {
-                container.scrollTo({
-                  top: container.scrollHeight,
-                  behavior: 'smooth'
-                });
-              }
-            }, 100);
-            return updated;
-          });
-        }
-        return curr;
-      });
-
-      // Update conversations list state
-      setConversations((prevConvs) => {
-        if (!prevConvs.some((c) => c.conversationId === newMsg.conversationId)) return prevConvs;
-        const isSystem = newMsg.content?.startsWith('[HỆ THỐNG]') || newMsg.content?.startsWith('[SYSTEM]');
-        const isScheduling = isSystem && newMsg.content.includes('đặt lịch hẹn phỏng vấn thành công');
-
-        // Deferred server sync
-        setTimeout(() => {
-          if (selectedCampaignRef.current) {
-            getCampaignConversationsApi(selectedCampaignRef.current.id).then((res) => {
-              if (res.data) {
-                setConversations(res.data);
-                setSelectedConversation((curr) => {
-                  if (curr) { const fresh = res.data!.find((c) => c.id === curr.id); if (fresh) return fresh; }
-                  return curr;
-                });
-              }
-            });
-          }
-        }, 1500);
-
-        return prevConvs.map((conv) => {
-          if (conv.conversationId !== newMsg.conversationId) return conv;
-          const updated = { ...conv };
-          if (isScheduling) {
-            updated.status = 'Scheduled';
-            const m = newMsg.content.match(/vào lúc\s+(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2})/);
-            if (m?.[1]) {
-              const [d, mo, y] = m[1].split(' ')[0].split('/');
-              const t = m[1].split(' ')[1];
-              const parsed = dayjs(`${y}-${mo}-${d}T${t}`);
-              if (parsed.isValid()) updated.interviewDate = parsed.toISOString();
+  useChatHubEvent(chatConnection, 'ReceiveMessage', (newMsg: IMessageDto) => {
+    // Update active chat window
+    setSelectedConversation((curr) => {
+      if (curr?.conversationId === newMsg.conversationId) {
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          const updated = [...prev, newMsg].sort((a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix());
+          setTimeout(() => {
+            const container = chatBottomRef.current;
+            if (container) {
+              container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
             }
-            setSelectedConversation((curr) => {
-              if (curr?.conversationId === newMsg.conversationId)
-                return { ...curr, status: 'Scheduled', interviewDate: updated.interviewDate };
-              return curr;
-            });
-          }
+          }, 100);
           return updated;
         });
-      });
+      }
+      return curr;
     });
 
-    connection.start().catch((err) => console.error('SignalR error:', err));
-    return () => { connection.stop(); };
-  }, [user?.id]);
+    // Update conversations list state
+    setConversations((prevConvs) => {
+      if (!prevConvs.some((c) => c.conversationId === newMsg.conversationId)) return prevConvs;
+      const isSystem = newMsg.content?.startsWith('[HỆ THỐNG]') || newMsg.content?.startsWith('[SYSTEM]');
+      const isScheduling = isSystem && newMsg.content.includes('đặt lịch hẹn phỏng vấn thành công');
 
-  // ── Event handlers ────────────────────────────────────────────────────────────
+      // Deferred server sync
+      setTimeout(() => {
+        if (selectedCampaignRef.current) {
+          getCampaignConversationsApi(selectedCampaignRef.current.id).then((res) => {
+            if (res.data) {
+              setConversations(res.data);
+              setSelectedConversation((curr) => {
+                if (curr) { const fresh = res.data!.find((c) => c.id === curr.id); if (fresh) return fresh; }
+                return curr;
+              });
+            }
+          });
+        }
+      }, 1500);
+
+      return prevConvs.map((conv) => {
+        if (conv.conversationId !== newMsg.conversationId) return conv;
+        const updated = { ...conv };
+        if (isScheduling) {
+          updated.status = 'Scheduled';
+          const m = newMsg.content.match(/vào lúc\s+(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2})/);
+          if (m?.[1]) {
+            const [d, mo, y] = m[1].split(' ')[0].split('/');
+            const t = m[1].split(' ')[1];
+            const parsed = dayjs(`${y}-${mo}-${d}T${t}`);
+            if (parsed.isValid()) updated.interviewDate = parsed.toISOString();
+          }
+          setSelectedConversation((curr) => {
+            if (curr?.conversationId === newMsg.conversationId)
+              return { ...curr, status: 'Scheduled', interviewDate: updated.interviewDate };
+            return curr;
+          });
+        }
+        return updated;
+      });
+    });
+  });
+
+
   const handleSelectCampaign = async (campaign: IHireAgentCampaign) => {
     setSelectedCampaign(campaign)
     setSelectedConversation(null)

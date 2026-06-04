@@ -8,6 +8,7 @@ import NotificationDropdown from '../../../components/shared/notification/Notifi
 import type { INotification } from '../../../components/shared/notification/NotificationDropdown'
 import ProfileDropdown from '../../../components/shared/header/ProfileDropdown'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
+import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub'
 import {
   getNotificationsApi,
   markNotificationReadApi,
@@ -99,6 +100,31 @@ const HeaderClient = () => {
   const { totalUnread: chatUnreadCount } = useConversations(isAuthenticated)
   const unreadCount = notifications.filter(n => !n.isRead).length
 
+  // Singleton Chat Hub — chia sẻ connection với FloatingChatWidget, ChatPage
+  const { connection: chatConnection } = useChatHub(isAuthenticated ? user?.id : null)
+
+  // Lắng nghe tin nhắn mới → invalidate conversations cache + hiện toast
+  useChatHubEvent(chatConnection, 'ReceiveMessage', (msg: any) => {
+    if (!user || msg.senderId.toLowerCase() === user.id.toLowerCase()) return
+    invalidateConversationsCache()
+    if (window.location.pathname !== '/chat') {
+      notification.info({
+        message: 'Tin nhắn mới',
+        description: msg.content.length > 60 ? msg.content.substring(0, 60) + '...' : msg.content,
+        placement: 'bottomRight',
+        duration: 4,
+        onClick: () => navigate('/chat'),
+        style: { borderRadius: '10px', borderLeft: '4px solid #52c41a', cursor: 'pointer' }
+      })
+      playNotificationSound()
+    }
+  })
+
+  // Lắng nghe ConversationRead → invalidate cache để cập nhật badge
+  useChatHubEvent(chatConnection, 'ConversationRead', () => {
+    invalidateConversationsCache()
+  })
+
   // Stable notification fetch function
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated || !user) return
@@ -188,53 +214,10 @@ const HeaderClient = () => {
       .then(() => console.log('SignalR Connected to NotificationHub'))
       .catch(err => console.error('SignalR Connection Error:', err))
 
-    // 3. Setup SignalR Chat connection to listen to real-time chat messages
-    const chatConnection = new HubConnectionBuilder()
-      .withUrl(`${socketUrl}/ws/chat`, {
-        accessTokenFactory: () => token || ''
-      })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build()
-
-    chatConnection.on('ReceiveMessage', (msg: any) => {
-      if (msg.senderId.toLowerCase() !== user.id.toLowerCase()) {
-        invalidateConversationsCache()
-
-        // Hiển thị thông báo khi không ở trang chat
-        if (window.location.pathname !== '/chat') {
-          notification.info({
-            message: 'Tin nhắn mới',
-            description: msg.content.length > 60 ? msg.content.substring(0, 60) + '...' : msg.content,
-            placement: 'bottomRight',
-            duration: 4,
-            onClick: () => navigate('/chat'),
-            style: {
-              borderRadius: '10px',
-              borderLeft: '4px solid #52c41a',
-              cursor: 'pointer'
-            }
-          })
-          playNotificationSound()
-        }
-      }
-    })
-
-    chatConnection.on('ConversationRead', () => {
-      invalidateConversationsCache()
-    })
-
-    chatConnection.start()
-      .then(() => console.log('SignalR Connected to ChatHub (Header)'))
-      .catch(err => console.error('SignalR ChatHub Connection Error (Header):', err))
-
     return () => {
       connection.stop()
         .then(() => console.log('SignalR Connection Stopped'))
         .catch(err => console.error('SignalR Stop Error:', err))
-      chatConnection.stop()
-        .then(() => console.log('SignalR Chat Connection Stopped'))
-        .catch(err => console.error('SignalR Chat Stop Error:', err))
     }
   }, [isAuthenticated, user, fetchNotifications])
 

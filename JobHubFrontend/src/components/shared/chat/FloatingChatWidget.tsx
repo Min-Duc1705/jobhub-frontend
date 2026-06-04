@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Avatar, Input, Button, Spin, Popover, List } from 'antd'
 import { message } from '../../../utils/antd'
-import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr'
 import { useAppSelector } from '../../../redux/hooks'
+import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub'
 import {
   getChatHistoryApi,
   sendChatMessageApi,
@@ -84,7 +84,8 @@ const FloatingChatWidget = () => {
   // Dùng shared hook conversations (cache chung với HeaderClient)
   const { conversations: allConversations } = useConversations(!!currentUserId)
 
-  const [connection, setConnection] = useState<HubConnection | null>(null)
+  // Singleton Chat Hub — dùng chung connection với HeaderClient và ChatPage
+  const { connection } = useChatHub(currentUserId || null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<any>(null)
@@ -386,69 +387,33 @@ const FloatingChatWidget = () => {
       .catch(e => console.error('Error invoking MarkConversationAsRead:', e))
   }, [activeConv, isMinimized, connection])
 
-  // 3. Connect to Hub for real-time messages in the floating widget
-  useEffect(() => {
-    if (!activeConv || !currentUserId || location.pathname === '/chat') {
-      if (connection) {
-        connection.stop()
-        setConnection(null)
-      }
-      return
-    }
-
-    const token = localStorage.getItem('access_token')
-    const socketUrl = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || 'http://localhost:5008'
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(`${socketUrl}/ws/chat`, {
-        accessTokenFactory: () => token || ''
-      })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
-      .build()
-
-    newConnection.start()
-      .then(() => {
-        setConnection(newConnection)
-        // Mark read initially
-        newConnection.invoke('MarkConversationAsRead', activeConv.conversationId, activeConv.otherUserId)
+  // 3. Lắng nghe ReceiveMessage từ singleton connection
+  useChatHubEvent(connection, 'ReceiveMessage', (msg: IMessageDto) => {
+    if (!activeConv || msg.conversationId !== activeConv.conversationId) return
+    setMessages(prev => {
+      if (prev.some(m => m.id === msg.id)) return prev
+      return [...prev, msg]
+    })
+    scrollToBottom()
+    if (!isMinimizedRef.current) {
+      if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
+        connection?.invoke('MarkConversationAsRead', activeConv.conversationId, msg.senderId)
           .catch(e => console.error(e))
-      })
-      .catch(err => console.error('Floating chat Hub failed:', err))
-
-    newConnection.on('ReceiveMessage', (msg: IMessageDto) => {
-      if (msg.conversationId === activeConv.conversationId) {
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev
-          return [...prev, msg]
-        })
-        scrollToBottom()
-
-        // Auto mark as read if expanded, else increment local badge on the bubble
-        if (!isMinimizedRef.current) {
-          if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
-            newConnection.invoke('MarkConversationAsRead', activeConv.conversationId, msg.senderId)
-              .catch(e => console.error(e))
-          }
-        } else {
-          if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
-            setUnreadCount(c => c + 1)
-          }
-        }
       }
-    })
-
-    newConnection.on('ConversationRead', (data: { conversationId: string; readerId: string }) => {
-      if (data.conversationId === activeConv.conversationId) {
-        setMessages(prev => prev.map(m =>
-          m.senderId.toLowerCase() === currentUserId.toLowerCase() ? { ...m, isRead: true } : m
-        ))
+    } else {
+      if (msg.senderId.toLowerCase() !== currentUserId.toLowerCase()) {
+        setUnreadCount(c => c + 1)
       }
-    })
-
-    return () => {
-      newConnection.stop()
     }
-  }, [activeConv, location.pathname, currentUserId])
+  })
+
+  // 3b. Lắng nghe ConversationRead từ singleton connection
+  useChatHubEvent(connection, 'ConversationRead', (data: { conversationId: string; readerId: string }) => {
+    if (!activeConv || data.conversationId !== activeConv.conversationId) return
+    setMessages(prev => prev.map(m =>
+      m.senderId.toLowerCase() === currentUserId.toLowerCase() ? { ...m, isRead: true } : m
+    ))
+  })
 
   // 4. Sync unread count từ shared conversations cache (không gọi API thêm)
   useEffect(() => {
