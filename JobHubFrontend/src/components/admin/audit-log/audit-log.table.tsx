@@ -35,8 +35,10 @@ const AuditLogTable = () => {
           } else {
             newAvatars[userId] = ''
           }
-        } catch (err) {
-          console.error(`Không thể lấy avatar cho user ${userId}:`, err)
+        } catch (err: any) {
+          if (err?.response?.status !== 404) {
+            console.error(`Không thể lấy avatar cho user ${userId}:`, err)
+          }
           newAvatars[userId] = ''
         }
       })
