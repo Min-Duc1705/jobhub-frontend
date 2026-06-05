@@ -233,7 +233,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
       setPastedImages([]);
 
       // Update conversation history
-      const nextHistory = [
+      const nextHistory: AssistantMessage[] = [
         ...newHistory,
         { role: 'model', content: response.reply }
       ];
@@ -398,7 +398,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const handleClearSession = async () => {
     try {
       await clearAssistantSession(sessionId);
-      const welcome = [{
+      const welcome: ChatMessage[] = [{
         id: 'welcome_new',
         role: 'assistant',
         content: '🔄 Đã xóa lịch sử hội thoại. Tôi có thể giúp gì cho bạn?',
