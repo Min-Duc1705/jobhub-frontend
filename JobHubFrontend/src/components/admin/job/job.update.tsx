@@ -34,6 +34,32 @@ const JOB_STATUS_OPTIONS = [
   { label: 'Bị khoá', value: 'SUSPENDED' },
 ]
 
+const IT_CATEGORY_OPTIONS = [
+  { label: 'Lập trình / Phát triển phần mềm', value: 'Software Development' },
+  { label: 'Frontend / UI Development', value: 'Frontend Development' },
+  { label: 'Backend Development', value: 'Backend Development' },
+  { label: 'Fullstack Development', value: 'Fullstack Development' },
+  { label: 'Mobile Development (iOS / Android)', value: 'Mobile Development' },
+  { label: 'DevOps / Cloud / Infrastructure', value: 'DevOps & Cloud' },
+  { label: 'Data Engineering / Big Data', value: 'Data Engineering' },
+  { label: 'Data Science / Machine Learning / AI', value: 'Data Science & AI' },
+  { label: 'Cybersecurity / An ninh mạng', value: 'Cybersecurity' },
+  { label: 'QA / Testing / Kiểm thử', value: 'QA & Testing' },
+  { label: 'UI/UX Design / Product Design', value: 'UI/UX Design' },
+  { label: 'Product Management', value: 'Product Management' },
+  { label: 'Business Analysis / BA', value: 'Business Analysis' },
+  { label: 'ERP / SAP / Enterprise Systems', value: 'ERP & Enterprise Systems' },
+  { label: 'Network / System Administration', value: 'Network & Sysadmin' },
+  { label: 'IT Support / Helpdesk', value: 'IT Support' },
+  { label: 'Game Development', value: 'Game Development' },
+  { label: 'Blockchain / Web3', value: 'Blockchain & Web3' },
+  { label: 'Embedded Systems / IoT', value: 'Embedded & IoT' },
+  { label: 'Kỹ thuật & Công nghệ (Khác)', value: 'Engineering' },
+  { label: 'Tiếp thị & Truyền thông', value: 'Marketing' },
+  { label: 'Kinh doanh & Bán hàng', value: 'Sales' },
+  { label: 'Khác', value: 'Other' },
+]
+
 const quillModules = {
   toolbar: [
     ['bold', 'italic', 'underline'],
@@ -208,8 +234,14 @@ const UpdateJobModal = ({ open, onOpenChange, data, onSuccess }: Props) => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item name="category" label={<span style={{ fontWeight: 600 }}>Ngành nghề</span>} rules={[{ required: true, message: 'Vui lòng nhập ngành nghề!' }]}>
-              <Input placeholder="VD: Kỹ thuật, Kinh doanh..." />
+            <Form.Item name="category" label={<span style={{ fontWeight: 600 }}>Ngành nghề</span>} rules={[{ required: true, message: 'Vui lòng chọn ngành nghề!' }]}>
+              <Select
+                options={IT_CATEGORY_OPTIONS}
+                showSearch
+                allowClear
+                placeholder="Chọn ngành nghề..."
+                optionFilterProp="label"
+              />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>

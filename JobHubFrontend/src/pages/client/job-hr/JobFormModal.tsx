@@ -27,6 +27,32 @@ const JOB_TYPE_OPTIONS = (Object.keys(JOB_TYPE_LABEL) as JobType[]).map(k => ({
   label: JOB_TYPE_LABEL[k], value: k,
 }))
 
+const IT_CATEGORY_OPTIONS = [
+  { label: 'Lập trình / Phát triển phần mềm', value: 'Software Development' },
+  { label: 'Frontend / UI Development', value: 'Frontend Development' },
+  { label: 'Backend Development', value: 'Backend Development' },
+  { label: 'Fullstack Development', value: 'Fullstack Development' },
+  { label: 'Mobile Development (iOS / Android)', value: 'Mobile Development' },
+  { label: 'DevOps / Cloud / Infrastructure', value: 'DevOps & Cloud' },
+  { label: 'Data Engineering / Big Data', value: 'Data Engineering' },
+  { label: 'Data Science / Machine Learning / AI', value: 'Data Science & AI' },
+  { label: 'Cybersecurity / An ninh mạng', value: 'Cybersecurity' },
+  { label: 'QA / Testing / Kiểm thử', value: 'QA & Testing' },
+  { label: 'UI/UX Design / Product Design', value: 'UI/UX Design' },
+  { label: 'Product Management', value: 'Product Management' },
+  { label: 'Business Analysis / BA', value: 'Business Analysis' },
+  { label: 'ERP / SAP / Enterprise Systems', value: 'ERP & Enterprise Systems' },
+  { label: 'Network / System Administration', value: 'Network & Sysadmin' },
+  { label: 'IT Support / Helpdesk', value: 'IT Support' },
+  { label: 'Game Development', value: 'Game Development' },
+  { label: 'Blockchain / Web3', value: 'Blockchain & Web3' },
+  { label: 'Embedded Systems / IoT', value: 'Embedded & IoT' },
+  { label: 'Kỹ thuật & Công nghệ (Khác)', value: 'Engineering' },
+  { label: 'Tiếp thị & Truyền thông', value: 'Marketing' },
+  { label: 'Kinh doanh & Bán hàng', value: 'Sales' },
+  { label: 'Khác', value: 'Other' },
+]
+
 
 const quillModules = {
   toolbar: [
@@ -129,6 +155,7 @@ const JobFormModal = ({ open, data, onClose, onSuccess }: Props) => {
         description:    '',
         requirements:   '',
         benefits:       '',
+        startDate:      dayjs(), // Tự fill ngày hiện tại
       })
     }
   }, [open, data])
@@ -237,8 +264,14 @@ const JobFormModal = ({ open, data, onClose, onSuccess }: Props) => {
           <Form.Item name="jobType" label="Hình thức" rules={[{ required: true }]}>
             <Select options={JOB_TYPE_OPTIONS} />
           </Form.Item>
-          <Form.Item name="category" label="Ngành nghề" rules={[{ required: true, message: 'Vui lòng nhập ngành nghề!' }]}>
-            <Input placeholder="VD: Kỹ thuật, Kinh doanh..." />
+          <Form.Item name="category" label="Ngành nghề" rules={[{ required: true, message: 'Vui lòng chọn ngành nghề!' }]}>
+            <Select
+              options={IT_CATEGORY_OPTIONS}
+              showSearch
+              allowClear
+              placeholder="Chọn ngành nghề..."
+              optionFilterProp="label"
+            />
           </Form.Item>
           <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]}>
             <InputNumber min={1} style={{ width: '100%' }} />

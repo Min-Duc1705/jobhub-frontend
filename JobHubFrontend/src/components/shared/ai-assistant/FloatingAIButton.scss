@@ -1,0 +1,117 @@
+.ai-floating-btn {
+  position: fixed;
+  bottom: 28px; // fallback, overridden by inline style
+  right: 28px;
+  z-index: 1100;
+  cursor: pointer;
+  user-select: none;
+  transition: bottom 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &--active .ai-floating-btn-inner {
+    background: linear-gradient(135deg, #5b21b6, #4c1d95);
+    transform: scale(0.95);
+  }
+
+  .ai-floating-btn-inner {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    z-index: 2;
+
+    &:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 8px 30px rgba(124, 58, 237, 0.7);
+    }
+  }
+
+  .ai-floating-pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(124, 58, 237, 0.4);
+    animation: ai-pulse 2s infinite;
+    z-index: 1;
+  }
+
+  @keyframes ai-pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .ai-floating-tooltip {
+    position: absolute;
+    bottom: 64px;
+    right: 0;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    animation: tooltip-appear 0.3s ease;
+    z-index: 3;
+    font-family: 'Inter', -apple-system, sans-serif;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 18px;
+      border: 6px solid transparent;
+      border-top-color: #5b21b6;
+    }
+
+    @keyframes tooltip-appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
+}
+
+.ai-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1098;
+  // Overlay mờ nhẹ, không che hết màn hình khi panel nhỏ
+  background: transparent;
+}
+
+.ai-panel-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 380px;
+  height: 580px;
+  z-index: 1099;
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
+  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: none;
+  animation: panel-pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @keyframes panel-pop-in {
+    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0);        opacity: 1; }
+  }
+
+  @media (max-width: 480px) {
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 85dvh;
+    border-radius: 16px 16px 0 0;
+  }
+}

@@ -114,7 +114,23 @@ const JobHRTable: React.FC<JobHRTableProps> = ({
       dataIndex: 'location',
       key: 'location',
       width: 140,
-      render: (loc: string) => loc ?? '—',
+      ellipsis: { showTitle: false },
+      render: (loc: string) =>
+        loc ? (
+          <Tooltip title={loc} placement="topLeft">
+            <span
+              style={{
+                display: 'block',
+                maxWidth: 130,
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {loc}
+            </span>
+          </Tooltip>
+        ) : '—',
     },
     {
       title: 'Lương',

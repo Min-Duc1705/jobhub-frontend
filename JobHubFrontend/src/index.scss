@@ -49,13 +49,28 @@ img, svg {
   line-height: 1.6;
 }
 
-// ─── Material Symbols Outlined Icon fallback styling ─────────────────
+// ─── Material Symbols Outlined — Global Icon Fix ─────────────────────
+// line-height: 1 triệt tiêu khoảng trắng dọc thừa của icon font
+// vertical-align: -0.125em căn giữa với text inline (chuẩn Google Fonts guide)
 .material-symbols-outlined {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  overflow: hidden;
-  vertical-align: middle;
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
   font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
   user-select: none;
+  flex-shrink: 0;
 }
