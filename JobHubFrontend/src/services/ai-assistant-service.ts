@@ -67,3 +67,23 @@ export const clearAssistantSession = async (sessionId: string): Promise<void> =>
     headers: getHeaders(sessionId),
   });
 };
+
+export const importFileToAssistant = async (
+  file: File,
+  importType: 'users' | 'skills' | 'companies' | 'jobs'
+): Promise<any> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axios.post(
+    `${API_BASE}/api/v1/assistant/import?import_type=${importType}`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 120000,
+    }
+  );
+  return response.data;
+};

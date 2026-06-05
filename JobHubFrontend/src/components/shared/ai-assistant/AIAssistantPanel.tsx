@@ -17,6 +17,7 @@ import {
   uploadFileToAssistant,
   confirmAssistantAction,
   clearAssistantSession,
+  importFileToAssistant,
 } from '../../../services/ai-assistant-service';
 import type { AssistantMessage, ActionItem } from '../../../types/assistant';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +36,12 @@ interface ChatMessage {
   suggestions?: string[];
   isLoading?: boolean;
   error?: boolean;
+  importAction?: {
+    import_type: 'users' | 'skills' | 'companies' | 'jobs';
+    label: string;
+    upload_endpoint: string;
+    accepted_formats: string[];
+  };
 }
 
 interface AIAssistantPanelProps {
@@ -112,6 +119,8 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const [pendingFileData, setPendingFileData] = useState<{ imageBase64?: string; fileContent?: string; fileName?: string } | null>(null);
   // Multiple pasted images support
   const [pastedImages, setPastedImages] = useState<Array<{ dataUrl: string; base64: string }>>([]);
+  // Import state: track which messageId is currently uploading
+  const [importingMsgId, setImportingMsgId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileUploadRef = useRef<any>(null);
@@ -290,6 +299,30 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
             message.error(navAction.data.message || 'Bạn không có quyền truy cập trang này.');
           }
         }
+
+        // ── Xử lý import_required — gắn importAction vào message cuối ────────
+        const importAction = response.actions_taken.find(
+          (act: any) => act.data?.status === 'import_required'
+        );
+        if (importAction?.data) {
+          const d = importAction.data;
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (!last) return prev;
+            const updated = {
+              ...last,
+              importAction: {
+                import_type: d.import_type,
+                label: d.label,
+                upload_endpoint: d.upload_endpoint,
+                accepted_formats: d.accepted_formats,
+              },
+            };
+            const next = [...prev.slice(0, -1), updated];
+            localStorage.setItem(`ai_messages_${sessionId}`, JSON.stringify(next));
+            return next;
+          });
+        }
       }
 
     } catch (err: any) {
@@ -424,6 +457,54 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const formatTime = (date: Date) =>
     date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
+  // ── Import handler ──────────────────────────────────────────────────────────
+  const handleImportFileSelect = async (
+    file: File,
+    msgId: string,
+    importType: 'users' | 'skills' | 'companies' | 'jobs'
+  ) => {
+    setImportingMsgId(msgId);
+    try {
+      message.loading({ content: `Đang import ${importType}...`, key: 'import', duration: 0 });
+      const result = await importFileToAssistant(file, importType);
+      message.destroy('import');
+
+      const d = result.data || {};
+      const total   = d.total ?? '?';
+      const success = d.success_count ?? total;
+      const failed  = d.failed_count ?? 0;
+      const details = d.details?.length
+        ? `\n\n**Lỗi:**\n${(d.details as any[]).slice(0, 5).map((e: any) => `- ${e}`).join('\n')}`
+        : '';
+
+      addMessage({
+        role: 'assistant',
+        content:
+          `✅ **Import ${importType} hoàn tất!**\n` +
+          `- 📦 Tổng: **${total}** bản ghi\n` +
+          `- ✔️ Thành công: **${success}**\n` +
+          `- ❌ Thất bại: **${failed}**` +
+          details,
+      });
+
+      // Remove importAction from the original message
+      setMessages(prev => prev.map(m =>
+        m.id === msgId ? { ...m, importAction: undefined } : m
+      ));
+    } catch (err: any) {
+      message.destroy('import');
+      const detail = err?.response?.data?.detail || err?.message || 'Lỗi không xác định';
+      addMessage({
+        role: 'assistant',
+        content: `❌ **Import thất bại:** ${detail}`,
+        error: true,
+      });
+    } finally {
+      setImportingMsgId(null);
+    }
+    return false; // prevent ant Upload auto-upload
+  };
+
   const renderMessageContent = (msg: ChatMessage) => {
     if (msg.isLoading) {
       return (
@@ -534,6 +615,43 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
                     >
                       Hủy
                     </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Import Card — hiển thị khi AI yêu cầu upload file import ── */}
+              {msg.importAction && (
+                <div className="ai-import-card">
+                  <div className="ai-import-card__header">
+                    <span className="material-symbols-outlined ai-import-icon">upload_file</span>
+                    <div>
+                      <strong>Import {msg.importAction.label}</strong>
+                      <p>Chọn file Excel hoặc CSV để AI thực hiện import</p>
+                    </div>
+                    <Tag color="blue">Admin</Tag>
+                  </div>
+                  <div className="ai-import-card__body">
+                    <Upload
+                      beforeUpload={(file) => {
+                        handleImportFileSelect(file, msg.id, msg.importAction!.import_type);
+                        return false;
+                      }}
+                      showUploadList={false}
+                      accept={msg.importAction.accepted_formats.join(',')}
+                      disabled={importingMsgId === msg.id}
+                    >
+                      <Button
+                        type="primary"
+                        icon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>folder_open</span>}
+                        loading={importingMsgId === msg.id}
+                        className="ai-import-btn"
+                      >
+                        {importingMsgId === msg.id ? 'Đang import...' : 'Chọn file để import'}
+                      </Button>
+                    </Upload>
+                    <span className="ai-import-hint">
+                      Hỗ trợ: {msg.importAction.accepted_formats.join(', ')}
+                    </span>
                   </div>
                 </div>
               )}

@@ -23,3 +23,12 @@ export const deleteUserApi = (id: string): Promise<ApiResponse<null>> =>
 /** Đặt lại mật khẩu */
 export const resetUserPasswordApi = (id: string, data: ResetPasswordBody): Promise<ApiResponse<null>> =>
   axios.patch(`/api/v1/users/${id}/reset-password`, data)
+
+/** Import users từ Excel/CSV */
+export const importUsersApi = (file: File): Promise<ApiResponse<any>> => {
+  const form = new FormData()
+  form.append('file', file)
+  return axios.post('/api/v1/users/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}

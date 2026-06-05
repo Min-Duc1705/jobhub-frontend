@@ -67,3 +67,12 @@ export const updateSkillApi = (id: string, data: SkillBody): Promise<ApiResponse
 /** DELETE /api/v1/skills/{id} — Admin xóa kỹ năng */
 export const deleteSkillApi = (id: string): Promise<ApiResponse<null>> =>
   axios.delete(`/api/v1/skills/${id}`)
+
+/** POST /api/v1/skills/import — Admin import kỹ năng từ Excel/CSV */
+export const importSkillsApi = (file: File): Promise<ApiResponse<any>> => {
+  const form = new FormData()
+  form.append('file', file)
+  return axios.post('/api/v1/skills/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}

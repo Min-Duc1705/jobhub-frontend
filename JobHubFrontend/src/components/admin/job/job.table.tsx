@@ -18,7 +18,9 @@ import {
   JOB_STATUS_LABEL, JOB_STATUS_COLOR,
   JOB_LEVEL_LABEL, JOB_TYPE_LABEL,
 } from '../../../types/job'
-import { getAdminJobsApi, deleteJobApi } from '../../../services/job-service'
+import { getAdminJobsApi, deleteJobApi, importJobsApi } from '../../../services/job-service'
+import ImportModal from '../../shared/common/ImportModal'
+import { FileExcelOutlined } from '@ant-design/icons'
 import { getCompaniesApi } from '../../../services/company-service'
 import type { ICompany } from '../../../types/company'
 
@@ -36,6 +38,7 @@ const JobTable = () => {
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openUpdate, setOpenUpdate] = useState(false)
+  const [openImport, setOpenImport] = useState(false)
   const [openDetail, setOpenDetail] = useState(false)
   const [editRow,    setEditRow]    = useState<IJob | null>(null)
 
@@ -283,6 +286,15 @@ const JobTable = () => {
         cardBordered
         headerTitle="Danh sách Tin tuyển dụng"
         toolBarRender={() => [
+          <Access key="import" permission={All_PERMISSIONS.JOBS.CREATE} hideChildren={true}>
+            <Button
+              type="default"
+              icon={<FileExcelOutlined />}
+              onClick={() => setOpenImport(true)}
+            >
+              Import Excel/CSV
+            </Button>
+          </Access>,
           <Access key="create" permission={All_PERMISSIONS.JOBS.CREATE} hideChildren={true}>
             <Button
               type="primary"
@@ -337,6 +349,23 @@ const JobTable = () => {
         open={openDetail}
         onClose={() => { setOpenDetail(false); setEditRow(null) }}
         data={editRow}
+      />
+
+      <ImportModal
+        open={openImport}
+        onOpenChange={setOpenImport}
+        title="Import danh sách tin tuyển dụng"
+        onImport={importJobsApi}
+        templateUrl="/templates/jobs_import_template.xlsx"
+        templateName="jobs_import_template.xlsx"
+        onSuccess={() => {
+          notification.success({
+            message: 'Thành công',
+            description: 'Import danh sách tin tuyển dụng thành công',
+            duration: 2,
+          })
+          reload()
+        }}
       />
     </Access>
   )

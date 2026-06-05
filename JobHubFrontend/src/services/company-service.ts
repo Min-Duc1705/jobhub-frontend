@@ -31,6 +31,15 @@ export const uploadCompanyImageApi = (file: File): Promise<ApiResponse<{ url: st
   })
 }
 
+/** Import companies từ Excel/CSV */
+export const importCompaniesApi = (file: File): Promise<ApiResponse<any>> => {
+  const form = new FormData()
+  form.append('file', file)
+  return axios.post('/api/v1/companies/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
 // ── Public APIs — Employer tự đăng ký (không cần quyền Admin) ────────────────
 
 /** GET /api/v1/companies/public/register — Employer tự đăng ký công ty, IsVerified=false */

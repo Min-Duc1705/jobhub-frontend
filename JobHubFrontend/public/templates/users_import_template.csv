@@ -1,0 +1,3 @@
+Username,Email,Password,RoleName
+hr_example,hr1@test.com,Password@123,HR
+candidate_example,candidate1@test.com,Password@123,CANDIDATE

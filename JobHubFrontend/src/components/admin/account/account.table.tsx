@@ -14,7 +14,9 @@ import CreateAccountModal from './account.create'
 import UpdateAccountModal from './account.update'
 import type { IUser, UserStatus } from '../../../types/account'
 import { USER_STATUS_LABEL, USER_STATUS_COLOR } from '../../../types/account'
-import { getUsersApi, deleteUserApi } from '../../../services/account-service'
+import { getUsersApi, deleteUserApi, importUsersApi } from '../../../services/account-service'
+import ImportModal from '../../shared/common/ImportModal'
+import { FileExcelOutlined } from '@ant-design/icons'
 
 const AccountTable = () => {
   const actionRef = useRef<ActionType | null>(null)
@@ -23,6 +25,7 @@ const AccountTable = () => {
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openUpdate, setOpenUpdate] = useState(false)
+  const [openImport, setOpenImport] = useState(false)
   const [editRow,    setEditRow]    = useState<IUser | null>(null)
 
   const reload = () => actionRef.current?.reload()
@@ -178,6 +181,15 @@ const AccountTable = () => {
         cardBordered
         headerTitle="Danh sách Tài khoản hệ thống"
         toolBarRender={() => [
+          <Access key="import" permission={All_PERMISSIONS.USERS.CREATE} hideChildren={true}>
+            <Button
+              type="default"
+              icon={<FileExcelOutlined />}
+              onClick={() => setOpenImport(true)}
+            >
+              Import Excel/CSV
+            </Button>
+          </Access>,
           <Access key="create" permission={All_PERMISSIONS.USERS.CREATE} hideChildren={true}>
             <Button
               type="primary"
@@ -222,6 +234,22 @@ const AccountTable = () => {
         data={editRow}
         onOpenChange={setOpenUpdate}
         onSuccess={() => { setOpenUpdate(false); setEditRow(null); reload() }}
+      />
+      <ImportModal
+        open={openImport}
+        onOpenChange={setOpenImport}
+        title="Import danh sách tài khoản"
+        onImport={importUsersApi}
+        templateUrl="/templates/users_import_template.xlsx"
+        templateName="users_import_template.xlsx"
+        onSuccess={() => {
+          notification.success({
+            message: 'Thành công',
+            description: 'Import danh sách tài khoản thành công',
+            duration: 2,
+          })
+          reload()
+        }}
       />
     </Access>
   )

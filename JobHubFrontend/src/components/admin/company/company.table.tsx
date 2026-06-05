@@ -13,7 +13,9 @@ import { ADMIN_BREADCRUMBS } from '../../../types/breadcum'
 import CreateCompanyModal  from './company.create'
 import UpdateCompanyModal  from './company.update'
 import type { ICompany }  from '../../../types/company'
-import { deleteCompanyApi, getCompaniesApi, verifyCompanyApi } from '../../../services/company-service'
+import { deleteCompanyApi, getCompaniesApi, verifyCompanyApi, importCompaniesApi } from '../../../services/company-service'
+import ImportModal from '../../shared/common/ImportModal'
+import { FileExcelOutlined } from '@ant-design/icons'
 
 const SIZE_LABEL: Record<string, string> = {
   STARTUP:    'Startup (<50)',
@@ -34,6 +36,7 @@ const CompanyTable = () => {
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openUpdate, setOpenUpdate] = useState(false)
+  const [openImport, setOpenImport] = useState(false)
   const [editRow,    setEditRow]    = useState<ICompany | null>(null)
 
   const reload = () => actionRef.current?.reload()
@@ -256,6 +259,15 @@ const CompanyTable = () => {
         cardBordered
         headerTitle="Danh sách Công ty"
         toolBarRender={() => [
+          <Access key="import" permission={All_PERMISSIONS.COMPANIES.CREATE} hideChildren={true}>
+            <Button
+              type="default"
+              icon={<FileExcelOutlined />}
+              onClick={() => setOpenImport(true)}
+            >
+              Import Excel/CSV
+            </Button>
+          </Access>,
           <Access key="create" permission={All_PERMISSIONS.COMPANIES.CREATE} hideChildren={true}>
             <Button
               type="primary"
@@ -300,6 +312,22 @@ const CompanyTable = () => {
         onOpenChange={setOpenUpdate}
         data={editRow}
         onSuccess={() => { setOpenUpdate(false); setEditRow(null); reload() }}
+      />
+      <ImportModal
+        open={openImport}
+        onOpenChange={setOpenImport}
+        title="Import danh sách công ty"
+        onImport={importCompaniesApi}
+        templateUrl="/templates/companies_import_template.xlsx"
+        templateName="companies_import_template.xlsx"
+        onSuccess={() => {
+          notification.success({
+            message: 'Thành công',
+            description: 'Import danh sách công ty thành công',
+            duration: 2,
+          })
+          reload()
+        }}
       />
     </Access>
   )

@@ -51,3 +51,12 @@ export const unsaveJobApi = (jobId: string): Promise<ApiResponse<null>> =>
 /** Lấy thống kê ngành nghề tin tuyển dụng */
 export const getJobCategoryStatsApi = (): Promise<ApiResponse<{ name: string, count: number, percentage: number }[]>> =>
   axios.get('/api/v1/jobs/stats/categories')
+
+/** Import jobs từ Excel/CSV (Admin) */
+export const importJobsApi = (file: File): Promise<ApiResponse<any>> => {
+  const form = new FormData()
+  form.append('file', file)
+  return axios.post('/api/v1/admin/jobs/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}

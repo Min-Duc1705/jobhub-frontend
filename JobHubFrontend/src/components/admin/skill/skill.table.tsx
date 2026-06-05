@@ -13,7 +13,9 @@ import { ADMIN_BREADCRUMBS } from '../../../types/breadcum'
 import CreateSkillModal from './skill.create'
 import UpdateSkillModal from './skill.update'
 import type { ISkill }  from '../../../types/skill'
-import { deleteSkillApi, getSkillsApi } from '../../../services/profile-service'
+import { deleteSkillApi, getSkillsApi, importSkillsApi } from '../../../services/profile-service'
+import ImportModal from '../../shared/common/ImportModal'
+import { FileExcelOutlined } from '@ant-design/icons'
 
 const SkillTable = () => {
   const actionRef = useRef<ActionType | null>(null)
@@ -22,6 +24,7 @@ const SkillTable = () => {
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openUpdate, setOpenUpdate] = useState(false)
+  const [openImport, setOpenImport] = useState(false)
   const [editRow,    setEditRow]    = useState<ISkill | null>(null)
 
   const reload = () => actionRef.current?.reload()
@@ -138,6 +141,15 @@ const SkillTable = () => {
         cardBordered
         headerTitle="Danh sách Kỹ năng"
         toolBarRender={() => [
+          <Access key="import" permission={All_PERMISSIONS.SKILLS.CREATE} hideChildren={true}>
+            <Button
+              type="default"
+              icon={<FileExcelOutlined />}
+              onClick={() => setOpenImport(true)}
+            >
+              Import Excel/CSV
+            </Button>
+          </Access>,
           <Access key="create" permission={All_PERMISSIONS.SKILLS.CREATE} hideChildren={true}>
             <Button
               type="primary"
@@ -182,6 +194,22 @@ const SkillTable = () => {
         onOpenChange={setOpenUpdate}
         data={editRow}
         onSuccess={() => { setOpenUpdate(false); setEditRow(null); reload() }}
+      />
+      <ImportModal
+        open={openImport}
+        onOpenChange={setOpenImport}
+        title="Import danh sách kỹ năng"
+        onImport={importSkillsApi}
+        templateUrl="/templates/skills_import_template.xlsx"
+        templateName="skills_import_template.xlsx"
+        onSuccess={() => {
+          notification.success({
+            message: 'Thành công',
+            description: 'Import danh sách kỹ năng thành công',
+            duration: 2,
+          })
+          reload()
+        }}
       />
     </Access>
   )

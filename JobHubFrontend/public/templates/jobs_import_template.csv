@@ -1,0 +1,3 @@
+Name,CompanyName,HREmail,Location,SalaryMin,SalaryMax,SalaryCurrency,IsSalaryNegotiable,Quantity,Level,JobType,ExperienceRequired,Description,Requirements,Benefits,Category,Skills
+React Developer,Viettel Group,hr1@test.com,Hà Nội,1000,2000,USD,FALSE,3,JUNIOR,FULL_TIME,1-2 years,Mô tả công việc...,Yêu cầu ứng viên...,Quyền lợi...,IT,"React, JavaScript, CSS"
+Java Backend Engineer,FPT Software,hr1@test.com,Hồ Chí Minh,1500,3000,USD,TRUE,5,SENIOR,FULL_TIME,3-5 years,Mô tả Java...,Yêu cầu Java...,Quyền lợi...,IT,"Java, Spring Boot, SQL"
