@@ -106,6 +106,40 @@ function getDefaultWelcomeMessage(): ChatMessage[] {
   }];
 }
 
+type AssistantImportType = 'users' | 'skills' | 'companies' | 'jobs';
+
+function isImportFile(file: File): boolean {
+  return /\.(xlsx|xls|csv)$/i.test(file.name);
+}
+
+function detectImportType(text?: string, fileName?: string): AssistantImportType | null {
+  const source = `${text || ''} ${fileName || ''}`.toLowerCase();
+  if (!/(import|upload|nhap|nhập|tai len|tải lên)/i.test(source)) return null;
+  if (/(skill|skills|ky nang|kỹ năng)/i.test(source)) return 'skills';
+  if (/(user|users|account|accounts|tai khoan|tài khoản|nguoi dung|người dùng)/i.test(source)) return 'users';
+  if (/(company|companies|cong ty|công ty)/i.test(source)) return 'companies';
+  if (/(job|jobs|tin tuyen dung|tin tuyển dụng|viec lam|việc làm)/i.test(source)) return 'jobs';
+  return null;
+}
+
+function buildImportSummary(result: any, importType: AssistantImportType): string {
+  const d = result?.data || {};
+  const total = d.total ?? '?';
+  const success = d.success_count ?? total;
+  const failed = d.failed_count ?? 0;
+  const details = d.details?.length
+    ? `\n\n**Lỗi:**\n${(d.details as any[]).slice(0, 5).map((e: any) => `- ${typeof e === 'string' ? e : JSON.stringify(e)}`).join('\n')}`
+    : '';
+
+  return (
+    `✅ **Import ${importType} hoàn tất!**\n` +
+    `- 📦 Tổng: **${total}** bản ghi\n` +
+    `- ✔️ Thành công: **${success}**\n` +
+    `- ❌ Thất bại: **${failed}**` +
+    details
+  );
+}
+
 export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const { user } = useAppSelector((state: any) => state.auth);
   const userId = user?.id || user?.email || 'guest';
@@ -116,7 +150,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<AssistantMessage[]>([]);
-  const [pendingFileData, setPendingFileData] = useState<{ imageBase64?: string; fileContent?: string; fileName?: string } | null>(null);
+  const [pendingFileData, setPendingFileData] = useState<{ imageBase64?: string; fileContent?: string; fileName?: string; rawFile?: File } | null>(null);
   // Multiple pasted images support
   const [pastedImages, setPastedImages] = useState<Array<{ dataUrl: string; base64: string }>>([]);
   // Import state: track which messageId is currently uploading
@@ -202,6 +236,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
     if (isLoading) return;
 
     const userContent = text;
+    const pendingImportType = detectImportType(text, pendingFileData?.fileName);
 
     addMessage({
       role: 'user',
@@ -221,6 +256,45 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
       timestamp: new Date(),
       isLoading: true,
     }]);
+
+    if (pendingFileData?.rawFile && pendingImportType) {
+      try {
+        message.loading({ content: `Đang import ${pendingImportType}...`, key: 'import', duration: 0 });
+        const result = await importFileToAssistant(pendingFileData.rawFile, pendingImportType);
+        message.destroy('import');
+
+        setPendingFileData(null);
+        setMessages(prev => {
+          const newMsgs = prev.filter(m => m.id !== loadingId);
+          const next = [...newMsgs, {
+            id: `ai_${Date.now()}`,
+            role: 'assistant' as const,
+            content: buildImportSummary(result, pendingImportType),
+            timestamp: new Date(),
+          }];
+          localStorage.setItem(`ai_messages_${sessionId}`, JSON.stringify(next));
+          return next;
+        });
+      } catch (err: any) {
+        message.destroy('import');
+        const detail = err?.response?.data?.detail || err?.message || 'Lỗi không xác định';
+        setMessages(prev => {
+          const newMsgs = prev.filter(m => m.id !== loadingId);
+          const next = [...newMsgs, {
+            id: `err_${Date.now()}`,
+            role: 'assistant' as const,
+            content: `❌ **Import thất bại:** ${detail}`,
+            timestamp: new Date(),
+            error: true,
+          }];
+          localStorage.setItem(`ai_messages_${sessionId}`, JSON.stringify(next));
+          return next;
+        });
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
 
     const newHistory: AssistantMessage[] = [
       ...conversationHistory,
@@ -386,6 +460,22 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
 
   const handleFileUpload = async (file: File) => {
     try {
+      const userRole = user?.role?.name ?? '';
+      const isAdmin = userRole.toUpperCase() === 'ADMIN';
+
+      if (isImportFile(file) && isAdmin) {
+        setPendingFileData({
+          rawFile: file,
+          fileName: file.name,
+        });
+        addMessage({
+          role: 'system' as any,
+          content: `📎 Đã đính kèm file **${file.name}**. Hãy gõ **import skill**, **import user**, **import company** hoặc **import job** để AI import trực tiếp.`,
+        });
+        message.success('Đã đính kèm file import!');
+        return false;
+      }
+
       message.loading('Đang phân tích file...', 1.5);
       const result = await uploadFileToAssistant(file);
       const data = result.data;
@@ -750,7 +840,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
                 ref={fileUploadRef}
                 beforeUpload={handleFileUpload}
                 showUploadList={false}
-                accept="image/*,.pdf,.txt,.doc,.docx"
+                accept="image/*,.pdf,.txt,.doc,.docx,.xlsx,.xls,.csv"
               >
                 <Tooltip title="Đính kèm file hoặc ảnh JD">
                   <Button
