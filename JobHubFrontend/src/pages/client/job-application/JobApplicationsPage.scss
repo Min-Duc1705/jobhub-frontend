@@ -227,11 +227,18 @@
   color: #fff;
   flex-shrink: 0;
 }
+.jap-candidate-info {
+  min-width: 0;
+  flex: 1;
+}
 .jap-candidate-name {
   font-size: 16px;
   font-weight: 700;
   color: #1b1c1c;
   margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .jap-candidate-title {
   font-size: 13px;

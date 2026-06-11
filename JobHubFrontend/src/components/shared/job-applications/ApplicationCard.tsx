@@ -74,8 +74,8 @@ const ApplicationCard = ({ application, onView, onUpdateStatus, downloadUrl, aiR
       {/* ── LEFT: identity ── */}
       <div className="jap-card-left">
         <div className="jap-avatar-fallback">{initial}</div>
-        <div>
-          <h3 className="jap-candidate-name">{candidateName}</h3>
+        <div className="jap-candidate-info">
+          <h3 className="jap-candidate-name" title={candidateName}>{candidateName}</h3>
           <p className="jap-candidate-title">{resume?.isOnlineCv ? 'Online CV' : 'File CV'}</p>
           <div className="jap-candidate-location">
             <span className="material-symbols-outlined">person</span>
