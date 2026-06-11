@@ -365,7 +365,7 @@ const ProfileSettings = () => {
         summary:           values.summary,
         yearsOfExperience: values.yearsOfExperience ?? null,
         expectedSalary:    values.expectedSalary ?? null,
-        jobSearchStatus:   values.jobSearchStatus ?? null,
+        jobSearchStatus:   isEmployer ? null : (values.jobSearchStatus ?? null),
         position:          values.position ?? null,
         companyId:         isEmployer ? (values.companyId || null) : null,
       }
@@ -1291,25 +1291,27 @@ const ProfileSettings = () => {
             </section>
 
             {/* Privacy / Job search status */}
-            <section className="ps-card">
-              <div className="ps-card__header">
-                <span className="material-symbols-outlined">visibility</span>
-                <h2>Quyền riêng tư</h2>
-              </div>
-              <div className="ps-privacy">
-                <p className="ps-privacy__label">Trạng thái tìm việc</p>
-                <Form.Item name="jobSearchStatus" style={{ marginBottom: 8 }}>
-                  <Select size="large" placeholder="Chọn trạng thái">
-                    {JOB_STATUS_OPTIONS.map(o =>
-                      <Option key={o.value} value={o.value}>{o.label}</Option>
-                    )}
-                  </Select>
-                </Form.Item>
-                <p className="ps-privacy__tip">
-                  Giúp hồ sơ của bạn xuất hiện đúng với nhà tuyển dụng phù hợp.
-                </p>
-              </div>
-            </section>
+            {!isEmployer && (
+              <section className="ps-card">
+                <div className="ps-card__header">
+                  <span className="material-symbols-outlined">visibility</span>
+                  <h2>Quyền riêng tư</h2>
+                </div>
+                <div className="ps-privacy">
+                  <p className="ps-privacy__label">Trạng thái tìm việc</p>
+                  <Form.Item name="jobSearchStatus" style={{ marginBottom: 8 }}>
+                    <Select size="large" placeholder="Chọn trạng thái">
+                      {JOB_STATUS_OPTIONS.map(o =>
+                        <Option key={o.value} value={o.value}>{o.label}</Option>
+                      )}
+                    </Select>
+                  </Form.Item>
+                  <p className="ps-privacy__tip">
+                    Giúp hồ sơ của bạn xuất hiện đúng với nhà tuyển dụng phù hợp.
+                  </p>
+                </div>
+              </section>
+            )}
 
             {/* Profile type badge */}
             <section className="ps-card ps-card--type">
