@@ -50,3 +50,16 @@ export interface IBroadcastNotificationRequest {
 /** Gửi thông báo broadcast đến tất cả người dùng hoặc nhóm (HR, Candidate) */
 export const broadcastNotificationApi = (data: IBroadcastNotificationRequest): Promise<ApiResponse<{ success: boolean }>> =>
   axios.post('/api/v1/users/notifications/broadcast', data)
+
+export interface ITelegramBindingDto {
+  isConnected: boolean
+  username?: string | null
+}
+
+/** Lấy trạng thái liên kết Telegram của user */
+export const getTelegramBindingApi = (): Promise<ApiResponse<ITelegramBindingDto>> =>
+  axios.get('/api/v1/telegram/binding')
+
+/** Hủy liên kết Telegram */
+export const deleteTelegramBindingApi = (): Promise<ApiResponse<{ success: boolean }>> =>
+  axios.delete('/api/v1/telegram/binding')

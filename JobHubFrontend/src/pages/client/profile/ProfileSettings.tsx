@@ -29,6 +29,7 @@ import type { ICompany, CompanyBody } from '../../../types/company'
 import { useProvinces } from '../../../hooks/useProvinces'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
+import { getTelegramBindingApi, deleteTelegramBindingApi } from '../../../services/notification-service'
 import './ProfileSettings.scss'
 
 const { TextArea } = Input
@@ -160,6 +161,10 @@ const ProfileSettings = () => {
   // ── Notifications (UI only, extend later)
   const [notif, setNotif] = useState({ newJobs: true, recruiter: true, newsletter: false })
 
+  // ── Telegram Bot states
+  const [telegramLoading, setTelegramLoading] = useState(false)
+  const [telegramBinding, setTelegramBinding] = useState<{ isConnected: boolean; username?: string | null } | null>(null)
+
   // ── Province / Ward (shared hook — cache toàn module, chỉ fetch 1 lần) ──────────────────────
   const { provinceOptions, getWards } = useProvinces()
   const [wardOptions,  setWardOptions]  = useState<{ value: string; label: string }[]>([])
@@ -278,6 +283,16 @@ const ProfileSettings = () => {
 
       // Available skills to choose from (loại trừ đã có)
       setSkillOptions(skillsRes.data ?? [])
+
+      // Fetch Telegram status
+      try {
+        const tgRes = await getTelegramBindingApi()
+        if (tgRes && tgRes.data) {
+          setTelegramBinding(tgRes.data)
+        }
+      } catch (err) {
+        console.error("Failed to load Telegram binding", err)
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Không thể tải hồ sơ. Vui lòng thử lại.'
       setFetchError(msg)
@@ -567,6 +582,26 @@ const ProfileSettings = () => {
       })
     } finally {
       setIsChangingPassword(false)
+    }
+  }
+
+  const handleConnectTelegram = () => {
+    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'JobHub_Control_Bot'
+    window.open(`https://t.me/${botUsername}?start=BIND_${user?.id}`, '_blank')
+  }
+
+  const handleDisconnectTelegram = async () => {
+    try {
+      setTelegramLoading(true)
+      const res = await deleteTelegramBindingApi()
+      if (res && res.data?.success) {
+        message.success('Đã hủy liên kết Telegram thành công.')
+        setTelegramBinding({ isConnected: false })
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Hủy liên kết Telegram thất bại.')
+    } finally {
+      setTelegramLoading(false)
     }
   }
 
@@ -1057,6 +1092,32 @@ const ProfileSettings = () => {
                   <p className="ps-security-item__sub">Cập nhật định kỳ để bảo vệ tài khoản.</p>
                 </div>
                 <Button type="link" className="ps-security-item__action" onClick={() => setChangePasswordVisible(true)}>Đổi mật khẩu</Button>
+              </div>
+
+              <div className="ps-security-item">
+                <div className="ps-security-item__icon" style={{ backgroundColor: 'rgba(0, 136, 204, 0.08)' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#0088cc' }}>send</span>
+                </div>
+                <div>
+                  <p className="ps-security-item__title">
+                    Thông báo Telegram {telegramBinding?.isConnected && <span style={{ color: '#52c41a', fontSize: 12, fontWeight: 'normal' }}>(Đã liên kết @{telegramBinding.username})</span>}
+                  </p>
+                  <p className="ps-security-item__sub">Nhận thông báo đẩy và điều khiển ứng dụng qua Telegram.</p>
+                </div>
+                {telegramBinding?.isConnected ? (
+                  <Popconfirm
+                    title="Xác nhận hủy liên kết"
+                    description="Bạn chắc chắn muốn hủy liên kết tài khoản với Telegram?"
+                    onConfirm={handleDisconnectTelegram}
+                    okText="Hủy liên kết"
+                    cancelText="Hủy"
+                    okButtonProps={{ danger: true, loading: telegramLoading }}
+                  >
+                    <Button type="link" danger className="ps-security-item__action">Hủy kết nối</Button>
+                  </Popconfirm>
+                ) : (
+                  <Button type="link" className="ps-security-item__action" onClick={handleConnectTelegram} style={{ color: '#0088cc' }}>Kết nối ngay</Button>
+                )}
               </div>
 
               <div className="ps-social-section">
