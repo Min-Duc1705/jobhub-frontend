@@ -104,6 +104,17 @@ const ChatPage = () => {
 
   // Fetch a user profile and cache it
   const fetchUserProfile = async (userId: string) => {
+    if (userId.toLowerCase() === 'ai_assistant') {
+      setProfiles((prev) => ({
+        ...prev,
+        [userId]: {
+          name: 'JobHub AI Assistant',
+          avatar: undefined
+        }
+      }))
+      return
+    }
+
     try {
       const res = await getCustomerByIdApi(userId)
       if (res && res.data) {

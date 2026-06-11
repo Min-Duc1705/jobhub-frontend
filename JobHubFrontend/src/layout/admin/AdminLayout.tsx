@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminHeader from '../../components/shared/admin/AdminHeader';
 import AdminSidebar from '../../components/shared/admin/AdminSidebar';
+import FloatingChatWidget from '../../components/shared/chat/FloatingChatWidget';
 import FloatingAIButton from '../../components/shared/ai-assistant/FloatingAIButton';
 import './AdminLayout.scss';
 
@@ -25,6 +26,9 @@ export default function AdminLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* ── Chat Widget ────────────────────────────────────────────────────────── */}
+      <FloatingChatWidget />
 
       {/* ── AI Assistant ──────────────────────────────────────────────────────── */}
       <FloatingAIButton />

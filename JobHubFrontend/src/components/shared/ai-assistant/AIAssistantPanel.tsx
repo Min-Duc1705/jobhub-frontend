@@ -19,6 +19,8 @@ import {
   clearAssistantSession,
   importFileToAssistant,
 } from '../../../services/ai-assistant-service';
+import { getOrCreateConversationApi, getChatHistoryApi } from '../../../services/chat-service';
+import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub';
 import type { AssistantMessage, ActionItem } from '../../../types/assistant';
 import { useNavigate } from 'react-router-dom';
 import './AIAssistantPanel.scss';
@@ -60,6 +62,7 @@ function getOrCreateSessionId(userId: string): string {
 
 // Simple markdown renderer
 function renderMarkdown(text: string): string {
+  if (typeof text !== 'string') return '';
   return text
     // Headers
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -159,36 +162,124 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileUploadRef = useRef<any>(null);
 
-  // Load state when sessionId changes
-  useEffect(() => {
-    const saved = localStorage.getItem(`ai_messages_${sessionId}`);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setMessages(parsed.map((m: any) => ({
-          ...m,
-          timestamp: new Date(m.timestamp)
-        })));
-      } catch (e) {
-        setMessages(getDefaultWelcomeMessage());
-      }
-    } else {
-      setMessages(getDefaultWelcomeMessage());
-    }
+  const { connection } = useChatHub(user?.id);
 
-    const savedHistory = localStorage.getItem(`ai_history_${sessionId}`);
-    if (savedHistory) {
-      try {
-        setConversationHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        setConversationHistory([]);
+  // Load state when sessionId changes or user logs in
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (user?.id) {
+        try {
+          setIsLoading(true);
+          const convRes = await getOrCreateConversationApi('ai_assistant');
+          if (convRes && convRes.data) {
+            const convId = convRes.data.id;
+            const histRes = await getChatHistoryApi(convId, 50);
+            if (histRes && histRes.data) {
+              const loadedMessages = histRes.data.map((m: any) => ({
+                id: m.id,
+                role: (m.senderId.toLowerCase() === 'ai_assistant' ? 'assistant' : 'user') as 'assistant' | 'user',
+                content: m.content,
+                timestamp: new Date(m.createdAt),
+              }));
+
+              if (loadedMessages.length > 0) {
+                setMessages(loadedMessages);
+                const nextHistory = loadedMessages.map((m: any) => ({
+                  role: (m.role === 'assistant' ? 'model' : 'user') as 'model' | 'user',
+                  content: m.content,
+                }));
+                setConversationHistory(nextHistory);
+              } else {
+                setMessages(getDefaultWelcomeMessage());
+                setConversationHistory([]);
+              }
+            } else {
+              setMessages(getDefaultWelcomeMessage());
+              setConversationHistory([]);
+            }
+          } else {
+            setMessages(getDefaultWelcomeMessage());
+            setConversationHistory([]);
+          }
+        } catch (e) {
+          console.error('Failed to load AI Assistant history from backend:', e);
+          setMessages(getDefaultWelcomeMessage());
+          setConversationHistory([]);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        const saved = localStorage.getItem(`ai_messages_${sessionId}`);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setMessages(parsed.map((m: any) => ({
+              ...m,
+              timestamp: new Date(m.timestamp)
+            })));
+          } catch (e) {
+            setMessages(getDefaultWelcomeMessage());
+          }
+        } else {
+          setMessages(getDefaultWelcomeMessage());
+        }
+
+        const savedHistory = localStorage.getItem(`ai_history_${sessionId}`);
+        if (savedHistory) {
+          try {
+            setConversationHistory(JSON.parse(savedHistory));
+          } catch (e) {
+            setConversationHistory([]);
+          }
+        } else {
+          setConversationHistory([]);
+        }
       }
-    } else {
-      setConversationHistory([]);
-    }
+    };
+
+    loadChatHistory();
     setPendingFileData(null);
     setPastedImages([]);
-  }, [sessionId]);
+  }, [sessionId, user?.id]);
+
+  // Listen for real-time messages from SignalR
+  useChatHubEvent(connection, 'ReceiveMessage', (message: any) => {
+    if (!message) return;
+    const isRelated = 
+      message.senderId.toLowerCase() === 'ai_assistant' || 
+      message.receiverId?.toLowerCase() === 'ai_assistant';
+
+    if (isRelated) {
+      setMessages(prev => {
+        // Prevent duplicate appending
+        if (prev.some(m => m.id === message.id || (m.content === message.content && m.role === (message.senderId.toLowerCase() === 'ai_assistant' ? 'assistant' : 'user')))) {
+          return prev;
+        }
+
+        const isAi = message.senderId.toLowerCase() === 'ai_assistant';
+        const next = [...prev, {
+          id: message.id,
+          role: isAi ? 'assistant' as const : 'user' as const,
+          content: message.content,
+          timestamp: new Date(message.createdAt),
+        }];
+
+        localStorage.setItem(`ai_messages_${sessionId}`, JSON.stringify(next));
+        return next;
+      });
+
+      setConversationHistory(prev => {
+        const isAi = message.senderId.toLowerCase() === 'ai_assistant';
+        const roleStr = (isAi ? 'model' : 'user') as 'model' | 'user';
+        if (prev.some(m => m.content === message.content && m.role === roleStr)) {
+          return prev;
+        }
+        const next = [...prev, { role: roleStr, content: message.content }];
+        localStorage.setItem(`ai_history_${sessionId}`, JSON.stringify(next));
+        return next;
+      });
+    }
+  });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -312,13 +403,17 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
         sessionId
       );
 
+      const resData = (response as any)?.data?.reply !== undefined
+        ? (response as any).data
+        : response;
+
       setPendingFileData(null);
       setPastedImages([]);
 
       // Update conversation history
       const nextHistory: AssistantMessage[] = [
         ...newHistory,
-        { role: 'model', content: response.reply }
+        { role: 'model', content: resData.reply }
       ];
       setConversationHistory(nextHistory);
       localStorage.setItem(`ai_history_${sessionId}`, JSON.stringify(nextHistory));
@@ -329,19 +424,19 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
         const next = [...newMsgs, {
           id: `ai_${Date.now()}`,
           role: 'assistant' as const,
-          content: response.reply,
+          content: resData.reply,
           timestamp: new Date(),
-          actions: response.actions_taken,
-          pendingAction: response.pending_action,
-          suggestions: response.suggestions,
+          actions: resData.actions_taken,
+          pendingAction: resData.pending_action,
+          suggestions: resData.suggestions,
         }];
         localStorage.setItem(`ai_messages_${sessionId}`, JSON.stringify(next));
         return next;
       });
 
       // Xử lý chuyển hướng trang nếu AI gọi tool_navigate_to_page thành công
-      if (response.actions_taken && response.actions_taken.length > 0) {
-        const navAction = response.actions_taken.find(
+      if (resData.actions_taken && resData.actions_taken.length > 0) {
+        const navAction = resData.actions_taken.find(
           (act: any) => act.action_type === 'tool_navigate_to_page'
         );
         if (navAction && navAction.data) {
@@ -375,7 +470,7 @@ export default function AIAssistantPanel({ onClose }: AIAssistantPanelProps) {
         }
 
         // ── Xử lý import_required — gắn importAction vào message cuối ────────
-        const importAction = response.actions_taken.find(
+        const importAction = resData.actions_taken.find(
           (act: any) => act.data?.status === 'import_required'
         );
         if (importAction?.data) {

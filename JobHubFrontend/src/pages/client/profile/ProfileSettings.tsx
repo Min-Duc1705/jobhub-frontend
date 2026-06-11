@@ -29,7 +29,8 @@ import type { ICompany, CompanyBody } from '../../../types/company'
 import { useProvinces } from '../../../hooks/useProvinces'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
-import { getTelegramBindingApi, deleteTelegramBindingApi } from '../../../services/notification-service'
+import { getTelegramBindingApi, deleteTelegramBindingApi, bindCustomBotApi } from '../../../services/notification-service'
+import type { ITelegramBindingDto } from '../../../services/notification-service'
 import './ProfileSettings.scss'
 
 const { TextArea } = Input
@@ -163,7 +164,9 @@ const ProfileSettings = () => {
 
   // ── Telegram Bot states
   const [telegramLoading, setTelegramLoading] = useState(false)
-  const [telegramBinding, setTelegramBinding] = useState<{ isConnected: boolean; username?: string | null } | null>(null)
+  const [telegramBinding, setTelegramBinding] = useState<ITelegramBindingDto | null>(null)
+  const [botTokenInput, setBotTokenInput] = useState('')
+  const [isBindingBot, setIsBindingBot] = useState(false)
 
   // ── Province / Ward (shared hook — cache toàn module, chỉ fetch 1 lần) ──────────────────────
   const { provinceOptions, getWards } = useProvinces()
@@ -597,11 +600,36 @@ const ProfileSettings = () => {
       if (res && res.data?.success) {
         message.success('Đã hủy liên kết Telegram thành công.')
         setTelegramBinding({ isConnected: false })
+        setBotTokenInput('')
       }
     } catch (err: any) {
       message.error(err?.response?.data?.message || 'Hủy liên kết Telegram thất bại.')
     } finally {
       setTelegramLoading(false)
+    }
+  }
+
+  const handleBindCustomBot = async () => {
+    if (!botTokenInput || !botTokenInput.trim()) {
+      message.warning('Vui lòng nhập Token Bot Telegram của bạn.')
+      return
+    }
+
+    try {
+      setIsBindingBot(true)
+      const res = await bindCustomBotApi(botTokenInput.trim())
+      if (res && res.data?.success) {
+        message.success(res.data.message || 'Đăng ký Webhook cho Bot thành công!')
+        setTelegramBinding({
+          isConnected: false,
+          botToken: botTokenInput.trim(),
+          botUsername: res.data.botUsername
+        })
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Không thể liên kết Bot Telegram. Vui lòng kiểm tra lại Token.')
+    } finally {
+      setIsBindingBot(false)
     }
   }
 
@@ -1094,32 +1122,6 @@ const ProfileSettings = () => {
                 <Button type="link" className="ps-security-item__action" onClick={() => setChangePasswordVisible(true)}>Đổi mật khẩu</Button>
               </div>
 
-              <div className="ps-security-item">
-                <div className="ps-security-item__icon" style={{ backgroundColor: 'rgba(0, 136, 204, 0.08)' }}>
-                  <span className="material-symbols-outlined" style={{ color: '#0088cc' }}>send</span>
-                </div>
-                <div>
-                  <p className="ps-security-item__title">
-                    Thông báo Telegram {telegramBinding?.isConnected && <span style={{ color: '#52c41a', fontSize: 12, fontWeight: 'normal' }}>(Đã liên kết @{telegramBinding.username})</span>}
-                  </p>
-                  <p className="ps-security-item__sub">Nhận thông báo đẩy và điều khiển ứng dụng qua Telegram.</p>
-                </div>
-                {telegramBinding?.isConnected ? (
-                  <Popconfirm
-                    title="Xác nhận hủy liên kết"
-                    description="Bạn chắc chắn muốn hủy liên kết tài khoản với Telegram?"
-                    onConfirm={handleDisconnectTelegram}
-                    okText="Hủy liên kết"
-                    cancelText="Hủy"
-                    okButtonProps={{ danger: true, loading: telegramLoading }}
-                  >
-                    <Button type="link" danger className="ps-security-item__action">Hủy kết nối</Button>
-                  </Popconfirm>
-                ) : (
-                  <Button type="link" className="ps-security-item__action" onClick={handleConnectTelegram} style={{ color: '#0088cc' }}>Kết nối ngay</Button>
-                )}
-              </div>
-
               <div className="ps-social-section">
                 <p className="ps-social-section__title">Liên kết mạng xã hội</p>
                 <div className="ps-social-row">
@@ -1139,6 +1141,207 @@ const ProfileSettings = () => {
                   </button>
                 </div>
               </div>
+            </section>
+
+            {/* Telegram Bot Integration Card */}
+            <section className="ps-card" style={{ borderLeft: '4px solid #0088cc' }}>
+              <div className="ps-card__header">
+                <span className="material-symbols-outlined" style={{ color: '#0088cc' }}>robot_2</span>
+                <h2>Trợ lý AI &amp; Telegram Bot riêng</h2>
+              </div>
+              
+              <p style={{ marginBottom: 16, color: '#475569', fontSize: 13, lineHeight: 1.6 }}>
+                Bạn có thể tự đăng ký và đặt tên Bot Telegram theo sở thích cá nhân để trò chuyện trực tiếp với <strong>Trợ lý AI (AI Assistant)</strong> và nhận thông báo tức thời từ hệ thống JobHub. Mọi cuộc hội thoại trên Telegram sẽ được đồng bộ thời gian thực với Assistant trên Web.
+              </p>
+
+              {!telegramBinding?.botToken ? (
+                <div className="ps-telegram-bind-flow">
+                  {/* Instructions */}
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 20
+                  }}>
+                    <h4 style={{ margin: '0 0 10px 0', fontSize: 13, fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#0088cc' }}>help</span>
+                      Hướng dẫn tạo và đặt tên Bot riêng:
+                    </h4>
+                    <ol style={{ margin: 0, paddingLeft: 20, fontSize: 12.5, color: '#475569', lineHeight: 1.8 }}>
+                      <li>
+                        Truy cập Telegram và bắt đầu cuộc trò chuyện với <strong><a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">@BotFather</a></strong>.
+                      </li>
+                      <li>
+                        Gửi lệnh <code>/newbot</code> để bắt đầu tạo Bot mới.
+                      </li>
+                      <li>
+                        Nhập <strong>Tên hiển thị</strong> của Bot theo sở thích của bạn (ví dụ: <em>Trợ lý AI của Nam</em>, <em>AI JobHub Assistant</em>,...).
+                      </li>
+                      <li>
+                        Nhập <strong>Username</strong> duy nhất cho Bot (phải kết thúc bằng chữ <code>bot</code>, ví dụ: <code>nam_jobhub_bot</code>, <code>ai_assistant_xyz_bot</code>).
+                      </li>
+                      <li>
+                        Sau khi hoàn tất, @BotFather sẽ cung cấp cho bạn một chuỗi <strong>HTTP API Token</strong> (dạng <code>739274028:AAHh_...</code>). Hãy sao chép Token đó.
+                      </li>
+                    </ol>
+                  </div>
+
+                  {/* Input field */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>Dán HTTP API Token của Bot vào đây:</label>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      <Input
+                        placeholder="Ví dụ: 739274028:AAHh_P..."
+                        size="large"
+                        value={botTokenInput}
+                        onChange={(e) => setBotTokenInput(e.target.value)}
+                        style={{ flex: 1, minWidth: 260 }}
+                        disabled={isBindingBot}
+                      />
+                      <Button
+                        type="primary"
+                        size="large"
+                        loading={isBindingBot}
+                        onClick={handleBindCustomBot}
+                        style={{ background: '#0088cc', borderColor: '#0088cc' }}
+                      >
+                        Liên kết &amp; Kích hoạt Bot
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {telegramBinding?.botToken && !telegramBinding?.isConnected ? (
+                <div className="ps-telegram-activate-flow">
+                  {/* Status indicator */}
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 16,
+                    padding: '8px 12px',
+                    background: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    borderRadius: 8
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#d97706', display: 'inline-block' }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Đã đăng ký Bot - Chờ kích hoạt kết nối</span>
+                  </div>
+
+                  {/* Info details */}
+                  <div style={{ marginBottom: 20, fontSize: 13, color: '#334155' }}>
+                    <p style={{ margin: '0 0 6px 0' }}>Bot của bạn: <strong style={{ color: '#0088cc' }}>@{telegramBinding.botUsername}</strong></p>
+                    <p style={{ margin: '0 0 6px 0', fontSize: 12, color: '#64748b', wordBreak: 'break-all' }}>Token: <code>{telegramBinding.botToken}</code></p>
+                  </div>
+
+                  {/* Call to action */}
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 20
+                  }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                      Bước cuối cùng để kích hoạt kết nối:
+                    </h4>
+                    <p style={{ margin: '0 0 16px 0', fontSize: 12.5, color: '#475569', lineHeight: 1.6 }}>
+                      Nhấp vào nút bên dưới để mở Telegram và nhấn <strong>Bắt đầu (Start)</strong> hoặc gửi tin nhắn <code>/start</code> cho Bot của bạn để hoàn tất đồng bộ tài khoản.
+                    </p>
+                    
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        icon={<span className="material-symbols-outlined" style={{ fontSize: 18 }}>near_me</span>}
+                        onClick={() => {
+                          window.open(`https://t.me/${telegramBinding.botUsername}?start=BIND_${user?.id}`, '_blank')
+                        }}
+                        style={{ background: '#0088cc', borderColor: '#0088cc', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      >
+                        Kích hoạt Bot trên Telegram
+                      </Button>
+
+                      <Popconfirm
+                        title="Xác nhận hủy đăng ký Bot"
+                        description="Bạn có chắc chắn muốn hủy đăng ký Bot này và liên kết Bot khác?"
+                        onConfirm={handleDisconnectTelegram}
+                        okText="Hủy đăng ký"
+                        cancelText="Hủy"
+                        okButtonProps={{ danger: true, loading: telegramLoading }}
+                      >
+                        <Button size="large" danger>
+                          Sử dụng Bot khác
+                        </Button>
+                      </Popconfirm>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {telegramBinding?.botToken && telegramBinding?.isConnected ? (
+                <div className="ps-telegram-active-flow">
+                  {/* Status indicator */}
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 16,
+                    padding: '8px 12px',
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: 8
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#15803d' }}>Đã liên kết hoạt động thành công</span>
+                  </div>
+
+                  {/* Info details */}
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 20,
+                    fontSize: 13,
+                    color: '#334155'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0' }}>Bot Telegram của bạn: <strong style={{ color: '#0088cc' }}>@{telegramBinding.botUsername}</strong></p>
+                    <p style={{ margin: '0 0 8px 0' }}>Tài khoản Telegram liên kết: <strong>@{telegramBinding.username}</strong></p>
+                    <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
+                      Bot <strong>@{telegramBinding.botUsername}</strong> đã sẵn sàng! Bây giờ bạn có thể chat trực tiếp với trợ lý AI hoặc nhận thông báo từ hệ thống ngay trên Telegram. Lịch sử chat được đồng bộ trực tiếp lên Web.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={() => {
+                        window.open(`https://t.me/${telegramBinding.botUsername}`, '_blank')
+                      }}
+                      style={{ background: '#0088cc', borderColor: '#0088cc' }}
+                    >
+                      Mở Chat trên Telegram
+                    </Button>
+
+                    <Popconfirm
+                      title="Xác nhận hủy liên kết"
+                      description="Hành động này sẽ hủy liên kết Bot và gỡ cấu hình Webhook. Bạn chắc chắn muốn hủy?"
+                      onConfirm={handleDisconnectTelegram}
+                      okText="Hủy liên kết"
+                      cancelText="Hủy"
+                      okButtonProps={{ danger: true, loading: telegramLoading }}
+                    >
+                      <Button size="large" danger>
+                        Hủy liên kết Bot
+                      </Button>
+                    </Popconfirm>
+                  </div>
+                </div>
+              ) : null}
             </section>
 
             {isEmployer && registeredCompany && (

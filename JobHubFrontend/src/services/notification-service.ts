@@ -54,6 +54,8 @@ export const broadcastNotificationApi = (data: IBroadcastNotificationRequest): P
 export interface ITelegramBindingDto {
   isConnected: boolean
   username?: string | null
+  botToken?: string | null
+  botUsername?: string | null
 }
 
 /** Lấy trạng thái liên kết Telegram của user */
@@ -63,3 +65,8 @@ export const getTelegramBindingApi = (): Promise<ApiResponse<ITelegramBindingDto
 /** Hủy liên kết Telegram */
 export const deleteTelegramBindingApi = (): Promise<ApiResponse<{ success: boolean }>> =>
   axios.delete('/api/v1/telegram/binding')
+
+/** Liên kết Telegram Bot tùy chỉnh */
+export const bindCustomBotApi = (botToken: string): Promise<ApiResponse<{ success: boolean; botUsername: string; botName: string; message: string }>> =>
+  axios.post('/api/v1/telegram/binding/bot', { botToken })
+
