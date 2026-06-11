@@ -9,12 +9,14 @@ const CategoryDonut = () => {
   const [categoryStats, setCategoryStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isAnimated, setIsAnimated] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     getJobCategoryStatsApi()
       .then(res => {
-        setCategoryStats(res.data ?? []);
+        const sortedData = (res.data ?? []).sort((a: any, b: any) => b.count - a.count);
+        setCategoryStats(sortedData);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -85,11 +87,13 @@ const CategoryDonut = () => {
         <div className="donut-legend">
           {categoryStats.map((item, index) => {
             const color = COLORS[index % COLORS.length];
+            const isVisible = showAll || index < 5;
             return (
               <div
-                className="legend-row"
+                className={`legend-row ${isVisible ? '' : 'hidden-row'}`}
                 key={item.name}
                 style={{
+                  display: isVisible ? 'flex' : 'none',
                   opacity: isAnimated ? 1 : 0,
                   transform: isAnimated ? 'translateX(0)' : 'translateX(-12px)',
                   transition: `opacity 0.6s ease-out ${index * 0.06}s, transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) ${index * 0.06}s`,
@@ -104,6 +108,18 @@ const CategoryDonut = () => {
             );
           })}
         </div>
+
+        {categoryStats.length > 5 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="show-more-btn"
+          >
+            <span>{showAll ? 'Show Less' : 'Show More'}</span>
+            <span className={`material-symbols-outlined toggle-icon ${showAll ? 'expanded' : ''}`}>
+              expand_more
+            </span>
+          </button>
+        )}
       </Spin>
     </div>
   );

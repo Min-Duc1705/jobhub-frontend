@@ -5,6 +5,7 @@ import type { IJob, JobStatus } from '../../../types/job'
 import {
   getJobsApi, deleteJobApi, changeJobStatusApi, previewJobApi,
 } from '../../../services/job-service'
+import { getCampaignsApi, getCampaignConversationsApi } from '../../../services/hire-agent-service'
 import JobFormModal from './JobFormModal'
 import JobPreviewDrawer from './JobPreviewDrawer'
 
@@ -28,6 +29,34 @@ const JobHRPage = () => {
   const [jobs, setJobs] = useState<IJob[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [smartMatchCount, setSmartMatchCount] = useState<number | null>(null)
+
+  const fetchSmartMatchCount = async () => {
+    if (!user?.id) return
+    try {
+      const res = await getCampaignsApi()
+      if (res.data) {
+        const campaignsList = res.data
+        if (campaignsList.length === 0) {
+          setSmartMatchCount(0)
+          return
+        }
+        const convPromises = campaignsList.map(c =>
+          getCampaignConversationsApi(c.id).catch(() => ({ data: [] }))
+        )
+        const results = await Promise.all(convPromises)
+        let count = 0
+        results.forEach(r => {
+          if (r.data) {
+            count += r.data.filter((conv: any) => conv.status === 'Screening').length
+          }
+        })
+        setSmartMatchCount(count)
+      }
+    } catch (err) {
+      console.error('Lỗi khi tải số ứng viên Smart Match:', err)
+    }
+  }
 
   // Filters / pagination
   const [search, setSearch] = useState('')
@@ -85,6 +114,11 @@ const JobHRPage = () => {
     }
   }, [user?.id, authLoading, page, pageSize, search, statusFilter, levelFilter])
 
+  useEffect(() => {
+    if (authLoading || !user?.id) return
+    fetchSmartMatchCount()
+  }, [user?.id, authLoading])
+
   // ── Actions ────────────────────────────────────────────────────────────────
   const handleDelete = async (id: string) => {
     try {
@@ -130,9 +164,15 @@ const JobHRPage = () => {
     setOpenForm(true)
   }
 
-  const reload = () => fetchJobs(page, pageSize, search, statusFilter, levelFilter)
+  const reload = () => {
+    fetchJobs(page, pageSize, search, statusFilter, levelFilter)
+    fetchSmartMatchCount()
+  }
 
   const activeCount = jobs.filter(j => j.status === 'PUBLISHED').length
+  const recruiterSkills = jobs
+    .flatMap(j => (j.skills || []).map(s => s?.name))
+    .filter((v, i, a) => v && a.indexOf(v) === i) as string[]
 
   return (
     <div className="hr-job-page">
@@ -152,14 +192,22 @@ const JobHRPage = () => {
               <span>{total}</span> tin.
             </p>
           </div>
-          <button className="btn-post-job" onClick={handleCreate}>
-            <span className="material-symbols-outlined">add</span>
-            Đăng tin mới
-          </button>
+          <div className="hr-job-header-actions">
+            <button className="btn-reload" onClick={reload} disabled={loading}>
+              <span className={`material-symbols-outlined ${loading ? 'spin' : ''}`}>
+                refresh
+              </span>
+              Tải lại
+            </button>
+            <button className="btn-post-job" onClick={handleCreate}>
+              <span className="material-symbols-outlined">add</span>
+              Đăng tin mới
+            </button>
+          </div>
         </div>
 
         {/* ── AI Insights ────────────────────────────────────────────────── */}
-        <JobHRInsights />
+        <JobHRInsights smartMatchCount={smartMatchCount} skills={recruiterSkills} />
 
         {/* ── Filters ────────────────────────────────────────────────────── */}
         <JobHRFilters
@@ -188,7 +236,7 @@ const JobHRPage = () => {
         />
 
         {/* ── Bento Section ──────────────────────────────────────────────── */}
-        <JobHRBento />
+        <JobHRBento smartMatchCount={smartMatchCount} />
 
       </div>
 

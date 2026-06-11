@@ -43,6 +43,7 @@
     display: flex;
     gap: 12px;
     flex-shrink: 0;
+    flex-wrap: wrap;
 
     .ant-btn-primary {
       background: $primary !important;
@@ -168,15 +169,15 @@
 
 .ps-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 
   @media (min-width: 900px) {
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: minmax(0, 1fr) 360px;
   }
 
   @media (min-width: 1200px) {
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: minmax(0, 1fr) 400px;
   }
 }
 
@@ -185,6 +186,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 // ─── Card ─────────────────────────────────────────────────────────
@@ -308,12 +310,17 @@
   .material-symbols-outlined { font-size: 14px; }
 }
 
+.ps-avatar-info {
+  min-width: 0;
+}
+
 .ps-avatar-name {
   font-family: $font-body;
   font-size: 15px;
   font-weight: 600;
   color: $on-surface;
   margin: 0 0 2px;
+  word-break: break-word;
 }
 
 .ps-avatar-email {
@@ -321,6 +328,7 @@
   font-size: 12px;
   color: $on-surface-variant;
   margin: 0 0 4px;
+  word-break: break-all;
 }
 
 .ps-avatar-hint {
@@ -328,20 +336,21 @@
   color: $on-surface-variant;
   margin: 0 0 8px;
   font-style: italic;
+  word-break: break-word;
 }
 
 // ─── Form grid ──────────────────────────────────────────────────────
 .ps-form-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0 20px;
 
   @media (min-width: 480px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (min-width: 720px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -594,6 +603,7 @@
   border: 1px solid $outline-variant;
   border-radius: 10px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 
   &__icon {
     width: 40px;
@@ -627,6 +637,13 @@
     color: $secondary !important;
     font-family: $font-mono !important;
     font-size: 13px !important;
+
+    @media (max-width: 480px) {
+      margin-left: 0;
+      width: 100%;
+      text-align: left;
+      padding: 0 !important;
+    }
   }
 }
 
@@ -732,11 +749,16 @@
   background: rgba($secondary, 0.05);
   border: 1px solid rgba($secondary, 0.15);
   border-radius: 10px;
+  min-width: 0;
 
   .material-symbols-outlined {
     font-size: 28px;
     color: $secondary;
     flex-shrink: 0;
+  }
+
+  & > div {
+    min-width: 0;
   }
 
   &__name {
@@ -751,6 +773,7 @@
     font-size: 12px;
     color: $on-surface-variant;
     margin: 0;
+    word-break: break-word;
   }
 }
 
@@ -824,5 +847,41 @@
 
   .ant-progress-bg {
     border-radius: 99px !important;
+  }
+}
+
+// ─── Company Card styles ──────────────────────────────────────────
+.ps-company-card {
+  .ps-company-banner {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .ps-company-view-logo {
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .ps-company-desc {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+
+    * {
+      word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: normal !important;
+    }
+
+    p {
+      margin-bottom: 8px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
   }
 }

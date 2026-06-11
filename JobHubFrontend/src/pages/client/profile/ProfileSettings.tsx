@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import {
   App, Form, Input, DatePicker, Select, InputNumber,
   Switch, Button, Tag, Progress, Popconfirm,
-  Avatar, Image, Spin, Alert,
+  Avatar, Image, Spin, Alert, Modal,
 } from 'antd'
 import { message } from '../../../utils/antd'
 import dayjs from 'dayjs'
 import { useAppSelector, useAppDispatch } from '../../../redux/hooks'
 import { setAvatarUrl as syncAvatarUrl, fetchAccount } from '../../../redux/slices/authSlice'
-import { updateUsernameApi } from '../../../services/auth-service'
+import { updateUsernameApi, changePasswordApi } from '../../../services/auth-service'
 import {
   getMyProfileApi,
   updateMyProfileApi,
@@ -19,8 +19,16 @@ import {
   removeSkillFromProfileApi,
 } from '../../../services/profile-service'
 import type { CustomerProfile, CustomerSkillDto, SkillOption } from '../../../types/profile'
-import { getVerifiedCompaniesApi } from '../../../services/company-service'
+import {
+  getVerifiedCompaniesApi,
+  getCompanyByIdApi,
+  updateCompanyApi,
+  uploadCompanyPublicImageApi,
+} from '../../../services/company-service'
+import type { ICompany, CompanyBody } from '../../../types/company'
 import { useProvinces } from '../../../hooks/useProvinces'
+import ReactQuill from 'react-quill-new'
+import 'react-quill-new/dist/quill.snow.css'
 import './ProfileSettings.scss'
 
 const { TextArea } = Input
@@ -113,6 +121,24 @@ const ProfileSettings = () => {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // ── Company states (Employer/HR)
+  const [companyForm] = Form.useForm()
+  const [editCompanyVisible, setEditCompanyVisible] = useState(false)
+  const [registeredCompany, setRegisteredCompany] = useState<ICompany | null>(null)
+  const [companyDesc, setCompanyDesc] = useState('')
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | null>(null)
+  const [companyLogoFile, setCompanyLogoFile] = useState<File | null>(null)
+  const [companyCoverUrl, setCompanyCoverUrl] = useState<string | null>(null)
+  const [companyCoverFile, setCompanyCoverFile] = useState<File | null>(null)
+  const [companyActivityPreviews, setCompanyActivityPreviews] = useState<string[]>([])
+  const [companyActivityFiles, setCompanyActivityFiles] = useState<File[]>([])
+  const [isSavingCompany, setIsSavingCompany] = useState(false)
+
+  // ── Change Password states
+  const [changePasswordForm] = Form.useForm()
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   // Clean up object URL to prevent memory leaks
   useEffect(() => {
@@ -215,10 +241,32 @@ const ProfileSettings = () => {
       if (p.type === 'EMPLOYER') {
         try {
           const compRes = await getVerifiedCompaniesApi("pageSize=100")
-          const options = (compRes.data?.result ?? []).map(c => ({
+          let options = (compRes.data?.result ?? []).map(c => ({
             value: c.id ?? '',
             label: c.name ?? ''
           }))
+
+          if (p.companyId) {
+            try {
+              const currentCompRes = await getCompanyByIdApi(p.companyId)
+              const currentComp = currentCompRes.data
+              if (currentComp) {
+                setRegisteredCompany(currentComp)
+                setCompanyDesc(currentComp.description || '')
+                if (!options.some(opt => opt.value === p.companyId)) {
+                  options = [
+                    {
+                      value: currentComp.id ?? '',
+                      label: currentComp.name ?? ''
+                    },
+                    ...options
+                  ]
+                }
+              }
+            } catch (err) {
+              console.error("Failed to load current registered company details", err)
+            }
+          }
           setCompanyOptions(options)
         } catch (err) {
           console.error("Failed to load companies", err)
@@ -380,6 +428,146 @@ const ProfileSettings = () => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+  }
+
+  // ── Company Edit Handlers ─────────────────────────────────────────
+  const handleCompanyLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { message.error('Logo tối đa 2MB.'); return }
+    setCompanyLogoFile(file)
+    setCompanyLogoUrl(URL.createObjectURL(file))
+  }
+
+  const handleCompanyCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { message.error('Ảnh bìa tối đa 5MB.'); return }
+    setCompanyCoverFile(file)
+    setCompanyCoverUrl(URL.createObjectURL(file))
+  }
+
+  const handleCompanyActivityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    const remaining = 4 - companyActivityPreviews.length
+    if (remaining <= 0) { message.warning('Tối đa 4 ảnh hoạt động.'); return }
+    const selected = files.slice(0, remaining)
+    const oversized = selected.some(f => f.size > 5 * 1024 * 1024)
+    if (oversized) { message.error('Mỗi ảnh tối đa 5MB.'); return }
+    setCompanyActivityFiles(prev => [...prev, ...selected])
+    setCompanyActivityPreviews(prev => [...prev, ...selected.map(f => URL.createObjectURL(f))])
+    e.target.value = ''
+  }
+
+  const handleSaveCompany = async (values: any) => {
+    if (!profile?.companyId) return
+    setIsSavingCompany(true)
+    try {
+      let logoUrl = companyLogoUrl
+      let coverUrl = companyCoverUrl
+
+      const uploadTasks: Promise<void>[] = []
+
+      if (companyLogoFile) {
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(companyLogoFile)
+            .then(res => { logoUrl = res.data?.url })
+        )
+      }
+      if (companyCoverFile) {
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(companyCoverFile)
+            .then(res => { coverUrl = res.data?.url })
+        )
+      }
+
+      const finalActivityUrls: string[] = companyActivityPreviews.filter(url => url.startsWith('http'))
+      
+      companyActivityFiles.forEach((file) => {
+        uploadTasks.push(
+          uploadCompanyPublicImageApi(file)
+            .then(res => {
+              if (res.data?.url) {
+                finalActivityUrls.push(res.data.url)
+              }
+            })
+        )
+      })
+
+      await Promise.all(uploadTasks)
+
+      const payload: CompanyBody = {
+        name: values.name,
+        description: companyDesc,
+        address: values.address,
+        industry: values.industry,
+        companySize: values.companySize,
+        website: values.website,
+        contactEmail: values.contactEmail,
+        taxCode: values.taxCode,
+        logo: logoUrl || undefined,
+        coverImage: coverUrl || undefined,
+        activityImages: finalActivityUrls.length ? finalActivityUrls : undefined,
+      }
+
+      const updateRes = await updateCompanyApi(profile.companyId, payload)
+      if (updateRes.data) {
+        setRegisteredCompany(updateRes.data)
+        
+        setCompanyOptions(prev =>
+          prev.map(opt =>
+            opt.value === profile.companyId ? { ...opt, label: updateRes.data.name } : opt
+          )
+        )
+
+        notification.success({
+          message: 'Cập nhật thành công',
+          description: 'Hồ sơ công ty của bạn đã được cập nhật.',
+          placement: 'topRight',
+          duration: 3,
+        })
+        setEditCompanyVisible(false)
+        setCompanyLogoFile(null)
+        setCompanyCoverFile(null)
+        setCompanyActivityFiles([])
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Cập nhật hồ sơ công ty thất bại.'
+      notification.error({
+        message: 'Cập nhật thất bại',
+        description: msg,
+        placement: 'topRight',
+        duration: 4,
+      })
+    } finally {
+      setIsSavingCompany(false)
+    }
+  }
+
+  const handleChangePassword = async (values: any) => {
+    setIsChangingPassword(true)
+    try {
+      await changePasswordApi(values.currentPassword, values.newPassword)
+      notification.success({
+        message: 'Đổi mật khẩu thành công',
+        description: 'Mật khẩu tài khoản của bạn đã được cập nhật.',
+        placement: 'topRight',
+        duration: 3,
+      })
+      setChangePasswordVisible(false)
+      changePasswordForm.resetFields()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.'
+      notification.error({
+        message: 'Đổi mật khẩu thất bại',
+        description: msg,
+        placement: 'topRight',
+        duration: 4,
+      })
+    } finally {
+      setIsChangingPassword(false)
+    }
   }
 
   // ── Add skill ───────────────────────────────────────────────────
@@ -868,7 +1056,7 @@ const ProfileSettings = () => {
                   <p className="ps-security-item__title">Mật khẩu</p>
                   <p className="ps-security-item__sub">Cập nhật định kỳ để bảo vệ tài khoản.</p>
                 </div>
-                <Button type="link" className="ps-security-item__action">Đổi mật khẩu</Button>
+                <Button type="link" className="ps-security-item__action" onClick={() => setChangePasswordVisible(true)}>Đổi mật khẩu</Button>
               </div>
 
               <div className="ps-social-section">
@@ -891,6 +1079,188 @@ const ProfileSettings = () => {
                 </div>
               </div>
             </section>
+
+            {isEmployer && registeredCompany && (
+              <section className="ps-card ps-company-card" style={{ marginTop: 20 }}>
+                <div className="ps-card__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className="material-symbols-outlined">domain</span>
+                    <h2 style={{ margin: 0 }}>Thông tin doanh nghiệp của bạn</h2>
+                  </div>
+                  <Button
+                    type="primary"
+                    ghost
+                    onClick={() => {
+                      setEditCompanyVisible(true)
+                      companyForm.setFieldsValue({
+                        name: registeredCompany.name,
+                        address: registeredCompany.address,
+                        industry: registeredCompany.industry,
+                        companySize: registeredCompany.companySize,
+                        website: registeredCompany.website,
+                        contactEmail: registeredCompany.contactEmail,
+                        taxCode: registeredCompany.taxCode,
+                      })
+                      setCompanyDesc(registeredCompany.description || '')
+                      setCompanyLogoUrl(registeredCompany.logo || null)
+                      setCompanyCoverUrl(registeredCompany.coverImage || null)
+                      setCompanyActivityPreviews(registeredCompany.activityImages || [])
+                      setCompanyLogoFile(null)
+                      setCompanyCoverFile(null)
+                      setCompanyActivityFiles([])
+                    }}
+                    icon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>edit</span>}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    Chỉnh sửa
+                  </Button>
+                </div>
+
+                <div className="ps-company-view">
+                  <div className="ps-company-banner" style={{
+                    backgroundImage: registeredCompany.coverImage ? `url(${registeredCompany.coverImage})` : 'linear-gradient(135deg, #ecefef 0%, #cbd5e1 100%)',
+                    height: 140,
+                    borderRadius: 12,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    marginBottom: 44,
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <div className="ps-company-view-logo" style={{
+                      position: 'absolute',
+                      bottom: -22,
+                      left: 20,
+                      width: 68,
+                      height: 68,
+                      borderRadius: 10,
+                      border: '3px solid #fff',
+                      backgroundColor: '#fff',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {registeredCompany.logo ? (
+                        <img src={registeredCompany.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      ) : (
+                        <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#94a3b8' }}>domain</span>
+                      )}
+                    </div>
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 12,
+                      right: 12,
+                    }}>
+                      {registeredCompany.isVerified ? (
+                        <Tag color="success" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: '2px 8px', borderRadius: 4 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>verified</span>
+                          Đã xác minh
+                        </Tag>
+                      ) : (
+                        <Tag color="warning" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: '2px 8px', borderRadius: 4 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>hourglass_empty</span>
+                          Đang chờ duyệt
+                        </Tag>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ paddingLeft: 4 }}>
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: 20, fontWeight: 700, color: '#0f172a', wordBreak: 'break-word' }}>{registeredCompany.name}</h3>
+                    <p style={{ margin: '0 0 20px 0', fontSize: 13, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#94a3b8' }}>category</span>
+                      <span>{registeredCompany.industry || 'Chưa cập nhật lĩnh vực'}</span>
+                      <span style={{ color: '#cbd5e1' }}>&bull;</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#94a3b8' }}>groups</span>
+                      <span>
+                        {registeredCompany.companySize === 'STARTUP' ? 'Startup (< 50 nhân viên)' :
+                         registeredCompany.companySize === 'SME' ? 'SME (50 - 500 nhân viên)' :
+                         registeredCompany.companySize === 'ENTERPRISE' ? 'Enterprise (> 500 nhân viên)' :
+                         'Chưa cập nhật quy mô'}
+                      </span>
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 16, marginBottom: 20 }}>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#64748b', fontSize: 16 }}>mail</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email liên hệ</div>
+                          <div style={{ fontSize: 13, color: '#334155', fontWeight: 500, wordBreak: 'break-word' }}>{registeredCompany.contactEmail || 'N/A'}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#64748b', fontSize: 16 }}>language</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Website</div>
+                          <div style={{ fontSize: 13, color: '#334155', fontWeight: 500, wordBreak: 'break-all' }}>
+                            {registeredCompany.website ? (
+                              <a href={registeredCompany.website} target="_blank" rel="noopener noreferrer" style={{ color: '#1677ff', textDecoration: 'none' }}>
+                                {registeredCompany.website}
+                              </a>
+                            ) : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#64748b', fontSize: 16 }}>pin_drop</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Địa chỉ trụ sở</div>
+                          <div style={{ fontSize: 13, color: '#334155', fontWeight: 500, wordBreak: 'break-word' }}>{registeredCompany.address || 'N/A'}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#64748b', fontSize: 16 }}>receipt_long</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mã số thuế</div>
+                          <div style={{ fontSize: 13, color: '#334155', fontWeight: 500, wordBreak: 'break-word' }}>{registeredCompany.taxCode || 'N/A'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {registeredCompany.description && (
+                      <div style={{ marginTop: 16, borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#64748b' }}>description</span>
+                          Giới thiệu công ty
+                        </div>
+                        <div className="ps-company-desc" style={{ fontSize: 13, color: '#475569', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: registeredCompany.description }} />
+                      </div>
+                    )}
+
+                    {registeredCompany.activityImages && registeredCompany.activityImages.length > 0 && (
+                      <div style={{ marginTop: 16, borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#64748b' }}>gallery_thumbnail</span>
+                          Hình ảnh hoạt động
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                          {registeredCompany.activityImages.map((img, i) => (
+                            <Image
+                              key={i}
+                              src={img}
+                              alt={`Hoạt động ${i+1}`}
+                              width={120}
+                              height={80}
+                              style={{ objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
           </div>
 
@@ -988,6 +1358,271 @@ const ProfileSettings = () => {
           </div>
         </div>
       </Form>
+
+      {isEmployer && registeredCompany && (
+        <Modal
+          title="Chỉnh sửa Hồ sơ Công ty"
+          open={editCompanyVisible}
+          onCancel={() => setEditCompanyVisible(false)}
+          footer={null}
+          width={800}
+          destroyOnClose
+        >
+          <Form
+            form={companyForm}
+            layout="vertical"
+            onFinish={handleSaveCompany}
+            requiredMark={false}
+          >
+            <Alert
+              message="Lưu ý quan trọng"
+              description="Mọi thay đổi đối với hồ sơ công ty sẽ hủy trạng thái xác minh hiện tại. Doanh nghiệp của bạn sẽ cần được Admin phê duyệt lại để hiển thị công khai."
+              type="warning"
+              showIcon
+              style={{ marginBottom: 20 }}
+            />
+            <div className="ps-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
+              <Form.Item
+                name="name"
+                label="Tên công ty"
+                rules={[{ required: true, message: 'Vui lòng nhập tên công ty' }]}
+                style={{ gridColumn: '1 / -1' }}
+              >
+                <Input placeholder="Tên doanh nghiệp..." size="large" />
+              </Form.Item>
+
+              <Form.Item
+                name="industry"
+                label="Lĩnh vực hoạt động"
+                rules={[{ required: true, message: 'Vui lòng nhập hoặc chọn lĩnh vực hoạt động' }]}
+              >
+                <Input placeholder="Ví dụ: Công nghệ thông tin, Bán lẻ..." size="large" />
+              </Form.Item>
+
+              <Form.Item
+                name="companySize"
+                label="Quy mô nhân sự"
+                rules={[{ required: true, message: 'Vui lòng chọn quy mô nhân sự' }]}
+              >
+                <Select placeholder="Chọn quy mô..." size="large">
+                  <Option value="STARTUP">Startup (dưới 50 nhân viên)</Option>
+                  <Option value="SME">SME (50 - 500 nhân viên)</Option>
+                  <Option value="ENTERPRISE">Enterprise (trên 500 nhân viên)</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="website" label="Website công ty">
+                <Input placeholder="https://..." size="large" />
+              </Form.Item>
+
+              <Form.Item name="contactEmail" label="Email liên hệ" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+                <Input placeholder="hr@domain.com" size="large" />
+              </Form.Item>
+
+              <Form.Item name="taxCode" label="Mã số thuế / MST">
+                <Input placeholder="Mã số thuế..." size="large" />
+              </Form.Item>
+
+
+
+              <Form.Item name="address" label="Địa chỉ trụ sở chính" style={{ gridColumn: '1 / -1' }}>
+                <Input placeholder="Số nhà, đường, quận/huyện, tỉnh/thành..." size="large" />
+              </Form.Item>
+            </div>
+
+            {/* Giới thiệu công ty (ReactQuill) */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 13, color: '#475569', marginBottom: 6, fontWeight: 500 }}>
+                Giới thiệu công ty
+              </label>
+              <ReactQuill
+                theme="snow"
+                value={companyDesc}
+                onChange={setCompanyDesc}
+                placeholder="Mô tả về lĩnh vực, sứ mệnh và văn hoá doanh nghiệp..."
+                style={{ minHeight: 160 }}
+              />
+            </div>
+
+            {/* Logo and Cover Uploads */}
+            <div style={{ display: 'flex', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>
+                  Logo công ty
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Avatar shape="square" size={64} src={companyLogoUrl} icon={<span className="material-symbols-outlined">domain</span>} />
+                  <Button icon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>upload</span>} style={{ position: 'relative' }}>
+                    Tải Logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ position: 'absolute', opacity: 0, left: 0, top: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                      onChange={handleCompanyLogoChange}
+                    />
+                  </Button>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 250 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>
+                  Ảnh bìa công ty
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {companyCoverUrl ? (
+                    <img src={companyCoverUrl} alt="Cover" style={{ width: 120, height: 64, objectFit: 'cover', borderRadius: 4, border: '1px solid #cbd5e1' }} />
+                  ) : (
+                    <div style={{ width: 120, height: 64, background: '#e2e8f0', borderRadius: 4, border: '1px dashed #cbd5e1' }} />
+                  )}
+                  <Button icon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>upload</span>} style={{ position: 'relative' }}>
+                    Tải Ảnh bìa
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ position: 'absolute', opacity: 0, left: 0, top: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                      onChange={handleCompanyCoverChange}
+                    />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Images */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>
+                Ảnh hoạt động (Tối đa 4 ảnh)
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                {companyActivityPreviews.map((img, idx) => (
+                  <div key={idx} style={{ position: 'relative' }}>
+                    <Image src={img} alt={`Hoạt động ${idx + 1}`} width={80} height={56} style={{ objectFit: 'cover', borderRadius: 4 }} />
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      danger
+                      size="small"
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -6,
+                        width: 18,
+                        height: 18,
+                        minWidth: 18,
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      icon={<span className="material-symbols-outlined" style={{ fontSize: 12, fontWeight: 'bold' }}>close</span>}
+                      onClick={() => {
+                        setCompanyActivityPreviews(prev => prev.filter((_, i) => i !== idx))
+                        setCompanyActivityFiles(prev => prev.filter((_, i) => i !== idx))
+                      }}
+                    />
+                  </div>
+                ))}
+                {companyActivityPreviews.length < 4 && (
+                  <div style={{
+                    width: 80,
+                    height: 56,
+                    border: '1px dashed #cbd5e1',
+                    borderRadius: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    background: '#f8fafc'
+                  }}>
+                    <span className="material-symbols-outlined" style={{ color: '#94a3b8' }}>add</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      style={{ position: 'absolute', opacity: 0, left: 0, top: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                      onChange={handleCompanyActivityChange}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+              <Button onClick={() => setEditCompanyVisible(false)} size="large">Hủy</Button>
+              <Button type="primary" loading={isSavingCompany} htmlType="submit" size="large">Lưu thông tin</Button>
+            </div>
+          </Form>
+        </Modal>
+      )}
+
+      <Modal
+        title="Đổi mật khẩu tài khoản"
+        open={changePasswordVisible}
+        onCancel={() => {
+          setChangePasswordVisible(false)
+          changePasswordForm.resetFields()
+        }}
+        footer={null}
+        width={440}
+        destroyOnClose
+      >
+        <Form
+          form={changePasswordForm}
+          layout="vertical"
+          onFinish={handleChangePassword}
+          requiredMark={false}
+        >
+          <Form.Item
+            name="currentPassword"
+            label="Mật khẩu hiện tại"
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu hiện tại..." size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="newPassword"
+            label="Mật khẩu mới"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu mới' },
+              { min: 6, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' }
+            ]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)..." size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label="Xác nhận mật khẩu mới"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: 'Vui lòng xác nhận mật khẩu mới' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('Mật khẩu xác nhận không trùng khớp!'))
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Xác nhận lại mật khẩu mới..." size="large" />
+          </Form.Item>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+            <Button onClick={() => {
+              setChangePasswordVisible(false)
+              changePasswordForm.resetFields()
+            }} size="large">
+              Hủy
+            </Button>
+            <Button type="primary" loading={isChangingPassword} htmlType="submit" size="large">
+              Xác nhận đổi mật khẩu
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   )
 }

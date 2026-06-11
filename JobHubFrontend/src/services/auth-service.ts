@@ -57,3 +57,7 @@ export const loginGithubApi = (code: string): Promise<ApiResponse<LoginResponse>
   return axios.post('/api/v1/auth/github', { code });
 };
 
+export const changePasswordApi = (currentPassword: string, newPassword: string): Promise<ApiResponse<any>> => {
+  return axios.patch('/api/v1/auth/change-password', { currentPassword, newPassword });
+};
+
