@@ -17,7 +17,8 @@ interface Props {
 }
 
 const getIconConfig = (type: string) => {
-  switch (type) {
+  const normType = type.startsWith('hire_agent_passed') ? 'invite' : type
+  switch (normType) {
     case 'view':
       return {
         icon: 'visibility',

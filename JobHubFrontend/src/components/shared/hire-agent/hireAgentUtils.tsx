@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tag } from 'antd';
-import { SyncOutlined, CheckCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { SyncOutlined, CheckCircleOutlined, PlayCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 export function getCampaignStatusTag(status: string) {
   switch (status) {
@@ -13,10 +13,11 @@ export function getCampaignStatusTag(status: string) {
 
 export function getConvStatusTag(status: string) {
   switch (status) {
-    case 'Screening': return <Tag color="purple">Sàng lọc sơ bộ</Tag>;
-    case 'Passed':    return <Tag color="success">Đạt vòng AI</Tag>;
-    case 'Failed':    return <Tag color="error">Không đạt</Tag>;
-    case 'Scheduled': return <Tag color="cyan">Chốt phỏng vấn</Tag>;
-    default:          return <Tag color="default">{status}</Tag>;
+    case 'Screening':              return <Tag color="purple">Sàng lọc sơ bộ</Tag>;
+    case 'Passed':                 return <Tag color="success">Đạt vòng AI</Tag>;
+    case 'PendingCandidateConfirm': return <Tag color="gold" icon={<ClockCircleOutlined />}>Chờ ứng viên xác nhận</Tag>;
+    case 'Scheduled':              return <Tag color="cyan"  icon={<CheckCircleOutlined />}>Đã chốt lịch</Tag>;
+    case 'Failed':                 return <Tag color="error">Không đạt</Tag>;
+    default:                       return <Tag color="default">{status}</Tag>;
   }
 }

@@ -18,7 +18,7 @@ export interface IHireAgentConversation {
   conversationId: string
   candidateId: string
   cvText: string
-  status: 'Screening' | 'Passed' | 'Failed' | 'Scheduled'
+  status: 'Screening' | 'Passed' | 'PendingCandidateConfirm' | 'Failed' | 'Scheduled'
   matchingScore?: number
   lastQuestionAt: string
   createdAt: string
@@ -51,9 +51,17 @@ export const getCampaignConversationsApi = (campaignId: string): Promise<ApiResp
 export const getCampaignByIdApi = (campaignId: string): Promise<ApiResponse<IHireAgentCampaign>> =>
   axios.get(`/api/v1/hire-agent/campaigns/${campaignId}`)
 
-/** Schedule a candidate interview for a campaign */
-export const scheduleInterviewApi = (campaignId: string, interviewDate: string): Promise<ApiResponse<IHireAgentConversation>> =>
-  axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/schedule`, { interviewDate })
+/** HR đặt lịch đề xuất phỏng vấn cho một candidate cụ thể */
+export const scheduleInterviewApi = (campaignId: string, candidateId: string, interviewDate: string): Promise<ApiResponse<IHireAgentConversation>> =>
+  axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/schedule`, { candidateId, interviewDate })
+
+/** Candidate xác nhận đồng ý lịch HR đề xuất */
+export const confirmInterviewApi = (campaignId: string): Promise<ApiResponse<IHireAgentConversation>> =>
+  axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/confirm`)
+
+/** Candidate đề xuất đổi lịch phỏng vấn */
+export const proposeRescheduleApi = (campaignId: string, message?: string): Promise<ApiResponse<IHireAgentConversation>> =>
+  axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/propose-reschedule`, { message })
 
 /** Get current candidate's conversation details under a campaign */
 export const getMyConversationApi = (campaignId: string): Promise<ApiResponse<IHireAgentConversation>> =>

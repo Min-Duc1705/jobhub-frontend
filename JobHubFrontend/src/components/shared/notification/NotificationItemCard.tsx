@@ -6,11 +6,13 @@ interface NotificationItemCardProps {
   onMarkRead: (id: string) => void
   onArchive: (id: string) => void
   onActionClick?: (id: string, actionType: 'accept' | 'reschedule') => void
+  onCardClick?: (id: string) => void
   isArchivedView?: boolean
 }
 
 const getIconConfig = (type: string) => {
-  switch (type) {
+  const normType = type.startsWith('hire_agent_passed') ? 'invite' : type
+  switch (normType) {
     case 'view':
       return {
         icon: 'work',
@@ -39,6 +41,7 @@ const NotificationItemCard = ({
   onMarkRead,
   onArchive,
   onActionClick,
+  onCardClick,
   isArchivedView = false
 }: NotificationItemCardProps) => {
   const { id, title, message, isRead, time, type } = notification
@@ -51,9 +54,16 @@ const NotificationItemCard = ({
   if (type === 'recommend' && !isRead) {
     cardClass += ' notification-card--premium'
   }
+  if (onCardClick) {
+    cardClass += ' notification-card--clickable'
+  }
 
   return (
-    <div className={cardClass}>
+    <div
+      className={cardClass}
+      onClick={() => onCardClick?.(id)}
+      style={{ cursor: onCardClick ? 'pointer' : 'default' }}
+    >
       {/* Icon Box */}
       <div className={`card-icon-box ${iconConfig.class}`}>
         <span className="material-symbols-outlined card-icon">
@@ -80,13 +90,13 @@ const NotificationItemCard = ({
           <div className="card-action-row">
             <button
               className="action-btn action-btn--primary"
-              onClick={() => onActionClick(id, 'accept')}
+              onClick={(e) => { e.stopPropagation(); onActionClick(id, 'accept'); }}
             >
               Chấp nhận lời mời
             </button>
             <button
               className="action-btn action-btn--outline"
-              onClick={() => onActionClick(id, 'reschedule')}
+              onClick={(e) => { e.stopPropagation(); onActionClick(id, 'reschedule'); }}
             >
               Đổi lịch hẹn
             </button>
@@ -105,7 +115,7 @@ const NotificationItemCard = ({
         {!isRead && (
           <button
             className="action-icon-btn"
-            onClick={() => onMarkRead(id)}
+            onClick={(e) => { e.stopPropagation(); onMarkRead(id); }}
             title="Đánh dấu đã đọc"
           >
             <span className="material-symbols-outlined">check_circle</span>
@@ -115,7 +125,7 @@ const NotificationItemCard = ({
         {!isArchivedView && (
           <button
             className="action-icon-btn"
-            onClick={() => onArchive(id)}
+            onClick={(e) => { e.stopPropagation(); onArchive(id); }}
             title="Lưu trữ"
           >
             <span className="material-symbols-outlined">archive</span>

@@ -20,7 +20,6 @@ import JobApplicationsPage   from '../pages/client/job-application/JobApplicatio
 import AppliedJobsPage       from '../pages/client/job-candidate/AppliedJobsPage'
 import ChatPage              from '../pages/client/chat/ChatPage'
 import NotificationList      from '../pages/client/notification/NotificationList'
-import ScheduleInterview      from '../pages/client/job/ScheduleInterview'
 
 import AdminLayout      from '../layout/admin/AdminLayout'
 import RoleBasedRoute   from '../components/auth/RoleBasedRoute'
@@ -87,14 +86,6 @@ const router = createBrowserRouter([
       { path: '/about', element: <AboutPage /> },
       { path: '/contact', element: <ContactPage /> },
       { path: '/chat', element: <ChatPage /> },
-      {
-        path: '/schedule/:campaignId',
-        element: (
-          <RoleBasedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
-            <ScheduleInterview />
-          </RoleBasedRoute>
-        )
-      },
       { path: '/candidate/profile', element: <ProfileSettings /> },
       { path: '/candidate/resume', element: <ResumeManagerPage /> },
       { path: '/candidate/resume/builder/:id', element: <ResumeBuilderPage /> },

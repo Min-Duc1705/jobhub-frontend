@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Switch, Button, Spin } from 'antd'
+import { useAppSelector } from '../../../redux/hooks'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { message, modal } from '../../../utils/antd'
 import {
@@ -37,6 +38,7 @@ const PAGE_SIZE = 5
 
 const NotificationList = () => {
   const navigate = useNavigate()
+  const { user } = useAppSelector((state: any) => state.auth)
   
   // Tab states
   const [activeTab, setActiveTab] = useState<'feed' | 'settings' | 'archived'>('feed')
@@ -168,9 +170,11 @@ const NotificationList = () => {
     notifications.forEach(n => {
       if (!n.isRead) {
         counts.all++
-        if (n.type in counts) {
-          counts[n.type]++
-        }
+        let cat: FilterCategory = 'default'
+        if (n.type === 'view') cat = 'view'
+        else if (n.type === 'invite' || n.type.startsWith('hire_agent_passed')) cat = 'invite'
+        else if (n.type === 'recommend') cat = 'recommend'
+        counts[cat]++
       }
     })
     
@@ -180,7 +184,10 @@ const NotificationList = () => {
   // Filter notifications for active category (in Main feed)
   const filteredNotifications = useMemo(() => {
     if (activeCategory === 'all') return notifications
-    return notifications.filter(n => n.type === activeCategory)
+    return notifications.filter(n => {
+      if (activeCategory === 'invite') return n.type === 'invite' || n.type.startsWith('hire_agent_passed')
+      return n.type === activeCategory
+    })
   }, [notifications, activeCategory])
 
   // Slice notifications for pagination (Main feed)
@@ -246,6 +253,29 @@ const NotificationList = () => {
     }
     // Automatically mark read
     handleMarkRead(id)
+  }
+
+  const handleCardClick = async (notif: INotification) => {
+    if (!notif.isRead) {
+      await handleMarkRead(notif.id)
+    }
+    if (notif.type.startsWith('hire_agent_passed')) {
+      const parts = notif.type.split(':')
+      const campaignId = parts[1]
+      const candidateId = parts[2]
+      navigate(`/hr/hire-agent?campaignId=${campaignId}&candidateId=${candidateId}`)
+    } else if (notif.type === 'view') {
+      navigate('/candidate/profile')
+    } else if (notif.type === 'invite') {
+      const isHR = user?.role?.name === 'HR'
+      if (isHR) {
+        navigate('/hr/jobs')
+      } else {
+        navigate('/candidate/applied-jobs')
+      }
+    } else if (notif.type === 'recommend') {
+      navigate('/jobs')
+    }
   }
 
   const handleSaveSettings = () => {
@@ -341,6 +371,7 @@ const NotificationList = () => {
                         onMarkRead={handleMarkRead}
                         onArchive={handleArchive}
                         onActionClick={handleActionClick}
+                        onCardClick={() => handleCardClick(notif)}
                       />
                     ))}
                   </div>
@@ -402,6 +433,7 @@ const NotificationList = () => {
                         notification={notif}
                         onMarkRead={handleMarkRead}
                         onArchive={handleArchive}
+                        onCardClick={() => handleCardClick(notif)}
                         isArchivedView
                       />
                     ))}

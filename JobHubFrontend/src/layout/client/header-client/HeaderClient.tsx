@@ -253,6 +253,11 @@ const HeaderClient = () => {
           }
         } else if (notification.type === 'recommend') {
           navigate('/jobs')
+        } else if (notification.type.startsWith('hire_agent_passed')) {
+          const parts = notification.type.split(':')
+          const campaignId = parts[1]
+          const candidateId = parts[2]
+          navigate(`/hr/hire-agent?campaignId=${campaignId}&candidateId=${candidateId}`)
         }
       }
     } catch (err) {

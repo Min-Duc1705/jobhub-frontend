@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Drawer, Select, Spin, Tag, message } from 'antd'
 import dayjs from 'dayjs'
 import type { IApplication, ApplicationStatus } from '../../../types/application'
+import { scoreCvApi } from '../../../services/ai-service'
 import type { CvScoringResult } from '../../../services/ai-service'
+import { buildCvText, buildJobDescription } from '../../../pages/client/job-application/JobApplicationsPage'
+import type { IJob } from '../../../types/job'
 import { APPLICATION_STATUS_LABEL, APPLICATION_STATUS_COLOR } from '../../../types/application'
 import TemplateModern from '../../client/resume/templates/TemplateModern'
 import TemplateClassic from '../../client/resume/templates/TemplateClassic'
@@ -25,10 +28,12 @@ const STATUS_OPTIONS: { label: string; value: ApplicationStatus }[] = [
 
 interface Props {
   application: IApplication | null
+  job: IJob | null
   open: boolean
   onClose: () => void
   onUpdateStatus: (id: string, status: ApplicationStatus, note?: string) => void
   aiResult?: CvScoringResult
+  onAiResultGenerated?: (appId: string, result: CvScoringResult) => void
 }
 
 const fetchBlobUrl = async (apiUrl: string): Promise<string> => {
@@ -47,13 +52,47 @@ const EmptyLine = ({ children }: { children: string }) => (
   <li style={{ color: '#727682' }}>{children}</li>
 )
 
-const ApplicationDetailModal = ({ application, open, onClose, onUpdateStatus, aiResult }: Props) => {
+const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatus, aiResult, onAiResultGenerated }: Props) => {
   const [downloading, setDownloading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewing, setPreviewing] = useState(false)
   const [tempStatus, setTempStatus] = useState<ApplicationStatus>('PENDING')
   const [zoom, setZoom] = useState(100)
   const [note, setNote] = useState('')
+  const [generatingDetail, setGeneratingDetail] = useState(false)
+
+  useEffect(() => {
+    const generateAiDetail = async () => {
+      if (!open || !application || !job || !aiResult) return
+      // Nếu đã có feedback thì không sinh lại
+      if (aiResult.ai_feedback) return
+
+      setGeneratingDetail(true)
+      try {
+        const cvText = buildCvText(application)
+        const jobDesc = buildJobDescription(job)
+
+        const res = await scoreCvApi({
+          job_description: jobDesc,
+          cv_text: cvText,
+          application_id: application.id,
+          job_id: job.id,
+          customer_id: application.customerId
+        })
+
+        if (res.data && onAiResultGenerated) {
+          onAiResultGenerated(application.id, res.data)
+        }
+      } catch (err) {
+        console.error('Lỗi khi sinh đánh giá AI chi tiết:', err)
+        message.error('Không thể sinh đánh giá AI chi tiết.')
+      } finally {
+        setGeneratingDetail(false)
+      }
+    }
+
+    generateAiDetail()
+  }, [open, application?.id, job?.id, !!aiResult, !!aiResult?.ai_feedback])
 
   useEffect(() => {
     if (application) {
@@ -207,6 +246,21 @@ const ApplicationDetailModal = ({ application, open, onClose, onUpdateStatus, ai
 
         <div className="adm-right-pane">
           <div className="adm-ai-glass-bg"></div>
+
+          {generatingDetail && (
+            <div className="adm-ai-generating-overlay" style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 10,
+              gap: 16
+            }}>
+              <Spin size="large" />
+              <span style={{ fontWeight: 600, color: '#002660' }}>Đang phân tích chi tiết bằng AI...</span>
+            </div>
+          )}
 
           <div className="adm-ai-scrollable">
             <div className="adm-ai-header">

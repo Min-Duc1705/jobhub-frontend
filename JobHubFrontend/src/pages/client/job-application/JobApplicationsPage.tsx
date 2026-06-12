@@ -22,7 +22,7 @@ import './JobApplicationsPage.scss'
 
 const PAGE_SIZE = 10
 
-const buildJobDescription = (job: IJob) => [
+export const buildJobDescription = (job: IJob) => [
   `Title: ${job.name}`,
   `Company: ${job.companyName ?? ''}`,
   `Level: ${job.level}`,
@@ -33,7 +33,7 @@ const buildJobDescription = (job: IJob) => [
   `Requirements: ${job.requirements ?? ''}`,
 ].filter(Boolean).join('\n')
 
-const parseResumeContent = (contentJson?: string): ResumeContent | null => {
+export const parseResumeContent = (contentJson?: string): ResumeContent | null => {
   if (!contentJson) return null
   try {
     return JSON.parse(contentJson) as ResumeContent
@@ -42,7 +42,7 @@ const parseResumeContent = (contentJson?: string): ResumeContent | null => {
   }
 }
 
-const buildOnlineCvText = (resume: IResume | IResumeBasic): string => {
+export const buildOnlineCvText = (resume: IResume | IResumeBasic): string => {
   const content = parseResumeContent(resume.contentJson)
   if (!content) return resume.title || ''
 
@@ -70,7 +70,7 @@ const buildOnlineCvText = (resume: IResume | IResumeBasic): string => {
   return lines.filter(Boolean).join('\n')
 }
 
-const buildCvText = (application: IApplication, resume?: IResume | IResumeBasic | null) => {
+export const buildCvText = (application: IApplication, resume?: IResume | IResumeBasic | null) => {
   const resObj = resume ?? application.resume
   const lines = [
     `Application ID: ${application.id}`,
@@ -358,12 +358,16 @@ const JobApplicationsPage = () => {
 
       <ApplicationDetailModal
         application={selectedApp}
+        job={job}
         aiResult={selectedApp ? aiResults[selectedApp.id] : undefined}
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
         onUpdateStatus={(id, status, note) => {
           handleUpdateStatus(id, status, note)
           setDetailOpen(false)
+        }}
+        onAiResultGenerated={(appId, result) => {
+          setAiResults(prev => ({ ...prev, [appId]: result }))
         }}
       />
     </div>

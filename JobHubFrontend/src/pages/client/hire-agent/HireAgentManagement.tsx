@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Breadcrumb, Button, Col, Form, Row } from 'antd';
 import { PlusOutlined, RobotOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useChatHub, useChatHubEvent } from '../../../hooks/useChatHub';
 import dayjs from 'dayjs';
 
@@ -33,6 +33,10 @@ export default function HireAgentManagement() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const selectedCampaignRef = useRef<IHireAgentCampaign | null>(null);
 
+  const [searchParams] = useSearchParams();
+  const campaignIdParam = searchParams.get('campaignId');
+  const candidateIdParam = searchParams.get('candidateId');
+
   // State
   const [campaigns, setCampaigns]                   = useState<IHireAgentCampaign[]>([]);
   const [jobs, setJobs]                             = useState<any[]>([]);
@@ -53,6 +57,28 @@ export default function HireAgentManagement() {
   const [cvPreviewConv, setCvPreviewConv]           = useState<IHireAgentConversation | null>(null);
 
   useEffect(() => { selectedCampaignRef.current = selectedCampaign; }, [selectedCampaign]);
+
+  // Auto-select campaign if query param campaignId matches
+  useEffect(() => {
+    if (campaignIdParam && campaigns.length > 0) {
+      const matchedCampaign = campaigns.find(c => c.id === campaignIdParam);
+      if (matchedCampaign && selectedCampaign?.id !== matchedCampaign.id) {
+        handleSelectCampaign(matchedCampaign);
+      }
+    }
+  }, [campaignIdParam, campaigns]);
+
+  // Auto-select conversation if query param candidateId matches
+  useEffect(() => {
+    if (candidateIdParam && conversations.length > 0) {
+      const matchedConv = conversations.find(
+        c => c.candidateId.toLowerCase() === candidateIdParam.toLowerCase()
+      );
+      if (matchedConv && selectedConversation?.candidateId !== matchedConv.candidateId) {
+        handleSelectConversation(matchedConv);
+      }
+    }
+  }, [candidateIdParam, conversations]);
 
   // ── Data loading (song song) ───────────────────────────────────────────────────
   const loadCampaigns = async () => {
