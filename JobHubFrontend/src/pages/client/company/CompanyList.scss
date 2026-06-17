@@ -647,32 +647,71 @@ $on-secondary-fixed-variant: #004785;
       gap: 10px;
     }
 
-    .location-input-wrapper {
+    .location-select-wrapper {
       position: relative;
       display: flex;
       align-items: center;
+      border: 1px solid $outline-variant;
+      border-radius: 6px;
+      height: 38px;
+      padding-left: 36px;
+      box-sizing: border-box;
+      background-color: $surface-container-lowest;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        border-color: $secondary;
+      }
+
+      &:focus-within {
+        border-color: $secondary;
+        box-shadow: 0 0 0 2px rgba($secondary, 0.2);
+      }
 
       .location-icon {
         position: absolute;
         left: 12px;
         color: $outline;
         font-size: 16px;
+        pointer-events: none;
       }
 
-      .location-input {
-        padding-left: 36px !important;
-        border-color: $outline-variant !important;
-        border-radius: 6px !important;
-        font-size: 14px !important;
-        height: 38px !important;
+      .location-select {
+        width: 100%;
+        height: 100% !important;
 
-        &:hover {
-          border-color: $secondary !important;
-        }
+        .ant-select-selector {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          height: 100% !important;
+          display: flex !important;
+          align-items: center !important;
 
-        &:focus {
-          border-color: $secondary !important;
-          box-shadow: 0 0 0 2px rgba($secondary, 0.2) !important;
+          .ant-select-selection-item,
+          .ant-select-selection-placeholder {
+            padding: 0 !important;
+            font-size: 14px !important;
+            color: $on-surface !important;
+            line-height: 36px !important;
+          }
+
+          .ant-select-selection-placeholder {
+            color: rgba($on-surface, 0.6) !important;
+          }
+
+          .ant-select-selection-search {
+            inset-inline-start: 0 !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+
+          .ant-select-selection-search-input {
+            height: 100% !important;
+            line-height: 36px !important;
+          }
         }
       }
     }

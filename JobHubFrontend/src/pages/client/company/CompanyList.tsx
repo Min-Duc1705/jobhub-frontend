@@ -12,6 +12,72 @@ import './CompanyList.scss'
 const PAGE_SIZE = 4
 const FEATURED_COUNT = 10
 
+const normalizeLocation = (str: string): string => {
+  if (!str) return ''
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove Vietnamese accents
+    .replace(/đ/g, 'd')
+    .replace(/t\.?p\.?\s*/g, '')     // Remove TP.
+    .replace(/h\s*c\s*m/g, 'ho chi minh') // Map hcm to ho chi minh
+    .replace(/thanh\s*pho\s*/g, '')  // Remove Thanh pho
+    .replace(/tinh\s*/g, '')         // Remove Tinh
+    .trim()
+}
+
+const matchIndustryCategory = (companyIndustry: string, selectedCategories: string[]): boolean => {
+  if (selectedCategories.length === 0) return true
+  if (!companyIndustry) return false
+  
+  const ind = companyIndustry.toLowerCase()
+  
+  return selectedCategories.some(cat => {
+    switch (cat) {
+      case 'Công nghệ thông tin':
+        return ind.includes('công nghệ thông tin') || 
+               ind.includes('software') || 
+               ind.includes('it services') || 
+               ind.includes('it consulting') || 
+               ind.includes('phát triển phần mềm') || 
+               ind.includes('viễn thông') ||
+               ind.includes('telecommunication') ||
+               ind.includes('systems integration') || 
+               ind.includes('it infrastructure') ||
+               ind.includes('technology');
+      case 'Fintech':
+        return ind.includes('fintech') || 
+               ind.includes('banking') || 
+               ind.includes('tài chính') || 
+               ind.includes('ngân hàng') || 
+               ind.includes('digital finance') || 
+               ind.includes('payments');
+      case 'AI & Big Data':
+        return ind.includes('ai') || 
+               ind.includes('artificial intelligence') || 
+               ind.includes('big data') || 
+               ind.includes('data analytics') || 
+               ind.includes('data science') || 
+               ind.includes('machine learning') ||
+               ind.includes('cognitive');
+      case 'E-commerce':
+        return ind.includes('e-commerce') || 
+               ind.includes('thương mại điện tử') || 
+               ind.includes('retail tech') || 
+               ind.includes('logistics tech') || 
+               ind.includes('e-commerce platform') ||
+               ind.includes('e-commerce enabler');
+      case 'Cloud & DevOps':
+        return ind.includes('cloud') || 
+               ind.includes('devops') || 
+               ind.includes('infrastructure') ||
+               ind.includes('network');
+      default:
+        return ind.includes(cat.toLowerCase());
+    }
+  })
+}
+
 const CompanyList = () => {
   const navigate = useNavigate()
   const initFetched = useRef(false)
@@ -24,7 +90,7 @@ const CompanyList = () => {
   const [keyword,        setKeyword]        = useState('')
   const [appliedKeyword, setAppliedKeyword] = useState('')
 
-  // ── Sidebar filters (client-side on current page) ─────────────────────────
+  // ── Sidebar filters ───────────────────────────────────────────────────────
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([])
   const [selectedSize,       setSelectedSize]       = useState<string>('')
   const [locationSearch,     setLocationSearch]     = useState('')
@@ -34,37 +100,12 @@ const CompanyList = () => {
   const [page,   setPage]   = useState(1)
 
   // ── Data ──────────────────────────────────────────────────────────────────
-  const [companies,       setCompanies]       = useState<ICompany[]>([])
-  const [total,           setTotal]           = useState(0)
+  const [allCompanies,    setAllCompanies]    = useState<ICompany[]>([])
   const [loading,         setLoading]         = useState(false)
   const [loadingFeatured, setLoadingFeatured] = useState(false)
   const [featuredList,    setFeaturedList]    = useState<ICompany[]>([])
 
-  // ── Fetch (server-side pagination) ────────────────────────────────────────
-  const fetchPage = async (pg: number, kw: string, sort: string) => {
-    setLoading(true)
-    try {
-      const p = new URLSearchParams({
-        pageNumber:   String(pg),
-        pageSize:     String(PAGE_SIZE),
-        sortBy:       sort,
-        isDescending: sort === 'name' ? 'false' : 'true',
-      })
-      if (kw.trim()) p.append('searchTerm', kw.trim())
-
-      const res = await getVerifiedCompaniesApi(p.toString())
-      const result = res.data?.result ?? []
-      setCompanies(result)
-      setTotal(res.data?.meta?.total ?? 0)
-    } catch {
-      setCompanies([])
-      setTotal(0)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Run ONCE on mount — fetch paginated list & featured list song song
+  // Run ONCE on mount — fetch all verified companies & featured list
   useEffect(() => {
     if (initFetched.current) return
     initFetched.current = true
@@ -72,12 +113,6 @@ const CompanyList = () => {
     setLoading(true)
     setLoadingFeatured(true)
 
-    const pageParams = new URLSearchParams({
-      pageNumber:   '1',
-      pageSize:     String(PAGE_SIZE),
-      sortBy:       'createdDate',
-      isDescending: 'true',
-    })
     const featuredParams = new URLSearchParams({
       pageNumber:   '1',
       pageSize:     String(FEATURED_COUNT),
@@ -86,12 +121,11 @@ const CompanyList = () => {
     })
 
     Promise.all([
-      getVerifiedCompaniesApi(pageParams.toString())
+      getVerifiedCompaniesApi('pageNumber=1&pageSize=1000')
         .then(res => {
-          setCompanies(res.data?.result ?? [])
-          setTotal(res.data?.meta?.total ?? 0)
+          setAllCompanies(res.data?.result ?? [])
         })
-        .catch(() => { setCompanies([]); setTotal(0) })
+        .catch(err => console.error('Failed to fetch verified companies:', err))
         .finally(() => setLoading(false)),
 
       getVerifiedCompaniesApi(featuredParams.toString())
@@ -99,7 +133,6 @@ const CompanyList = () => {
         .catch(err => console.error('Failed to fetch featured companies:', err))
         .finally(() => setLoadingFeatured(false)),
     ])
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // ── Auto-slideshow (3s) ───────────────────────────────────────────────────
@@ -122,30 +155,59 @@ const CompanyList = () => {
     }, 3000)
   }
 
-  // ── Client-side filter on current page ───────────────────────────────────
-  const filtered = companies.filter(c => {
-    if (selectedIndustries.length > 0 && c.industry && !selectedIndustries.includes(c.industry)) return false
-    if (locationSearch.trim() && c.address && !c.address.toLowerCase().includes(locationSearch.toLowerCase())) return false
+  // ── Client-side filter on all verified companies ────────────────────────
+  const filtered = allCompanies.filter(c => {
+    // 1. Search term (search by name or industry)
+    if (appliedKeyword.trim()) {
+      const kw = appliedKeyword.toLowerCase()
+      const nameMatch = c.name.toLowerCase().includes(kw)
+      const indMatch = c.industry ? c.industry.toLowerCase().includes(kw) : false
+      if (!nameMatch && !indMatch) return false
+    }
+    // 2. Industry filter (match any of the selected industries)
+    if (selectedIndustries.length > 0) {
+      if (!c.industry || !matchIndustryCategory(c.industry, selectedIndustries)) return false
+    }
+    // 3. Location filter (match if address contains locationSearch, normalized)
+    if (locationSearch.trim()) {
+      if (!c.address) return false
+      const normalizedAddr = normalizeLocation(c.address)
+      const normalizedSearch = normalizeLocation(locationSearch)
+      if (!normalizedAddr.includes(normalizedSearch)) return false
+    }
+    // 4. Size filter
     if (selectedSize && c.companySize !== selectedSize) return false
     return true
   })
+
+  // ── Client-side sort ─────────────────────────────────────────────────────
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.name.localeCompare(b.name)
+    }
+    // Default / createdDate (newer first)
+    const dateA = a.createdDate ? new Date(a.createdDate).getTime() : 0
+    const dateB = b.createdDate ? new Date(b.createdDate).getTime() : 0
+    return dateB - dateA
+  })
+
+  // ── Client-side pagination ───────────────────────────────────────────────
+  const total = sorted.length
+  const paginatedCompanies = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const handleSearch = () => {
     setAppliedKeyword(keyword)
     setPage(1)
-    fetchPage(1, keyword, sortBy)
   }
 
   const handlePageChange = (pg: number) => {
     setPage(pg)
-    fetchPage(pg, appliedKeyword, sortBy)
   }
 
   const handleSortChange = (sort: string) => {
     setSortBy(sort)
     setPage(1)
-    fetchPage(1, appliedKeyword, sort)
   }
 
   const handleClearFilters = () => {
@@ -155,7 +217,6 @@ const CompanyList = () => {
     setKeyword('')
     setAppliedKeyword('')
     setPage(1)
-    fetchPage(1, '', sortBy)
   }
 
   const navigateToCompany = (id: string) => {
@@ -217,11 +278,11 @@ const CompanyList = () => {
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 60 }}><Spin size="large" /></div>
-          ) : filtered.length === 0 ? (
+          ) : paginatedCompanies.length === 0 ? (
             <Empty description="Không tìm thấy công ty nào phù hợp." style={{ padding: 60 }} />
           ) : (
             <div className="company-cards-wrapper">
-              {filtered.map(c => (
+              {paginatedCompanies.map(c => (
                 <CompanyCard
                   key={c.id}
                   company={c}

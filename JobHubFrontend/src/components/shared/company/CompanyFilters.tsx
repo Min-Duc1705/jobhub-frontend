@@ -1,5 +1,6 @@
 import React from 'react';
-import { Checkbox, Radio, Input, Button } from 'antd';
+import { Checkbox, Radio, Select, Button } from 'antd';
+import { useProvinceNames } from '../../../hooks/useProvinces';
 
 const ALL_INDUSTRIES = ['Công nghệ thông tin', 'Fintech', 'AI & Big Data', 'E-commerce', 'Cloud & DevOps'];
 
@@ -22,6 +23,8 @@ export default function CompanyFilters({
   setLocationSearch,
   onClearFilters
 }: CompanyFiltersProps) {
+  const { options: provinceOptions, loading: loadingProvinces } = useProvinceNames(true);
+
   return (
     <aside className="sidebar-filters">
       <div className="filters-card">
@@ -64,13 +67,22 @@ export default function CompanyFilters({
 
         <div className="filter-category border-top">
           <p className="category-title">Địa điểm</p>
-          <div className="location-input-wrapper">
+          <div className="location-select-wrapper">
             <span className="material-symbols-outlined location-icon">location_on</span>
-            <Input
-              className="location-input"
-              placeholder="Thành phố..."
-              value={locationSearch}
-              onChange={e => setLocationSearch(e.target.value)}
+            <Select
+              className="location-select"
+              variant="borderless"
+              value={locationSearch || undefined}
+              onChange={val => setLocationSearch(val || '')}
+              showSearch
+              optionFilterProp="children"
+              loading={loadingProvinces}
+              options={provinceOptions}
+              placeholder="Chọn địa điểm..."
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              style={{ width: '100%' }}
             />
           </div>
         </div>
