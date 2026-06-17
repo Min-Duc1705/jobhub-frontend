@@ -1,4 +1,3 @@
-import { Button } from 'antd'
 import type { JobType, JobLevel } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
 
@@ -62,9 +61,9 @@ const JobListFilters = ({
         </div>
       </div>
 
-      <Button className="btn-apply-filters" onClick={onApply}>
+      <button className="btn-apply-filters" onClick={onApply}>
         Áp dụng bộ lọc
-      </Button>
+      </button>
     </aside>
   )
 }

@@ -23,6 +23,17 @@ const buildJobsUrl = (params: URLSearchParams) => {
   return query ? `/jobs?${query}` : '/jobs'
 }
 
+const getArrayFromSearch = (search: string, prefix: string): string[] => {
+  const params = new URLSearchParams(search)
+  const results: string[] = []
+  for (const [key, value] of params.entries()) {
+    if (key === prefix || key.startsWith(`${prefix}[`)) {
+      results.push(value)
+    }
+  }
+  return results
+}
+
 const JobList = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -39,19 +50,22 @@ const JobList = () => {
   if (initialSortBy === 'createdDate') initialSortBy = 'newest'
   if (initialSortBy === 'salary') initialSortBy = 'salary_desc'
 
+  const initialTypes = getArrayFromSearch(location.search, 'jobType') as JobType[]
+  const initialLevels = getArrayFromSearch(location.search, 'level') as JobLevel[]
+
   // Search bar state
   const [keyword,       setKeyword]       = useState(initialKeyword)
   const [locationInput, setLocationInput] = useState(initialLocation)
 
   // Sidebar filter state (local — áp dụng khi nhấn Apply)
-  const [tempTypes,  setTempTypes]  = useState<JobType[]>([])
-  const [tempLevels, setTempLevels] = useState<JobLevel[]>([])
+  const [tempTypes,  setTempTypes]  = useState<JobType[]>(initialTypes)
+  const [tempLevels, setTempLevels] = useState<JobLevel[]>(initialLevels)
 
   // Committed filter state (gửi lên API)
   const [appliedKeyword,  setAppliedKeyword]  = useState(initialKeyword)
   const [appliedLocation, setAppliedLocation] = useState(initialLocation)
-  const [appliedTypes,    setAppliedTypes]    = useState<JobType[]>([])
-  const [appliedLevels,   setAppliedLevels]   = useState<JobLevel[]>([])
+  const [appliedTypes,    setAppliedTypes]    = useState<JobType[]>(initialTypes)
+  const [appliedLevels,   setAppliedLevels]   = useState<JobLevel[]>(initialLevels)
   const [sortBy,          setSortBy]          = useState(initialSortBy)
 
   // API / pagination state
@@ -91,12 +105,20 @@ const JobList = () => {
     if (urlSortBy === 'salary') urlSortBy = 'salary_desc'
     const urlPage = getPageFromSearch(location.search)
 
+    const urlTypes = getArrayFromSearch(location.search, 'jobType') as JobType[]
+    const urlLevels = getArrayFromSearch(location.search, 'level') as JobLevel[]
+
     setKeyword(urlKeyword)
     setLocationInput(urlLocation)
     setAppliedKeyword(urlKeyword)
     setAppliedLocation(urlLocation)
     setSortBy(urlSortBy)
     setCurrentPage(urlPage)
+
+    setTempTypes(urlTypes)
+    setTempLevels(urlLevels)
+    setAppliedTypes(urlTypes)
+    setAppliedLevels(urlLevels)
   }, [location.search])
 
   const handleToggleSave = async (e: React.MouseEvent, job: IJob) => {
@@ -138,8 +160,8 @@ const JobList = () => {
       params.set('pageSize',   String(PAGE_SIZE))
       if (appliedKeyword)               params.set('searchTerm',  appliedKeyword)
       if (appliedLocation)              params.set('location', appliedLocation)
-      if (appliedTypes.length)          params.set('jobType',  appliedTypes.join(','))
-      if (appliedLevels.length)         params.set('level',    appliedLevels.join(','))
+      appliedTypes.forEach((type, idx) => params.append(`jobType[${idx}]`, type))
+      appliedLevels.forEach((level, idx) => params.append(`level[${idx}]`, level))
       if (sortBy === 'newest') {
         params.set('sortBy', 'createdDate')
         params.set('isDescending', 'true')
@@ -195,6 +217,20 @@ const JobList = () => {
 
     const params = new URLSearchParams(location.search)
     params.delete('page')
+
+    // Clean up old filter query params
+    const keysToDelete: string[] = []
+    for (const key of params.keys()) {
+      if (key === 'jobType' || key.startsWith('jobType[') || key === 'level' || key.startsWith('level[')) {
+        keysToDelete.push(key)
+      }
+    }
+    keysToDelete.forEach(k => params.delete(k))
+
+    // Set new ones
+    tempTypes.forEach((type, idx) => params.append(`jobType[${idx}]`, type))
+    tempLevels.forEach((level, idx) => params.append(`level[${idx}]`, level))
+
     navigate(buildJobsUrl(params), { replace: true })
   }
 
