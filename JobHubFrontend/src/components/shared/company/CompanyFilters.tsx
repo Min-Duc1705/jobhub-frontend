@@ -1,5 +1,6 @@
 import React from 'react';
 import { Checkbox, Radio, Select, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { useProvinceNames } from '../../../hooks/useProvinces';
 
 const ALL_INDUSTRIES = ['Công nghệ thông tin', 'Fintech', 'AI & Big Data', 'E-commerce', 'Cloud & DevOps'];
@@ -23,6 +24,7 @@ export default function CompanyFilters({
   setLocationSearch,
   onClearFilters
 }: CompanyFiltersProps) {
+  const navigate = useNavigate();
   const { options: provinceOptions, loading: loadingProvinces } = useProvinceNames(true);
 
   return (
@@ -88,7 +90,7 @@ export default function CompanyFilters({
         </div>
       </div>
 
-      <div className="ai-predictor-banner glass-ai">
+      <div className="ai-predictor-banner glass-ai" onClick={() => navigate('/salary-predict')}>
         <div className="banner-content">
           <span className="banner-tag">Mới: Công cụ AI</span>
           <h4 className="banner-title">Dự đoán Lương</h4>
