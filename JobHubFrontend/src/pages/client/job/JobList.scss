@@ -814,77 +814,174 @@
 
     .pagination-container {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      margin-top: 24px;
+      margin-top: 36px;
       padding-top: 24px;
+      border-top: 1px solid $outline-variant;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      @media (max-width: 640px) {
+        flex-direction: column;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .pagination-info {
+        font-size: 14px;
+        color: $on-surface-variant;
+        font-family: $font-body;
+
+        strong {
+          color: $on-surface;
+          font-weight: 600;
+        }
+      }
 
       .ant-pagination {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
       }
 
-      .ant-pagination-item {
-        border-radius: 50% !important;
-        border: none !important;
-        font-family: $font-mono !important;
-        font-size: 12px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px !important;
-        height: 32px !important;
-        background-color: transparent !important;
+      .ant-pagination-item,
+      .ant-pagination-prev,
+      .ant-pagination-next,
+      .ant-pagination-jump-prev,
+      .ant-pagination-jump-next {
+        width: 40px !important;
+        height: 40px !important;
         margin: 0 !important;
+        margin-inline: 0 !important;
+        margin-inline-start: 0 !important;
+        margin-inline-end: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      .ant-pagination-item,
+      .ant-pagination-prev,
+      .ant-pagination-next {
+        border-radius: 8px !important;
+        border: 1px solid $outline-variant !important;
+        font-family: $font-mono !important;
+        font-size: 14px !important;
+        background-color: #ffffff !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+        button {
+          background: none !important;
+          border: none !important;
+          color: $on-surface !important;
+          padding: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 100% !important;
+          height: 100% !important;
+          cursor: pointer !important;
+        }
 
         a {
           color: $on-surface !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+
+        &:hover:not(.ant-pagination-disabled) {
+          background-color: $surface-container !important;
+          border-color: $outline !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+
+          a,
+          button {
+            color: $primary !important;
+          }
+        }
+
+        &.ant-pagination-item-active {
+          background-color: $primary !important;
+          border-color: $primary !important;
+          box-shadow: 0 4px 12px rgba($primary, 0.25);
+
+          a {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+          }
+
+          &:hover {
+            background-color: $primary !important;
+            border-color: $primary !important;
+            transform: none;
+
+            a {
+              color: #ffffff !important;
+            }
+          }
+        }
+      }
+
+      .ant-pagination-disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background-color: $surface-container-low !important;
+        border-color: $outline-variant !important;
+        box-shadow: none;
+
+        a,
+        button {
+          color: $outline !important;
+          cursor: not-allowed !important;
         }
 
         &:hover {
-          background-color: $surface-container !important;
-        }
-
-        &-active {
-          background-color: $primary-container !important;
-
-          a {
-            color: $on-primary !important;
-            font-weight: bold !important;
-          }
+          background-color: $surface-container-low !important;
+          border-color: $outline-variant !important;
+          transform: none;
+          box-shadow: none;
         }
       }
 
       .ant-pagination-jump-prev,
       .ant-pagination-jump-next {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 32px !important;
-        height: 32px !important;
-        margin: 0 !important;
+        background: transparent !important;
+        border: none !important;
         color: $on-surface-variant !important;
-      }
-
-      .pagination-arrow-btn {
-        background: none;
-        border: none;
-        padding: 4px;
-        color: $on-surface-variant;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         cursor: pointer;
-        transition: color 0.2s;
 
-        &:hover {
-          color: $primary;
+        a,
+        .ant-pagination-item-link,
+        .ant-pagination-item-container {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
+          border: none !important;
         }
 
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+        .ant-pagination-item-ellipsis {
+          display: block !important;
+          text-align: center !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          letter-spacing: 2px;
         }
       }
     }

@@ -12,6 +12,17 @@ import './JobList.scss'
 
 const PAGE_SIZE = 10
 
+const getPageFromSearch = (search: string) => {
+  const params = new URLSearchParams(search)
+  const parsedPage = Number.parseInt(params.get('page') || '1', 10)
+  return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+}
+
+const buildJobsUrl = (params: URLSearchParams) => {
+  const query = params.toString()
+  return query ? `/jobs?${query}` : '/jobs'
+}
+
 const JobList = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -46,7 +57,7 @@ const JobList = () => {
   // API / pagination state
   const [jobs,        setJobs]        = useState<IJob[]>([])
   const [total,       setTotal]       = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(() => getPageFromSearch(location.search))
   const [loading,     setLoading]     = useState(false)
 
   // ── Provinces (shared hook — cache toàn module, chỉ fetch 1 lần toàn app)
@@ -78,7 +89,7 @@ const JobList = () => {
     let urlSortBy = qParams.get('sortBy') || 'newest'
     if (urlSortBy === 'createdDate') urlSortBy = 'newest'
     if (urlSortBy === 'salary') urlSortBy = 'salary_desc'
-    const urlPage = parseInt(qParams.get('page') || '1', 10)
+    const urlPage = getPageFromSearch(location.search)
 
     setKeyword(urlKeyword)
     setLocationInput(urlLocation)
@@ -153,6 +164,17 @@ const JobList = () => {
     fetchJobs(currentPage)
   }, [fetchJobs, currentPage])
 
+  useEffect(() => {
+    if (loading || total === 0) return
+
+    const totalPages = Math.ceil(total / PAGE_SIZE)
+    if (currentPage <= totalPages) return
+
+    const params = new URLSearchParams(location.search)
+    params.set('page', String(totalPages))
+    navigate(buildJobsUrl(params), { replace: true })
+  }, [currentPage, loading, location.search, navigate, total])
+
   // Handlers
   const handleSearch = () => {
     const params = new URLSearchParams(location.search)
@@ -163,13 +185,17 @@ const JobList = () => {
     else params.delete('location')
 
     params.delete('page') // Reset pagination to page 1
-    navigate(`/jobs?${params.toString()}`)
+    navigate(buildJobsUrl(params))
   }
 
   const handleApplyFilters = () => {
     setAppliedTypes(tempTypes)
     setAppliedLevels(tempLevels)
     setCurrentPage(1)
+
+    const params = new URLSearchParams(location.search)
+    params.delete('page')
+    navigate(buildJobsUrl(params), { replace: true })
   }
 
   const handleClearAll = () => {
@@ -179,6 +205,7 @@ const JobList = () => {
     setTempLevels([])
     setAppliedTypes([])
     setAppliedLevels([])
+    setCurrentPage(1)
     navigate('/jobs')
   }
 
@@ -231,7 +258,7 @@ const JobList = () => {
                   if (val && val !== 'newest') params.set('sortBy', val)
                   else params.delete('sortBy')
                   params.delete('page') // Reset pagination to page 1
-                  navigate(`/jobs?${params.toString()}`)
+                  navigate(buildJobsUrl(params))
                 }}
                 options={[
                   { value: 'newest',     label: 'Mới nhất' },
@@ -265,6 +292,9 @@ const JobList = () => {
           {/* Pagination */}
           {total > PAGE_SIZE && (
             <div className="pagination-container">
+              <span className="pagination-info">
+                Hi&#7875;n th&#7883; t&#7915; <strong>{Math.min((currentPage - 1) * PAGE_SIZE + 1, total)}</strong> &#273;&#7871;n <strong>{Math.min(currentPage * PAGE_SIZE, total)}</strong> trong t&#7893;ng s&#7889; <strong>{total}</strong> vi&#7879;c l&#224;m
+              </span>
               <Pagination
                 current={currentPage}
                 pageSize={PAGE_SIZE}
@@ -273,14 +303,9 @@ const JobList = () => {
                   const params = new URLSearchParams(location.search)
                   if (page > 1) params.set('page', String(page))
                   else params.delete('page')
-                  navigate(`/jobs?${params.toString()}`)
+                  navigate(buildJobsUrl(params))
                 }}
                 showSizeChanger={false}
-                itemRender={(_, type, originalElement) => {
-                  if (type === 'prev') return <button className="pagination-arrow-btn"><span className="material-symbols-outlined">chevron_left</span></button>
-                  if (type === 'next') return <button className="pagination-arrow-btn"><span className="material-symbols-outlined">chevron_right</span></button>
-                  return originalElement
-                }}
               />
             </div>
           )}
