@@ -34,40 +34,44 @@ const CategoryDonut = () => {
 
   const totalJobs = categoryStats.reduce((sum, item) => sum + item.count, 0);
 
+  const circles = categoryStats.map((item, index) => {
+    const p = item.percentage / 100;
+    const arcLength = p * CIRCUMFERENCE;
+    const dashArray = `${arcLength.toFixed(1)} ${CIRCUMFERENCE}`;
+    const prevSum = categoryStats.slice(0, index).reduce((sum, prevItem) => {
+      const prevP = prevItem.percentage / 100;
+      return sum + prevP * CIRCUMFERENCE;
+    }, 0);
+    const dashOffset = -prevSum;
+    const color = COLORS[index % COLORS.length];
+
+    return (
+      <circle
+        key={item.name}
+        cx="90"
+        cy="90"
+        fill="none"
+        r="70"
+        stroke={color}
+        strokeWidth="22"
+        strokeDasharray={isAnimated ? dashArray : `0 ${CIRCUMFERENCE}`}
+        strokeDashoffset={dashOffset}
+        style={{
+          transition: 'stroke-dasharray 1.4s cubic-bezier(0.25, 1, 0.5, 1)',
+          transform: 'rotate(-90deg)',
+          transformOrigin: '50% 50%',
+        }}
+      />
+    );
+  });
+
   return (
     <div className="chart-container-card category-donut-card">
       <h4 className="chart-title">Job Categories</h4>
       <Spin spinning={loading}>
         <div className="donut-wrapper">
           <svg className="donut-svg" width="180" height="180">
-            {(() => {
-              let accum = 0;
-              return categoryStats.map((item, index) => {
-                const p = item.percentage / 100;
-                const arcLength = p * CIRCUMFERENCE;
-                const dashArray = `${arcLength.toFixed(1)} ${CIRCUMFERENCE}`;
-                const dashOffset = -accum;
-                accum += arcLength;
-                const color = COLORS[index % COLORS.length];
-
-                return (
-                  <circle
-                    key={item.name}
-                    cx="90"
-                    cy="90"
-                    fill="none"
-                    r="70"
-                    stroke={color}
-                    strokeWidth="22"
-                    strokeDasharray={isAnimated ? dashArray : `0 ${CIRCUMFERENCE}`}
-                    strokeDashoffset={dashOffset}
-                    style={{
-                      transition: 'stroke-dasharray 1.4s cubic-bezier(0.25, 1, 0.5, 1)',
-                    }}
-                  />
-                );
-              });
-            })()}
+            {circles}
           </svg>
           <div
             className="donut-center-text"

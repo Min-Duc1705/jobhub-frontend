@@ -130,7 +130,9 @@ export function useChatHubEvent<T extends any[]>(
   handler: (...args: T) => void
 ) {
   const handlerRef = useRef(handler)
-  handlerRef.current = handler
+  useEffect(() => {
+    handlerRef.current = handler
+  }, [handler])
 
   useEffect(() => {
     if (!connection) return

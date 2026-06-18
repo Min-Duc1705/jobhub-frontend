@@ -71,7 +71,7 @@ export default function ResumeBuilderPage() {
         setResumeTitle(cv.title)
         setTemplateId(cv.templateId ?? 1)
         if (cv.contentJson) {
-          try { setData(JSON.parse(cv.contentJson)) } catch {}
+          try { setData(JSON.parse(cv.contentJson)) } catch (err) { console.error('Error parsing contentJson:', err) }
         }
       })
       .catch(() => message.error('Không thể tải CV'))

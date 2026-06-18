@@ -276,6 +276,8 @@ export default function HireAgentManagement() {
         targetCount: values.targetCount,
         jobLocation: job.location || '',          // Tỉnh/thành phố job
         jobType: job.jobType || '',               // REMOTE/HYBRID/FULL_TIME/...
+        interviewDate: values.interviewDate ? values.interviewDate.toISOString() : undefined,
+        backupInterviewDate: values.backupInterviewDate ? values.backupInterviewDate.toISOString() : undefined,
       });
       setCreateModalVisible(false);
       form.resetFields();

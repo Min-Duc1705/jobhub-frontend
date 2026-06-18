@@ -86,10 +86,6 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
 
   const { user, avatarUrl } = useAppSelector((state: any) => state.auth);
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
   const loadNotifications = async () => {
     try {
       const res = await getNotificationsApi();
@@ -108,6 +104,10 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());

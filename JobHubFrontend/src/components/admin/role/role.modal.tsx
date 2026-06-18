@@ -55,7 +55,15 @@ const RoleModal = ({ open, onOpenChange, permissionGroups, initialRole, onSucces
 
   // ── Toggle helpers ────────────────────────────────────────────────────────
   const toggleOne = (id: string, checked: boolean) =>
-    setSelected(prev => { const s = new Set(prev); checked ? s.add(id) : s.delete(id); return s })
+    setSelected(prev => {
+      const s = new Set(prev)
+      if (checked) {
+        s.add(id)
+      } else {
+        s.delete(id)
+      }
+      return s
+    })
 
   const toggleGroup = (module: string, checked: boolean) =>
     setSelected(prev => {

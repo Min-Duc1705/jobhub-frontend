@@ -10,6 +10,8 @@ export interface IHireAgentCampaign {
   targetCount: number
   status: 'Active' | 'Paused' | 'Completed'
   createdAt: string
+  interviewDate?: string
+  backupInterviewDate?: string
 }
 
 export interface IHireAgentConversation {
@@ -33,6 +35,8 @@ export interface ICreateCampaignRequest {
   targetCount: number
   jobLocation?: string   // Tỉnh/thành phố job (VD: "Hồ Chí Minh")
   jobType?: string       // REMOTE / HYBRID / FULL_TIME / PART_TIME / INTERNSHIP
+  interviewDate?: string
+  backupInterviewDate?: string
 }
 
 /** Create automatic recruitment campaign for a job */

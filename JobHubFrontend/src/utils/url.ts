@@ -16,10 +16,10 @@ export const resolveChatUrl = (url: string | undefined): string => {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
       const cleanBackendUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
       return `${cleanBackendUrl}${parsedUrl.pathname}${parsedUrl.search}`;
-    } catch (e) {
+    } catch {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
       const cleanBackendUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
-      return url.replace(/https?:\/\/[a-zA-Z0-9\-]+\.trycloudflare\.com/i, cleanBackendUrl);
+      return url.replace(/https?:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/i, cleanBackendUrl);
     }
   }
 
@@ -30,7 +30,7 @@ export const resolveChatUrl = (url: string | undefined): string => {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
       const cleanBackendUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
       return `${cleanBackendUrl}${parsedUrl.pathname}${parsedUrl.search}`;
-    } catch (e) {
+    } catch {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
       const cleanBackendUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
       return url.replace(/https?:\/\/(localhost|127\.0\.0\.1):9000/i, cleanBackendUrl);

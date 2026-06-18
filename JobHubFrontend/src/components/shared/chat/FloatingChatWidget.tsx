@@ -341,7 +341,9 @@ const FloatingChatWidget = () => {
           const parsed = JSON.parse(stored) as IFloatingConv & { isMinimized?: boolean }
           setActiveConv(parsed)
           setIsMinimized(parsed.isMinimized !== false)
-        } catch (e) {}
+        } catch (e) {
+          console.error('Error parsing floating_chat from storage:', e)
+        }
       } else {
         setActiveConv(null)
       }
@@ -534,7 +536,9 @@ const FloatingChatWidget = () => {
         const parsed = JSON.parse(stored)
         parsed.isMinimized = minimized
         localStorage.setItem('floating_chat', JSON.stringify(parsed))
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error updating floating_chat minimized state:', e)
+      }
     }
   }
 

@@ -359,11 +359,9 @@ const ProfileSettings = () => {
 
       // --- STAGE 2: Parallel execute (Profile save & Redux auth sync)
       const stage2Promises: Promise<any>[] = []
-      let authSyncPromiseIndex = -1
       let profileSavePromiseIndex = -1
 
       if (usernamePromiseIndex !== -1) {
-        authSyncPromiseIndex = stage2Promises.length
         stage2Promises.push(dispatch(fetchAccount()))
       }
 
@@ -586,11 +584,6 @@ const ProfileSettings = () => {
     } finally {
       setIsChangingPassword(false)
     }
-  }
-
-  const handleConnectTelegram = () => {
-    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'JobHub_Control_Bot'
-    window.open(`https://t.me/${botUsername}?start=BIND_${profile?.appUserId || user?.id}`, '_blank')
   }
 
   const handleDisconnectTelegram = async () => {

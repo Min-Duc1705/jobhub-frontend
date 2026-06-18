@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Switch, Button, Spin } from 'antd'
 import { useAppSelector } from '../../../redux/hooks'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
-import { message, modal } from '../../../utils/antd'
+import { message } from '../../../utils/antd'
 import {
   getNotificationsApi,
   markNotificationReadApi,

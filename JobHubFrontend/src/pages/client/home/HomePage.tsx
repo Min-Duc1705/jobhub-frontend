@@ -205,7 +205,9 @@ const HomePage = () => {
         const res = await getSavedJobsApi('pageNumber=1&pageSize=1000')
         const ids = new Set((res.data?.result ?? []).map((sj: any) => sj.jobId))
         setSavedJobIds(ids)
-      } catch { }
+      } catch (err) {
+        console.error('Failed to fetch saved jobs:', err)
+      }
     }
     fetchSaved()
   }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps

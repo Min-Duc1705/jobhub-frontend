@@ -66,8 +66,8 @@ const SkillTrendChart = () => {
     if (history.length === 0 && forecast.length === 0) {
       const list: any[] = []
       const now = new Date()
-      let currentMonth = now.getMonth() + 1
-      let currentYear = now.getFullYear()
+      const currentMonth = now.getMonth() + 1
+      const currentYear = now.getFullYear()
       
       // Tạo 6 tháng lịch sử ảo có giá trị 0
       for (let i = 5; i >= 0; i--) {

@@ -96,7 +96,7 @@ const normalizeBackendUrl = (obj: any): any => {
         const parsed = new URL(obj);
         return `${cleanBackendUrl}${parsed.pathname}${parsed.search}`;
       } catch {
-        return obj.replace(/https?:\/\/[a-zA-Z0-9\-]+\.trycloudflare\.com/i, cleanBackendUrl);
+        return obj.replace(/https?:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/i, cleanBackendUrl);
       }
     }
 
