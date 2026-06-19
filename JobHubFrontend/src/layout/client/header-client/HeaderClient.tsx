@@ -372,9 +372,8 @@ const HeaderClient = () => {
             </>
           ) : (
             <>
-              <Link to="/login" className="nav-bar__login">Login</Link>
               <Button className="btn-signup">
-                <Link to="/register" style={{ color: 'inherit', textDecoration: 'none' }}>Sign Up</Link>
+                <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>Login</Link>
               </Button>
             </>
           )}
@@ -428,28 +427,9 @@ const HeaderClient = () => {
 
           {!isAuthenticated && (
             <div className="nav-bar__drawer-auth" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--outline-variant)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <Link
-                to="/login"
-                className="nav-bar__drawer-login"
-                style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  color: 'var(--on-surface-variant)',
-                  textDecoration: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--outline)'
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
               <Button className="btn-signup" style={{ width: '100%' }}>
-                <Link to="/register" style={{ color: 'inherit', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
-                  Sign Up
+                <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
+                  Login
                 </Link>
               </Button>
             </div>
