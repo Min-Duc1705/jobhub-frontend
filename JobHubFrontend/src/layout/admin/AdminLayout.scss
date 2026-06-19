@@ -74,9 +74,13 @@
       display: flex;
       align-items: center;
       gap: 24px;
+      flex-shrink: 0;
 
       @media (max-width: 768px) {
         gap: 4px;
+        flex-shrink: 1;
+        min-width: 0;
+        overflow: hidden;
       }
 
       .admin-search-box {
@@ -703,14 +707,8 @@
   }
 }
 
-// Admin header: ẩn trên mobile
+// Admin header: thu nhỏ tên avatar trên mobile
 .admin-header-desktop-only {
-  @media (max-width: 768px) {
-    display: none !important;
-  }
-}
-
-.admin-header-help-btn {
   @media (max-width: 768px) {
     display: none !important;
   }

@@ -244,7 +244,7 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
               </Badge>
             </button>
           </Dropdown>
-          <button className="icon-btn hover-effect admin-header-help-btn">
+          <button className="icon-btn hover-effect">
             <span className="material-symbols-outlined text-icon">help</span>
           </button>
 
