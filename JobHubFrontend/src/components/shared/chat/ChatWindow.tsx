@@ -464,13 +464,7 @@ const ChatWindow = ({
                 className="chat-header-btn" 
                 onClick={() => message.info('Tính năng cuộc gọi video đang được phát triển!')}
               />
-              <Button type="text" icon={<span className="material-symbols-outlined">remove</span>} className="chat-header-btn" onClick={handleMinimize} />
-              <Button 
-                type="text" 
-                icon={<span className="material-symbols-outlined">info</span>} 
-                className="chat-header-btn" 
-                onClick={() => message.info('Tính năng xem chi tiết thông tin đang được phát triển!')}
-              />
+              <Button type="text" icon={<span className="material-symbols-outlined">chat_bubble</span>} className="chat-header-btn" onClick={handleMinimize} />
               <Button 
                 type="text" 
                 icon={<span className="material-symbols-outlined">more_vert</span>} 
@@ -478,6 +472,7 @@ const ChatWindow = ({
                 onClick={() => message.info('Tính năng mở rộng menu đang được phát triển!')}
               />
             </div>
+
           </div>
 
           {/* Chat Messages List */}
