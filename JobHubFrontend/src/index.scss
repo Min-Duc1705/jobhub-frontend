@@ -13,6 +13,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; // Ngăn trang bị dịch sang phải do horizontal overflow
 }
 
 // Root element không giới hạn width, để mỗi page layout tự quyết
@@ -20,6 +21,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 // Reset heading default margin
