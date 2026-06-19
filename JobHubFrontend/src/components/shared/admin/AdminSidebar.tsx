@@ -40,8 +40,6 @@ const NAV_ITEMS: NavItem[] = [
       { path: '/admin/roles', label: 'Roles', icon: 'admin_panel_settings' },
     ],
   },
-  { type: 'link', path: '/admin/analytics', label: 'Analytics', icon: 'analytics' },
-  { type: 'link', path: '/admin/settings', label: 'Settings', icon: 'settings' },
 ];
 
 const PATH_PERMISSIONS: Record<string, { method: string; apiPath: string; module: string }> = {
