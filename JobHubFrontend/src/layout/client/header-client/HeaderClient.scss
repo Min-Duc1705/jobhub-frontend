@@ -129,6 +129,26 @@
     &:hover { color: $secondary; }
   }
 
+  // Mobile-only Sign In button (hiển thị ngay trên header bar)
+  &__mobile-signin {
+    display: inline-flex;
+    align-items: center;
+    font-family: $font-mono;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: $on-primary;
+    text-decoration: none;
+    background: $primary;
+    border-radius: 6px;
+    padding: 6px 14px;
+    transition: background 0.2s;
+
+    &:hover { background: darken($primary, 8%); }
+
+    @media (min-width: 768px) { display: none; } // Ẩn trên desktop
+  }
+
   // Sign Up button override
   .ant-btn.btn-signup {
     background: $primary-container !important;
@@ -142,12 +162,16 @@
     letter-spacing: 0.02em !important;
     font-weight: 500 !important;
 
+    // Ẩn Sign Up button trên mobile (chỉ hiện Sign In ở header)
+    @media (max-width: 767px) { display: none !important; }
+
     &:hover {
       background: $primary !important;
       border-color: $primary !important;
       color: $on-primary !important;
     }
   }
+
 
   // ── Avatar button (logged-in state) ──────────────────────────────
   .nav-avatar-btn {

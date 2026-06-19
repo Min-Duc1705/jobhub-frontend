@@ -372,10 +372,13 @@ const HeaderClient = () => {
             </>
           ) : (
             <>
+              {/* Desktop: Sign In link + Sign Up button */}
               <Link to="/login" className="nav-bar__login">Sign In</Link>
               <Button className="btn-signup">
                 <Link to="/register" style={{ color: 'inherit', textDecoration: 'none' }}>Sign Up</Link>
               </Button>
+              {/* Mobile-only: Sign In button hiển thị trực tiếp trên header bar */}
+              <Link to="/login" className="nav-bar__mobile-signin">Sign In</Link>
             </>
           )}
         </div>
