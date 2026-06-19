@@ -29,6 +29,8 @@
   @media (max-width: 768px) {
     border-radius: 0;
     border: none;
+    position: relative;  // Để sidebar absolute hoạt động đúng
+    overflow: hidden;
   }
 }
 
@@ -43,7 +45,19 @@
 
   @media (max-width: 768px) {
     width: 100%;
-    display: none;
+    // Trên mobile: sidebar hiển thị mặc định (khi chưa chọn hội thoại)
+    flex-shrink: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 10;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+
+    &--mobile-hidden {
+      transform: translateX(-100%);
+    }
   }
 
   &__header {
@@ -248,6 +262,54 @@
     p {
       font-size: 14px;
       max-width: 320px;
+    }
+  }
+
+  // Mobile: chat-main chỉ hiển khi đã chọn hội thoại
+  @media (max-width: 768px) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    pointer-events: none;
+
+    &--mobile-visible {
+      transform: translateX(0);
+      pointer-events: all;
+    }
+  }
+
+  // Nút back trên mobile
+  &__header-back {
+    display: none;
+
+    @media (max-width: 768px) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: $on-surface-variant;
+      margin-right: 4px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+
+      &:hover {
+        background: $surface-container-low;
+        color: $primary;
+      }
+
+      .material-symbols-outlined {
+        font-size: 20px;
+      }
     }
   }
 

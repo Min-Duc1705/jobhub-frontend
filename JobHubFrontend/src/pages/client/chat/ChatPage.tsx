@@ -36,6 +36,9 @@ const ChatPage = () => {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Mobile: toggle giữa sidebar và chat window
+  const [mobileShowChat, setMobileShowChat] = useState(false)
+
   // Profiles cache (to resolve Guid IDs to names and avatars)
   const [profiles, setProfiles] = useState<Record<string, { name: string; avatar?: string }>>({})
 
@@ -290,12 +293,16 @@ const ChatPage = () => {
         <ChatSidebar
           conversations={conversations}
           activeConversation={activeConversation}
-          setActiveConversation={setActiveConversation}
+          setActiveConversation={(conv) => {
+            setActiveConversation(conv)
+            setMobileShowChat(true)
+          }}
           profiles={profiles}
           currentUserId={currentUserId}
           loadingConvs={loadingConvs}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          mobileShowChat={mobileShowChat}
         />
 
         {/* RIGHT PANEL: Chat messages & inputs */}
@@ -311,6 +318,8 @@ const ChatPage = () => {
           handleKeyPress={handleKeyPress}
           messagesEndRef={messagesEndRef}
           messagesContainerRef={messagesContainerRef}
+          mobileShowChat={mobileShowChat}
+          onMobileBack={() => setMobileShowChat(false)}
         />
 
       </div>

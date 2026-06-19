@@ -65,6 +65,8 @@ interface ChatWindowProps {
   handleKeyPress: (e: any) => void
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   messagesContainerRef: React.RefObject<HTMLDivElement | null>
+  mobileShowChat?: boolean
+  onMobileBack?: () => void
 }
 
 const ChatWindow = ({
@@ -77,7 +79,9 @@ const ChatWindow = ({
   setInputText,
   handleSendMessage,
   messagesEndRef,
-  messagesContainerRef
+  messagesContainerRef,
+  mobileShowChat = false,
+  onMobileBack
 }: ChatWindowProps) => {
   const navigate = useNavigate()
 
@@ -407,7 +411,7 @@ const ChatWindow = ({
   }
 
   return (
-    <div className="chat-main">
+    <div className={`chat-main${mobileShowChat ? ' chat-main--mobile-visible' : ''}`}>
       {activeConversation ? (
         <>
           {/* Chat Header */}
@@ -420,6 +424,14 @@ const ChatWindow = ({
               
               return (
                 <div className="chat-main__header-left">
+                  {/* Nút back trên mobile */}
+                  <button
+                    className="chat-main__header-back"
+                    onClick={onMobileBack}
+                    aria-label="Quay lại danh sách"
+                  >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                  </button>
                   <div className="chat-main__header-avatar-container">
                     <Avatar 
                       shape="square"

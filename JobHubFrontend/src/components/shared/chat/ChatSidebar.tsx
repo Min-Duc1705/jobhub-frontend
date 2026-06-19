@@ -10,6 +10,7 @@ interface ChatSidebarProps {
   loadingConvs: boolean
   searchQuery: string
   setSearchQuery: (query: string) => void
+  mobileShowChat?: boolean
 }
 
 const ChatSidebar = ({
@@ -20,7 +21,8 @@ const ChatSidebar = ({
   currentUserId,
   loadingConvs,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  mobileShowChat = false
 }: ChatSidebarProps) => {
   
   // Filter conversations based on query
@@ -34,7 +36,7 @@ const ChatSidebar = ({
   })
 
   return (
-    <div className="chat-sidebar">
+    <div className={`chat-sidebar${mobileShowChat ? ' chat-sidebar--mobile-hidden' : ''}`}>
       <div className="chat-sidebar__header">
         <h3 className="chat-sidebar__title">Tin nhắn</h3>
         <div className="chat-sidebar__search-wrap">
