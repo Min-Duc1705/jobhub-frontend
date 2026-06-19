@@ -190,6 +190,7 @@ const JobHRTable: React.FC<JobHRTableProps> = ({
       title: 'Hành động',
       key: 'actions',
       width: 160,
+      fixed: 'right' as const,
       align: 'right' as const,
       render: (_: any, record: IJob) => (
         <Space size={12}>
@@ -268,7 +269,7 @@ const JobHRTable: React.FC<JobHRTableProps> = ({
           onShowSizeChange: (_cur, ps) => { setPageSize(ps); setPage(1) },
           showTotal: (total, range) => `Hiển thị ${range[0]} – ${range[1]} trong tổng số ${total} tin`,
         }}
-        scroll={{ x: 1260 }}
+        scroll={{ x: 'max-content' }}
       />
     </div>
   )
