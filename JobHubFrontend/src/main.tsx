@@ -20,8 +20,8 @@ const proViVN = {
       'tableForm.search':            'Tìm kiếm',
       'tableForm.reset':             'Đặt lại',
       'tableForm.submit':            'Tìm kiếm',
-      'tableForm.collapsed':         'Thu gọn',
-      'tableForm.expand':            'Mở rộng',
+      'tableForm.collapsed':         'Mở rộng',
+      'tableForm.expand':            'Thu gọn',
       'tableForm.inputPlaceholder':  'Vui lòng nhập',
       'tableForm.selectPlaceholder': 'Vui lòng chọn',
       // Alert / selection
