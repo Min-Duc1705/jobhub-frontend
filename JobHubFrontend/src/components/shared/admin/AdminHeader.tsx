@@ -9,6 +9,7 @@ import 'dayjs/locale/vi';
 import NotificationDropdown from '../notification/NotificationDropdown';
 import type { INotification } from '../notification/NotificationDropdown';
 import ProfileDropdown from '../header/ProfileDropdown';
+import { useConversations } from '../../../hooks/useConversations';
 import {
   getNotificationsApi,
   markNotificationReadApi,
@@ -38,6 +39,7 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
   const [jobsOpen, setJobsOpen] = useState(false);
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -87,6 +89,7 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
   };
 
   const { user, avatarUrl } = useAppSelector((state: any) => state.auth);
+  const { totalUnread: chatUnreadCount } = useConversations(user?.id);
 
   const loadNotifications = async () => {
     try {
@@ -245,7 +248,9 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
             </button>
           </Dropdown>
           <button className="icon-btn hover-effect" onClick={() => navigate('/chat')}>
-            <span className="material-symbols-outlined text-icon">chat</span>
+            <Badge count={chatUnreadCount} size="small" offset={[2, -2]}>
+              <span className="material-symbols-outlined text-icon">chat</span>
+            </Badge>
           </button>
 
           <Dropdown
