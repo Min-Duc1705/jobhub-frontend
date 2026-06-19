@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { EyeOutlined } from '@ant-design/icons'
 import { Breadcrumb, Button, Card, Descriptions, Modal, Space, Tag } from 'antd'
@@ -124,7 +124,7 @@ const ContactTable = () => {
         rowKey="id"
         cardBordered
         headerTitle="Danh sách liên hệ & hỗ trợ"
-        search={{ labelWidth: 'auto', span: 6 }}
+        search={{ labelWidth: 'auto', span: { xs: 24, sm: 24, md: 12, lg: 8, xl: 6, xxl: 6 } }}
         request={async (params) => {
           pageRef.current = { current: params.current ?? 1, pageSize: params.pageSize ?? 10 }
           try {

@@ -74,3 +74,6 @@ img, svg {
   user-select: none;
   flex-shrink: 0;
 }
+
+// ── Admin ProTable responsive overrides ─────────────────────────────────────
+@import './styles/admin-responsive.scss';

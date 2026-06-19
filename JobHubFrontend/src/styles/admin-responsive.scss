@@ -1,0 +1,138 @@
+// ── Admin ProTable Global Responsive Styles ──────────────────────────────────
+// Applied to all @ant-design/pro-components ProTable in the admin panel
+
+@media (max-width: 768px) {
+
+  // ── Search / Filter Form ───────────────────────────────────────────────────
+  // Force filter fields to stack 1 per row on mobile
+  .ant-pro-query-filter,
+  .ant-pro-table-search {
+    padding: 12px 12px 0 !important;
+
+    .ant-row {
+      margin: 0 !important;
+    }
+
+    // Each filter field: full width on mobile
+    .ant-col {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: 0 0 100% !important;
+      padding: 0 0 8px 0 !important;
+    }
+
+    // Action buttons (Tìm kiếm / Đặt lại) row
+    .ant-pro-query-filter-row-action {
+      width: 100% !important;
+      text-align: right;
+      padding: 4px 0 12px !important;
+    }
+  }
+
+  // ── Toolbar (header title + action buttons) ────────────────────────────────
+  .ant-pro-table-list-toolbar {
+    padding: 8px 12px !important;
+
+    &-container {
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+    }
+
+    &-left {
+      flex: 1 1 100% !important;
+      min-width: 0;
+
+      .ant-pro-table-list-toolbar-title {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+      }
+    }
+
+    &-right {
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+      width: 100%;
+      justify-content: flex-end;
+
+      // Import + Thêm mới buttons: shrink gracefully
+      .ant-btn {
+        font-size: 12px !important;
+        padding: 0 10px !important;
+        height: 30px !important;
+
+        span:not(.anticon) {
+          display: inline !important;
+        }
+      }
+    }
+
+    // Setting/density/column icons row
+    .ant-pro-table-list-toolbar-setting-item {
+      margin-left: 4px !important;
+    }
+  }
+
+  // ── Table Card container ───────────────────────────────────────────────────
+  .ant-pro-table {
+    .ant-card-body {
+      padding: 0 !important;
+    }
+  }
+
+  // ── Ant Table: fix cell padding & font on mobile ───────────────────────────
+  .ant-table-wrapper {
+    .ant-table {
+      font-size: 12px !important;
+    }
+
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding: 8px 10px !important;
+      white-space: nowrap;
+    }
+
+    // Sticky action column: ensure visible above shadow
+    .ant-table-cell-fix-right {
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  // ── Pagination ─────────────────────────────────────────────────────────────
+  .ant-pagination {
+    padding: 8px 12px !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+
+    &-total-text {
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    &-options {
+      margin-left: 4px !important;
+    }
+  }
+
+  // ── Breadcrumb spacing ─────────────────────────────────────────────────────
+  .ant-breadcrumb {
+    margin-bottom: 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+// Extra-small screens (< 480px)
+@media (max-width: 480px) {
+  .ant-pro-table-list-toolbar {
+    &-right .ant-btn span:not(.anticon) {
+      display: none !important; // chỉ hiện icon
+    }
+
+    &-right .ant-btn {
+      padding: 0 8px !important;
+      min-width: 30px;
+    }
+  }
+}

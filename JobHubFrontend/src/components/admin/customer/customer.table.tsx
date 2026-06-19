@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import { App, Avatar, Breadcrumb, Popconfirm, Space, Tag, Tooltip } from 'antd'
@@ -196,7 +196,7 @@ const CustomerTable = () => {
         rowKey="id"
         cardBordered
         headerTitle="Danh sách Customer"
-        search={{ labelWidth: 'auto', span: 6 }}
+        search={{ labelWidth: 'auto', span: { xs: 24, sm: 24, md: 12, lg: 8, xl: 6, xxl: 6 } }}
         request={async (params, sort) => {
           pageRef.current = { current: params.current ?? 1, pageSize: params.pageSize ?? 10 }
           try {
