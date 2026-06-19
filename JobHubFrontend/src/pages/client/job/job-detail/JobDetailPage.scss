@@ -98,7 +98,23 @@
 
 .jd-header-actions {
   display: flex; gap: 8px; align-items: flex-start; flex-shrink: 0;
-  @media (max-width: 600px) { width: 100%; button { flex: 1; } }
+
+  @media (max-width: 600px) {
+    width: 100%;
+    flex-wrap: wrap;
+
+    // Lưu tin + Nhắn tin chia đôi hàng đầu
+    button:not(:last-child) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    // Ứng tuyển ngay chiếm toàn bộ hàng thứ 2
+    button:last-child {
+      width: 100%;
+      flex-basis: 100%;
+    }
+  }
 }
 
 /* ── Main grid ──────────────────────────────────────────────── */
