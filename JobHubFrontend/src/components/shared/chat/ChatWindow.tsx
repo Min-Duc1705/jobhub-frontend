@@ -464,7 +464,7 @@ const ChatWindow = ({
                 className="chat-header-btn" 
                 onClick={() => message.info('Tính năng cuộc gọi video đang được phát triển!')}
               />
-              <Button type="text" icon={<span className="material-symbols-outlined">chat_bubble</span>} className="chat-header-btn" onClick={handleMinimize} />
+              <Button type="text" icon={<span className="material-symbols-outlined">forum</span>} className="chat-header-btn" onClick={handleMinimize} />
               <Button 
                 type="text" 
                 icon={<span className="material-symbols-outlined">more_vert</span>} 
