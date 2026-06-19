@@ -138,6 +138,15 @@
   // ── Main Panel Row ────────────────────────────────────────────────────────
   .main-panel {
     margin-top: 24px;
+
+    // Trên mobile: xóa height:100% inline style của Ant Design Col/Row
+    // vì chúng xếp dọc nên height:100% gây khoảng trắng khổng lồ
+    @media (max-width: 768px) {
+      .ant-row,
+      .ant-col {
+        height: auto !important;
+      }
+    }
   }
 
   // ── Campaign List Card ────────────────────────────────────────────────────
