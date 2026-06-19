@@ -3,23 +3,34 @@ import { Button } from 'antd'
 import { Link } from 'react-router-dom'
 import './FooterClient.scss'
 
+// ── Các link có thật trong hệ thống ─────────────────────────────────────────
 const ABOUT_LINKS = [
-  { label: 'Giới thiệu', to: '#' },
-  { label: 'Liên hệ',    to: '#' },
-  { label: 'Tuyển dụng', to: '#' },
-  { label: 'Blog',       to: '#' },
+  { label: 'Giới thiệu',   to: '/about' },
+  { label: 'Liên hệ',      to: '/contact' },
+  { label: 'Đăng ký công ty', to: '/company/register' },
+  { label: 'Danh sách công ty', to: '/companies' },
 ]
 
 const CANDIDATE_LINKS = [
-  { label: 'Tìm việc làm',        to: '/jobs' },
-  { label: 'Công cụ AI',          to: '/salary-predict' },
-  { label: 'Cẩm nang nghề nghiệp',to: '#' },
+  { label: 'Tìm việc làm',       to: '/jobs' },
+  { label: 'Công ty',            to: '/companies' },
+  { label: 'Dự đoán lương AI',   to: '/salary-predict' },
+  { label: 'Quản lý CV',         to: '/candidate/resume' },
+  { label: 'Việc đã ứng tuyển',  to: '/candidate/applied-jobs' },
 ]
 
 const EMPLOYER_LINKS = [
-  { label: 'Đăng tin tuyển dụng', to: '/admin/jobs/create' },
-  { label: 'Giải pháp ATS',       to: '/admin' },
-  { label: 'Báo cáo thị trường',  to: '#' },
+  { label: 'Đăng tin tuyển dụng', to: '/hr/jobs' },
+  { label: 'Quản lý ứng viên',    to: '/hr/jobs' },
+  { label: 'Smart Hire Agent',    to: '/hr/hire-agent' },
+  { label: 'Trang quản trị',      to: '/admin/dashboard' },
+]
+
+const SUPPORT_LINKS = [
+  { label: 'Đăng nhập',      to: '/login' },
+  { label: 'Đăng ký',       to: '/register' },
+  { label: 'Quên mật khẩu', to: '/forgot-password' },
+  { label: 'Chat hỗ trợ',   to: '/chat' },
 ]
 
 const FooterClient = () => {
@@ -45,6 +56,7 @@ const FooterClient = () => {
               Nền tảng tuyển dụng IT thông minh hàng đầu Việt Nam, được hỗ trợ bởi công nghệ AI.
             </p>
             <div className="site-footer__socials">
+              {/* TODO: Cung cấp link Facebook/LinkedIn/GitHub thật để thay thế '#' */}
               <a href="#" className="site-footer__social-btn" aria-label="Facebook">
                 <span className="material-symbols-outlined">facebook</span>
               </a>
@@ -63,7 +75,7 @@ const FooterClient = () => {
             <ul className="site-footer__col-list">
               {ABOUT_LINKS.map(({ label, to }) => (
                 <li key={label}>
-                  <a href={to} className="site-footer__col-link">{label}</a>
+                  <Link to={to} className="site-footer__col-link">{label}</Link>
                 </li>
               ))}
             </ul>
@@ -86,6 +98,18 @@ const FooterClient = () => {
             <h4 className="site-footer__col-title">Nhà tuyển dụng</h4>
             <ul className="site-footer__col-list">
               {EMPLOYER_LINKS.map(({ label, to }) => (
+                <li key={label}>
+                  <Link to={to} className="site-footer__col-link">{label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Hỗ trợ */}
+          <div className="site-footer__col">
+            <h4 className="site-footer__col-title">Hỗ trợ</h4>
+            <ul className="site-footer__col-list">
+              {SUPPORT_LINKS.map(({ label, to }) => (
                 <li key={label}>
                   <Link to={to} className="site-footer__col-link">{label}</Link>
                 </li>
@@ -124,8 +148,8 @@ const FooterClient = () => {
             © {new Date().getFullYear()} JobHub. All rights reserved.
           </p>
           <div className="site-footer__bottom-links">
-            <a href="#" className="site-footer__bottom-link">Privacy Policy</a>
-            <a href="#" className="site-footer__bottom-link">Terms of Service</a>
+            <Link to="/about" className="site-footer__bottom-link">Về chúng tôi</Link>
+            <Link to="/contact" className="site-footer__bottom-link">Liên hệ</Link>
           </div>
         </div>
 
