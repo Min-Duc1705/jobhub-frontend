@@ -8,28 +8,34 @@
   .ant-pro-table-search {
     padding: 12px 12px 0 !important;
 
+    // Xóa gutter dọc giữa các row
     .ant-row {
-      margin: 0 !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      row-gap: 0 !important;
     }
 
-    // Each filter field: full width on mobile
+    // Mỗi field: full width, giảm padding dọc xuống tối thiểu
     .ant-col {
       width: 100% !important;
       max-width: 100% !important;
       flex: 0 0 100% !important;
-      padding: 0 0 8px 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 4px !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
     }
 
-    // Giảm khoảng cách giữa form fields và action buttons
+    // Form item: giảm margin-bottom
     .ant-form-item {
-      margin-bottom: 8px !important;
+      margin-bottom: 6px !important;
     }
 
-    // Action buttons row (Tìm kiếm / Đặt lại / Thu gọn)
+    // Action buttons row (Tìm kiếm / Đặt lại / Mở rộng)
     .ant-pro-query-filter-row-action {
       width: 100% !important;
       text-align: right;
-      padding: 0 0 12px !important;  // bỏ padding-top thừa
+      padding: 0 0 10px !important;
       margin-top: 0 !important;
     }
   }
