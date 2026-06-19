@@ -4,7 +4,6 @@
 @media (max-width: 768px) {
 
   // ── Search / Filter Form ───────────────────────────────────────────────────
-  // Force filter fields to stack 1 per row on mobile
   .ant-pro-query-filter,
   .ant-pro-table-search {
     padding: 12px 12px 0 !important;
@@ -21,11 +20,17 @@
       padding: 0 0 8px 0 !important;
     }
 
-    // Action buttons (Tìm kiếm / Đặt lại) row
+    // Giảm khoảng cách giữa form fields và action buttons
+    .ant-form-item {
+      margin-bottom: 8px !important;
+    }
+
+    // Action buttons row (Tìm kiếm / Đặt lại / Thu gọn)
     .ant-pro-query-filter-row-action {
       width: 100% !important;
       text-align: right;
-      padding: 4px 0 12px !important;
+      padding: 0 0 12px !important;  // bỏ padding-top thừa
+      margin-top: 0 !important;
     }
   }
 
@@ -54,15 +59,11 @@
       width: 100%;
       justify-content: flex-end;
 
-      // Import + Thêm mới buttons: shrink gracefully
+      // Import + Thêm mới buttons: giữ nguyên text, chỉ giảm size
       .ant-btn {
         font-size: 12px !important;
         padding: 0 10px !important;
         height: 30px !important;
-
-        span:not(.anticon) {
-          display: inline !important;
-        }
       }
     }
 
@@ -120,19 +121,5 @@
   .ant-breadcrumb {
     margin-bottom: 12px !important;
     font-size: 12px !important;
-  }
-}
-
-// Extra-small screens (< 480px)
-@media (max-width: 480px) {
-  .ant-pro-table-list-toolbar {
-    &-right .ant-btn span:not(.anticon) {
-      display: none !important; // chỉ hiện icon
-    }
-
-    &-right .ant-btn {
-      padding: 0 8px !important;
-      min-width: 30px;
-    }
   }
 }
