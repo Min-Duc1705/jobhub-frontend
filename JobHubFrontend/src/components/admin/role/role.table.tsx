@@ -130,7 +130,8 @@ const RoleTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 80,
+      fixed: 'right',
+      width: 120,
       align: 'center',
       render: (_v, entity) => (
         <Space size={12}>
@@ -233,7 +234,7 @@ const RoleTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} roles`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <RoleModal

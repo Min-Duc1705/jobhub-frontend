@@ -78,7 +78,8 @@ const SkillTable = () => {
     {
       title:        'Thao tác',
       hideInSearch: true,
-      width:        90,
+      fixed:        'right',
+      width:        120,
       align:        'center',
       render:       (_v, entity) => (
         <Space size={10}>
@@ -181,7 +182,7 @@ const SkillTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} kỹ năng`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <CreateSkillModal

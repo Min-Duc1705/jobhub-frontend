@@ -212,7 +212,8 @@ const JobTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 120,
+      fixed: 'right',
+      width: 140,
       align: 'center',
       render: (_v, entity) => (
         <Space size={10}>
@@ -326,7 +327,7 @@ const JobTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} tin`,
         }}
-        scroll={{ x: 1450 }}
+        scroll={{ x: 'max-content' }}
       />
 
       {/* Modal tạo mới */}

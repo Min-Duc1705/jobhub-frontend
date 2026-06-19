@@ -179,7 +179,8 @@ const CompanyTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 110,
+      fixed: 'right',
+      width: 140,
       align: 'center',
       render: (_v, entity) => (
         <Space size={10}>
@@ -299,7 +300,7 @@ const CompanyTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} công ty`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <CreateCompanyModal

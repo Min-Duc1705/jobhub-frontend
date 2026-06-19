@@ -149,7 +149,8 @@ const ApplicationTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 64,
+      fixed: 'right',
+      width: 120,
       align: 'center',
       render: (_v, entity) => (
         <Space size={12}>
@@ -222,7 +223,7 @@ const ApplicationTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} đơn`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <UpdateApplicationModal

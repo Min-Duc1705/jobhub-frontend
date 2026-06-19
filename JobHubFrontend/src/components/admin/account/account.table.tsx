@@ -115,7 +115,8 @@ const AccountTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 90,
+      fixed: 'right',
+      width: 120,
       align: 'center',
       render: (_v, entity) => (
         <Space size={10}>
@@ -221,7 +222,7 @@ const AccountTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} tài khoản`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <CreateAccountModal

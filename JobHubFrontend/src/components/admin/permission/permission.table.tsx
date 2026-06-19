@@ -106,7 +106,8 @@ const PermissionTable = () => {
     {
       title: 'Thao tác',
       hideInSearch: true,
-      width: 80,
+      fixed: 'right',
+      width: 120,
       align: 'center',
       render: (_v, entity) => (
         <Space size={12}>
@@ -205,7 +206,7 @@ const PermissionTable = () => {
           defaultPageSize: 10,
           showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} quyền hạn`,
         }}
-        scroll={{ x: true }}
+        scroll={{ x: 'max-content' }}
       />
 
       <CreatePermissionModal
