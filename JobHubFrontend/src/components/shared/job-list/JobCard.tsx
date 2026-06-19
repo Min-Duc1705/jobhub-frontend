@@ -3,7 +3,7 @@ import { BookOutlined, BookFilled } from '@ant-design/icons'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
 import { formatTimeAgo } from '../common/TimeAgo/TimeAgo'
-import { LEVEL_COLOR } from '../job-detail/jobDetailHelpers'
+import { LEVEL_COLOR, TYPE_COLOR } from '../job-detail/jobDetailHelpers'
 
 interface Props {
   job: IJob
@@ -109,7 +109,7 @@ const JobCard = ({ job, isSaved, onToggleSave, onCardClick }: Props) => {
       <div className="card-footer-row">
         <div className="footer-meta">
           <span className="salary-range-badge">{formatSalary(job)}</span>
-          <span className="job-tag" style={{ marginLeft: 8 }}>{JOB_TYPE_LABEL[job.jobType]}</span>
+          <Tag color={TYPE_COLOR[job.jobType] ?? 'default'} style={{ marginLeft: 8, fontWeight: 600 }}>{JOB_TYPE_LABEL[job.jobType]}</Tag>
           <span className="posted-time">{formatTimeAgo(job.createdDate)}</span>
         </div>
         <Button
