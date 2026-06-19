@@ -1,8 +1,9 @@
-import { Button } from 'antd'
+import { Button, Tag } from 'antd'
 import { BookOutlined, BookFilled } from '@ant-design/icons'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
 import { formatTimeAgo } from '../common/TimeAgo/TimeAgo'
+import { LEVEL_COLOR } from '../job-detail/jobDetailHelpers'
 
 interface Props {
   job: IJob
@@ -68,9 +69,9 @@ const JobCard = ({ job, isSaved, onToggleSave, onCardClick }: Props) => {
               <span className="company-name" style={{ fontWeight: 500, color: '#555' }}>{job.companyName}</span>
             )}
             {job.companyName && <span className="separator">•</span>}
-            <span className="job-tag" style={{ marginRight: 6 }}>
+            <Tag color={LEVEL_COLOR[job.level] ?? 'default'} style={{ marginRight: 6, fontWeight: 600 }}>
               {JOB_LEVEL_LABEL[job.level]}
-            </span>
+            </Tag>
             <span className="separator">•</span>
             <span className="location-info">
               {isRemote(job) ? (
