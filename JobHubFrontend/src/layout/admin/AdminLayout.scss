@@ -679,7 +679,26 @@
   }
 }
 
-// User profile dropdown overrides
+// Mobile sidebar backdrop
+.admin-sidebar-backdrop {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 29; // Dưới sidebar (z-index 30) nhưng trên content
+    backdrop-filter: blur(2px);
+    animation: fadeInBackdrop 0.2s ease;
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .admin-profile-menu {
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;

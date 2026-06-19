@@ -26,9 +26,11 @@ const getInitials = (name?: string) => {
 interface AdminHeaderProps {
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  mobileOpen?: boolean;
+  setMobileOpen?: (open: boolean) => void;
 }
 
-export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: AdminHeaderProps) {
+export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mobileOpen, setMobileOpen }: AdminHeaderProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [searchFocused, setSearchFocused] = useState(false);
@@ -157,7 +159,17 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed }: A
     <header className="admin-header">
       <div className="header-left">
         <h1 className="admin-logo-text" onClick={() => navigate('/')}>JobHub</h1>
-        <button className="sidebar-toggle-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
+        {/* Desktop: thu gọn sidebar | Mobile: toggle drawer */}
+        <button
+          className="sidebar-toggle-btn"
+          onClick={() => {
+            if (window.innerWidth <= 768) {
+              setMobileOpen?.(!mobileOpen);
+            } else {
+              setSidebarCollapsed(!sidebarCollapsed);
+            }
+          }}
+        >
           <span className="material-symbols-outlined">
             {sidebarCollapsed ? 'menu' : 'menu_open'}
           </span>

@@ -8,6 +8,7 @@ import './AdminLayout.scss';
 
 export default function AdminLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="admin-layout-wrapper">
@@ -15,10 +16,24 @@ export default function AdminLayout() {
       <AdminHeader
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
       />
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <AdminSidebar sidebarCollapsed={sidebarCollapsed} />
+      <AdminSidebar
+        sidebarCollapsed={sidebarCollapsed}
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+      />
+
+      {/* ── Mobile Backdrop ──────────────────────────────────────────────────── */}
+      {mobileOpen && (
+        <div
+          className="admin-sidebar-backdrop"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
       {/* ── Main Content ─────────────────────────────────────────────────────── */}
       <main className={`admin-main-canvas ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>

@@ -59,9 +59,11 @@ const PATH_PERMISSIONS: Record<string, { method: string; apiPath: string; module
 
 interface AdminSidebarProps {
   sidebarCollapsed: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export default function AdminSidebar({ sidebarCollapsed }: AdminSidebarProps) {
+export default function AdminSidebar({ sidebarCollapsed, mobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const location = useLocation();
   const { user } = useAppSelector((state: any) => state.auth);
   const permissions = user?.role?.permissions || [];
@@ -95,7 +97,7 @@ export default function AdminSidebar({ sidebarCollapsed }: AdminSidebarProps) {
   };
 
   return (
-    <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'open' : ''}`}>
       <div className="sidebar-brand-area">
         <div className="brand-icon-wrapper">
           <span className="material-symbols-outlined brand-icon">shield_person</span>
@@ -116,6 +118,7 @@ export default function AdminSidebar({ sidebarCollapsed }: AdminSidebarProps) {
                 key={item.path}
                 to={item.path}
                 className={`sidebar-nav-item ${active ? 'active' : ''}`}
+                onClick={onMobileClose}
               >
                 <span className="material-symbols-outlined nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
@@ -152,6 +155,7 @@ export default function AdminSidebar({ sidebarCollapsed }: AdminSidebarProps) {
                         key={child.path}
                         to={child.path}
                         className={`sidebar-nav-child ${childActive ? 'active' : ''}`}
+                        onClick={onMobileClose}
                       >
                         <span className="material-symbols-outlined nav-icon">{child.icon}</span>
                         <span className="nav-label">{child.label}</span>
