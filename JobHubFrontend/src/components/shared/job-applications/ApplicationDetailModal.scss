@@ -50,6 +50,11 @@
   height: 100%;
   border-right: 1px solid #c3c6d3;
   overflow: hidden;
+
+  // Ẩn left pane trên mobile (màn hình nhỏ)
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .adm-pane-header {
@@ -214,6 +219,11 @@
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
+
+  // Full width trên mobile
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 // Glassmorphism background effect on top of right panel
@@ -239,6 +249,11 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    gap: 16px;
+  }
 }
 
 .adm-ai-header {
@@ -271,6 +286,11 @@
   color: #1b1c1c;
   margin: 0 0 4px 0;
   line-height: 1.2;
+  word-break: break-word;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .adm-applied-time {
@@ -376,6 +396,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .adm-pros-card, .adm-cons-card {
@@ -490,11 +514,22 @@
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
   z-index: 10;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
 }
 
 .adm-footer-buttons {
   display: flex;
   gap: 12px;
+
+  // Hiện nút download CV trên mobile (vì PDF pane bị ẩn)
+  .adm-btn-download-mobile {
+    @media (max-width: 768px) {
+      display: flex !important;
+    }
+  }
 }
 
 .adm-btn-reject {

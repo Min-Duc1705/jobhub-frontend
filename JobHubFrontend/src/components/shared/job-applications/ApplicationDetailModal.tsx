@@ -165,7 +165,7 @@ const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatu
     <Drawer
       open={open}
       onClose={onClose}
-      width="92%"
+      width={window.innerWidth <= 768 ? '100%' : '92%'}
       placement="right"
       closable={false}
       styles={{ body: { padding: 0 } }}
@@ -394,6 +394,18 @@ const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatu
                 <span className="material-symbols-outlined">close</span>
                 Hủy
               </button>
+              {/* Nút tải CV - chỉ hiện trên mobile vì left pane bị ẩn */}
+              {resume && (
+                <button
+                  className="adm-btn-reject adm-btn-download-mobile"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  style={{ display: 'none' }}
+                >
+                  <span className="material-symbols-outlined">download</span>
+                  CV
+                </button>
+              )}
               <button className="adm-btn-approve" onClick={() => onUpdateStatus(id, tempStatus, note)}>
                 <span className="material-symbols-outlined">save</span>
                 Lưu
