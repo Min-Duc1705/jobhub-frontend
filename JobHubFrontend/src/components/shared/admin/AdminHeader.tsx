@@ -244,7 +244,7 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
               </Badge>
             </button>
           </Dropdown>
-          <button className="icon-btn hover-effect">
+          <button className="icon-btn hover-effect admin-header-help-btn">
             <span className="material-symbols-outlined text-icon">help</span>
           </button>
 
@@ -271,11 +271,12 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
               <Avatar className="nav-avatar" size={38} src={(avatarUrl && avatarUrl !== 'null' && avatarUrl !== 'undefined') ? avatarUrl : undefined}>
                 {(!avatarUrl || avatarUrl === 'null' || avatarUrl === 'undefined') && user && getInitials(user?.username || user?.email)}
               </Avatar>
-              <span className="nav-avatar-name" style={{ fontWeight: 500, color: '#333' }}>{user?.username || 'Admin'}</span>
-              <span className="material-symbols-outlined nav-avatar-chevron" style={{ color: '#666' }}>expand_more</span>
+              <span className="nav-avatar-name admin-header-desktop-only" style={{ fontWeight: 500, color: '#333' }}>{user?.username || 'Admin'}</span>
+              <span className="material-symbols-outlined nav-avatar-chevron admin-header-desktop-only" style={{ color: '#666' }}>expand_more</span>
             </button>
           </Dropdown>
         </div>
+
       </nav>
     </header>
   );

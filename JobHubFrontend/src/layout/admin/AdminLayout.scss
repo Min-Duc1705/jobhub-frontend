@@ -75,6 +75,10 @@
       align-items: center;
       gap: 24px;
 
+      @media (max-width: 768px) {
+        gap: 4px;
+      }
+
       .admin-search-box {
         display: flex;
         align-items: center;
@@ -241,6 +245,10 @@
         display: flex;
         align-items: center;
         gap: 12px;
+
+        @media (max-width: 768px) {
+          gap: 4px;
+        }
 
         .icon-btn {
           background: none;
@@ -692,6 +700,19 @@
         padding: 16px;
       }
     }
+  }
+}
+
+// Admin header: ẩn trên mobile
+.admin-header-desktop-only {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+.admin-header-help-btn {
+  @media (max-width: 768px) {
+    display: none !important;
   }
 }
 
