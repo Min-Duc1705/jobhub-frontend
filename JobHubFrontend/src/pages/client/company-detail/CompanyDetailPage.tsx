@@ -55,11 +55,19 @@ const stripHtml = (raw: string): string => {
 }
 
 const formatSalary = (job: IJob) => {
-  if (job.isSalaryNegotiable) return 'Thỏa thuận'
-  const cur = job.salaryCurrency === 'USD' ? '$' : 'đ'
-  const fmt = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(0)}M` : n.toLocaleString()
-  if (job.salaryMin && job.salaryMax) return `${cur}${fmt(job.salaryMin)} – ${cur}${fmt(job.salaryMax)}`
-  if (job.salaryMin) return `Từ ${cur}${fmt(job.salaryMin)}`
+  if (job.isSalaryNegotiable || (!job.salaryMin && !job.salaryMax)) return 'Thỏa thuận'
+  const isUsd = job.salaryCurrency === 'USD'
+  const fmt = (n: number) => {
+    if (isUsd) return `$${n.toLocaleString('en-US')}`
+    return `${(n / 1_000_000).toFixed(0)} triệu`
+  }
+  
+  if (job.salaryMin && job.salaryMax) {
+    if (isUsd) return `${fmt(job.salaryMin)} – ${fmt(job.salaryMax)}`
+    return `${(job.salaryMin / 1_000_000).toFixed(0)} – ${(job.salaryMax / 1_000_000).toFixed(0)} triệu`
+  }
+  if (job.salaryMin) return `Từ ${fmt(job.salaryMin)}`
+  if (job.salaryMax) return `Đến ${fmt(job.salaryMax)}`
   return 'Thỏa thuận'
 }
 
