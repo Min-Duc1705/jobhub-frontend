@@ -56,14 +56,10 @@ const FooterClient = () => {
               Nền tảng tuyển dụng IT thông minh hàng đầu Việt Nam, được hỗ trợ bởi công nghệ AI.
             </p>
             <div className="site-footer__socials">
-              {/* TODO: Cung cấp link Facebook/LinkedIn/GitHub thật để thay thế '#' */}
-              <a href="#" className="site-footer__social-btn" aria-label="Facebook">
+              <a href="https://www.facebook.com/minh.uc.696827" target="_blank" rel="noopener noreferrer" className="site-footer__social-btn" aria-label="Facebook">
                 <span className="material-symbols-outlined">facebook</span>
               </a>
-              <a href="#" className="site-footer__social-btn" aria-label="LinkedIn">
-                <span className="material-symbols-outlined">link</span>
-              </a>
-              <a href="#" className="site-footer__social-btn" aria-label="GitHub">
+              <a href="https://github.com/Min-Duc1705" target="_blank" rel="noopener noreferrer" className="site-footer__social-btn" aria-label="GitHub">
                 <span className="material-symbols-outlined">code</span>
               </a>
             </div>
