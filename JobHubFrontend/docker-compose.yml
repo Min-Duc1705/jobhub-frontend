@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  jobhub-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jobhub-frontend:latest
+    container_name: jobhub_frontend_app
+    restart: unless-stopped
+    ports:
+      - "5173:80"
