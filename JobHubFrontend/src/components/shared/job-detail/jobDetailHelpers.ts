@@ -24,13 +24,7 @@ const PRESET_COLORS = [
 ]
 
 export const getSkillColor = (skillName: string): string => {
-  const normalized = skillName.trim().toLowerCase()
-  let hash = 0
-  for (let i = 0; i < normalized.length; i++) {
-    hash = normalized.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const index = Math.abs(hash) % PRESET_COLORS.length
-  return PRESET_COLORS[index]
+  return 'blue'
 }
 
 
