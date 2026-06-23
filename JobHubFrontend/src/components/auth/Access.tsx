@@ -20,7 +20,7 @@ const Access = (props: IProps) => {
   const [allow, setAllow] = useState<boolean>(false);
 
   const user = useAppSelector((state: any) => state.auth.user);
-  const permissions = user?.role?.permissions || [];
+  const permissions = user?.role?.permissions;
 
   useEffect(() => {
     // Nếu không có user hoặc role, hoặc permission chưa được định nghĩa, không cho phép

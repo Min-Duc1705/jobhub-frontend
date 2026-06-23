@@ -628,15 +628,13 @@
       }
 
       .job-tag {
-        background-color: $surface-container-high;
-        color: $on-surface;
         font-size: 12px;
         font-weight: 500;
         font-family: $font-mono;
-        padding: 2px 8px;
         border-radius: 9999px;
-        border: 1px solid $outline-variant;
+        margin: 0 !important;
       }
+
 
       .card-footer-row {
         display: flex;
@@ -778,7 +776,6 @@
           
           .job-tag {
             font-size: 11px;
-            padding: 1px 6px;
           }
         }
 

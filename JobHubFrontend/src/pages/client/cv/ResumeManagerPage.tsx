@@ -70,6 +70,7 @@ export default function ResumeManagerPage() {
       setLoading(false)
     }
   }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [user?.id])
 
   const handleDelete = async (id: string) => {

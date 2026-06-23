@@ -106,7 +106,7 @@ const JobFormModal = ({ open, data, onClose, onSuccess }: Props) => {
 
     // Chạy song song
     Promise.all([skillsPromise, companyPromise])
-  }, [open, isEdit])
+  }, [open, isEdit, form])
 
   // ── Populate form khi mở ─────────────────────────────────────────────────
   useEffect(() => {
@@ -158,7 +158,7 @@ const JobFormModal = ({ open, data, onClose, onSuccess }: Props) => {
         startDate:      dayjs(), // Tự fill ngày hiện tại
       })
     }
-  }, [open, data])
+  }, [open, data, form])
 
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleOk = async () => {

@@ -1,6 +1,8 @@
+import { Tag } from 'antd'
 import { BookOutlined, BookFilled } from '@ant-design/icons'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
+import { getSkillColor } from '../job-detail/jobDetailHelpers'
 
 interface Props {
   job: IJob
@@ -72,14 +74,14 @@ const HomeJobCard = ({ job, isSaved, onToggleSave, onCardClick }: Props) => {
           {JOB_TYPE_LABEL[job.jobType]}
         </span>
         {job.skills.slice(0, 2).map(s => (
-          <span key={s.id} className="job-card__tag job-card__tag--default">
+          <Tag key={s.id} color={getSkillColor(s.name)} className="job-card__tag" style={{ margin: 0 }}>
             {s.name}
-          </span>
+          </Tag>
         ))}
         {job.skills.length > 2 && (
-          <span className="job-card__tag job-card__tag--default">
+          <Tag color="default" className="job-card__tag" style={{ margin: 0 }}>
             +{job.skills.length - 2}
-          </span>
+          </Tag>
         )}
       </div>
 

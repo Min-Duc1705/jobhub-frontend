@@ -66,6 +66,7 @@ export default function HireAgentManagement() {
         handleSelectCampaign(matchedCampaign);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignIdParam, campaigns]);
 
   // Auto-select conversation if query param candidateId matches
@@ -78,6 +79,7 @@ export default function HireAgentManagement() {
         handleSelectConversation(matchedConv);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidateIdParam, conversations]);
 
   // ── Data loading (song song) ───────────────────────────────────────────────────
@@ -102,6 +104,7 @@ export default function HireAgentManagement() {
   // Tải campaigns + jobs song song khi mount
   useEffect(() => {
     Promise.all([loadCampaigns(), loadJobs()])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
 

@@ -44,6 +44,7 @@ const LoginPage = () => {
       window.history.replaceState({}, document.title, window.location.pathname)
       handleGithubLoginSuccess(githubCode)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchProfileAndRedirect = async (user: any) => {

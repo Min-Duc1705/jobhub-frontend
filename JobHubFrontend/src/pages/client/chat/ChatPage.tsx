@@ -147,6 +147,7 @@ const ChatPage = () => {
     if (currentUserId) {
       fetchConversations()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId, chatWithUserId])
 
   // 2. Fetch Chat History when active conversation changes
@@ -187,7 +188,7 @@ const ChatPage = () => {
         })
         .catch(err => console.error('Mark read hub error:', err))
     }
-  }, [activeConversation, connection])
+  }, [activeConversation, connection, currentUserId])
 
   // 3. Lắng nghe ReceiveMessage từ singleton connection
   useChatHubEvent(connection, 'ReceiveMessage', (msg: IMessageDto) => {

@@ -92,6 +92,7 @@ const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatu
     }
 
     generateAiDetail()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, application?.id, job?.id, !!aiResult, !!aiResult?.ai_feedback])
 
   useEffect(() => {
@@ -100,6 +101,7 @@ const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatu
       setNote(application.reviewNote ?? '')
       setZoom(100)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [application?.id, open])
 
   const hasFile = !!(application?.resume?.id && !application.resume.isOnlineCv)
@@ -131,6 +133,7 @@ const ApplicationDetailModal = ({ application, job, open, onClose, onUpdateStatu
       alive = false
       if (previewUrl) URL.revokeObjectURL(previewUrl)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, application?.id])
 
   if (!application) return null

@@ -4,4 +4,3 @@ dist
 .env.local
 Dockerfile
 docker-compose.yml
-nginx.conf

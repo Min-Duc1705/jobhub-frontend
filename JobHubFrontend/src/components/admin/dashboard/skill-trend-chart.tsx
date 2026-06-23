@@ -51,6 +51,7 @@ const SkillTrendChart = () => {
         fetchTrend('React', 6)
       })
       .finally(() => setLoadingSkills(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onFinish = (values: any) => {

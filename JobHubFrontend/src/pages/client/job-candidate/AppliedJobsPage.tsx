@@ -100,6 +100,7 @@ const AppliedJobsPage = () => {
   useEffect(() => {
     if (!user?.id) return
     Promise.all([fetchApplications(), fetchSavedJobs(savedPage, savedPageSize)])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   // Fetch saved jobs khi đổi trang/page size (không cần fetch applications lại)
@@ -135,6 +136,7 @@ const AppliedJobsPage = () => {
       })
       setJobsMap(newJobs)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applications])
 
   // ── Unsave action ───────────────────────────────────────────────────────────

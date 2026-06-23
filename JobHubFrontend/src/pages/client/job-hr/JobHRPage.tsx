@@ -112,11 +112,13 @@ const JobHRPage = () => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading, page, pageSize, search, statusFilter, levelFilter])
 
   useEffect(() => {
     if (authLoading || !user?.id) return
     fetchSmartMatchCount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading])
 
   // ── Actions ────────────────────────────────────────────────────────────────

@@ -135,6 +135,7 @@ const JobApplicationsPage = () => {
         })
         .catch(() => console.warn('Không thể tải lịch sử chấm điểm AI')),
     ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId])
 
   const fetchApplications = async (
@@ -171,6 +172,7 @@ const JobApplicationsPage = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => fetchApplications(page, search, statusFilter, sortBy), 350)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, statusFilter, sortBy, jobId])
 
   const handleUpdateStatus = async (id: string, status: ApplicationStatus, note?: string) => {

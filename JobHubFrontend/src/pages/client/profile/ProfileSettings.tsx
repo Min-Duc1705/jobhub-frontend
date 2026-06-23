@@ -302,7 +302,7 @@ const ProfileSettings = () => {
     } finally {
       setLoading(false)
     }
-  }, [form, user?.email])
+  }, [form, user?.email]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadData()

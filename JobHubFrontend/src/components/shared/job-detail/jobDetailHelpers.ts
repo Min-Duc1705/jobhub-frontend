@@ -18,6 +18,22 @@ export const TYPE_COLOR: Record<string, string> = {
   HYBRID: 'purple',  INTERNSHIP: 'gold',
 }
 
+const PRESET_COLORS = [
+  'blue', 'purple', 'cyan', 'green', 'magenta',
+  'volcano', 'orange', 'gold', 'lime', 'geekblue'
+]
+
+export const getSkillColor = (skillName: string): string => {
+  const normalized = skillName.trim().toLowerCase()
+  let hash = 0
+  for (let i = 0; i < normalized.length; i++) {
+    hash = normalized.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const index = Math.abs(hash) % PRESET_COLORS.length
+  return PRESET_COLORS[index]
+}
+
+
 // ── Salary formatter ─────────────────────────────────────────────────────────
 export const formatSalary = (job: IJob): string => {
   if (job.isSalaryNegotiable || (!job.salaryMin && !job.salaryMax)) return 'Thương lượng'

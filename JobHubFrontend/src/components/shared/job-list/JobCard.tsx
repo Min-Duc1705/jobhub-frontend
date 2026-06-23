@@ -3,7 +3,7 @@ import { BookOutlined, BookFilled } from '@ant-design/icons'
 import type { IJob } from '../../../types/job'
 import { JOB_LEVEL_LABEL, JOB_TYPE_LABEL } from '../../../types/job'
 import { formatTimeAgo } from '../common/TimeAgo/TimeAgo'
-import { LEVEL_COLOR, TYPE_COLOR } from '../job-detail/jobDetailHelpers'
+import { LEVEL_COLOR, TYPE_COLOR, getSkillColor } from '../job-detail/jobDetailHelpers'
 
 interface Props {
   job: IJob
@@ -97,10 +97,14 @@ const JobCard = ({ job, isSaved, onToggleSave, onCardClick }: Props) => {
       {job.skills.length > 0 && (
         <div className="card-tags-container">
           {job.skills.slice(0, 5).map(s => (
-            <span key={s.id} className="job-tag">{s.name}</span>
+            <Tag key={s.id} color={getSkillColor(s.name)} className="job-tag">
+              {s.name}
+            </Tag>
           ))}
           {job.skills.length > 5 && (
-            <span className="job-tag">+{job.skills.length - 5}</span>
+            <Tag color="default" className="job-tag">
+              +{job.skills.length - 5}
+            </Tag>
           )}
         </div>
       )}

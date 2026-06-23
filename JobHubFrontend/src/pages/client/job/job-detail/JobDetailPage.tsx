@@ -80,6 +80,7 @@ const JobDetailPage = () => {
         navigate('/jobs')
       })
       .finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // ── Song song: kiểm tra đã ứng tuyển + đã lưu + ghi nhận tương tác ──
@@ -108,6 +109,7 @@ const JobDetailPage = () => {
       const savedList = savedRes?.data?.result ?? []
       setSaved(savedList.some((sj: any) => sj.jobId === id))
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, currentUser?.id])
 
   // ── Open apply modal (auth guard) ─────────────────────────────
