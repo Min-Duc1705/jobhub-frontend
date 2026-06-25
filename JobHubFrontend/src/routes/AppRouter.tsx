@@ -36,6 +36,8 @@ import JobTable           from '../components/admin/job/job.table'
 import ContactTable       from '../components/admin/contact/contact.table'
 import NotificationManagement from '../pages/admin/notifications/NotificationManagement'
 import HireAgentManagement from '../pages/client/hire-agent/HireAgentManagement'
+import SupportPage from '../pages/admin/support/SupportPage'
+import DocsPage from '../pages/admin/docs/DocsPage'
 
 // ─── Public Pages (bỏ comment khi tạo file) ──────────────────────
 // import HomePage from '../pages/client/HomePage'
@@ -189,8 +191,8 @@ const router = createBrowserRouter([
       { path: 'analytics', element: <ComingSoon page="Analytics" /> },
       { path: 'financials', element: <ComingSoon page="Financials" /> },
       { path: 'settings', element: <ComingSoon page="Settings" /> },
-      { path: 'support', element: <ComingSoon page="Support" /> },
-      { path: 'docs', element: <ComingSoon page="Documentation" /> },
+      { path: 'support', element: <SupportPage /> },
+      { path: 'docs', element: <DocsPage /> },
     ],
   },
 

@@ -226,6 +226,12 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
         </div>
 
         <div className="header-action-icons">
+          <button className="icon-btn hover-effect" onClick={() => navigate('/chat')}>
+            <Badge count={chatUnreadCount} size="small" offset={[2, -2]}>
+              <span className="material-symbols-outlined text-icon">chat</span>
+            </Badge>
+          </button>
+
           <Dropdown
             overlayClassName="nav-notification-dropdown-wrap"
             dropdownRender={() => (
@@ -247,11 +253,6 @@ export default function AdminHeader({ sidebarCollapsed, setSidebarCollapsed, mob
               </Badge>
             </button>
           </Dropdown>
-          <button className="icon-btn hover-effect" onClick={() => navigate('/chat')}>
-            <Badge count={chatUnreadCount} size="small" offset={[2, -2]}>
-              <span className="material-symbols-outlined text-icon">chat</span>
-            </Badge>
-          </button>
 
           <Dropdown
             popupRender={() => (
