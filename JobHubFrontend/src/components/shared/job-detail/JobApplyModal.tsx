@@ -374,7 +374,7 @@ const JobApplyModal = ({ open, job, company, currentUserId, onSuccess, onClose }
         <div>
           <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 16, marginRight: 6, color: '#002660', verticalAlign: 'middle' }}>edit_note</span>
-            Thư xin việc{' '}
+            Thư giới thiệu{' '}
             <span style={{ fontWeight: 400, color: '#747783', fontSize: 12 }}>(không bắt buộc)</span>
           </div>
           <Input.TextArea

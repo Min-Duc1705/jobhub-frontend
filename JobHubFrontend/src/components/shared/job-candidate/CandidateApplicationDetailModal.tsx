@@ -162,7 +162,7 @@ const CandidateApplicationDetailModal = ({ application, job, open, onClose }: Pr
         {/* Cover letter */}
         {coverLetter && (
           <>
-            <Divider orientation="left" style={{ fontSize: 13, color: '#747783', margin: '20px 0 10px' }}>Thư xin việc</Divider>
+            <Divider orientation="left" style={{ fontSize: 13, color: '#747783', margin: '20px 0 10px' }}>Thư giới thiệu</Divider>
             <p className="adm-cover-letter" style={{ whiteSpace: 'pre-line', padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, color: '#334155' }}>
               {coverLetter}
             </p>
