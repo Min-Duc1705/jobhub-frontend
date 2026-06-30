@@ -70,3 +70,7 @@ export const proposeRescheduleApi = (campaignId: string, message?: string): Prom
 /** Get current candidate's conversation details under a campaign */
 export const getMyConversationApi = (campaignId: string): Promise<ApiResponse<IHireAgentConversation>> =>
   axios.get(`/api/v1/hire-agent/campaigns/${campaignId}/my-conversation`)
+
+/** HR hủy đề xuất/lịch hẹn phỏng vấn → trả ứng viên về Passed (chờ xếp lịch) */
+export const cancelCampaignScheduleApi = (campaignId: string, candidateId: string): Promise<ApiResponse<IHireAgentConversation>> =>
+  axios.post(`/api/v1/hire-agent/campaigns/${campaignId}/cancel-schedule`, { candidateId })

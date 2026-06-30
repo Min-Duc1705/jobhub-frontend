@@ -14,6 +14,12 @@ import { scheduleInterviewApi } from '../../../services/hire-agent-service';
 import type { IMessageDto } from '../../../services/chat-service';
 import { getConvStatusTag } from './hireAgentUtils';
 
+// Helper to parse date string as local time ignoring timezone offset/Z shift
+const parseRawDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return dayjs();
+  return dayjs(dateStr);
+};
+
 const renderContentWithLinks = (text: string, isMe: boolean) => {
   if (!text) return null;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -242,7 +248,7 @@ export default function ScreeningChatWindow({
                   >
                     <ClockCircleOutlined />
                     {selectedConversation.interviewDate
-                      ? `Đề xuất: ${dayjs(selectedConversation.interviewDate).format('DD/MM/YYYY HH:mm')} — Chờ xác nhận`
+                      ? `Đề xuất: ${parseRawDate(selectedConversation.interviewDate).format('DD/MM/YYYY HH:mm')} — Chờ xác nhận`
                       : 'Chờ ứng viên xác nhận'}
                   </span>
                 </Tooltip>
@@ -262,7 +268,7 @@ export default function ScreeningChatWindow({
                 >
                   <CheckCircleOutlined />
                   {selectedConversation.interviewDate
-                    ? dayjs(selectedConversation.interviewDate).format('DD/MM/YYYY HH:mm')
+                    ? parseRawDate(selectedConversation.interviewDate).format('DD/MM/YYYY HH:mm')
                     : 'Chưa xác định'}
                 </span>
               )}

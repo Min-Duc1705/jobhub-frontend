@@ -36,6 +36,7 @@ import JobTable           from '../components/admin/job/job.table'
 import ContactTable       from '../components/admin/contact/contact.table'
 import NotificationManagement from '../pages/admin/notifications/NotificationManagement'
 import HireAgentManagement from '../pages/client/hire-agent/HireAgentManagement'
+import InterviewSchedulerPage from '../pages/client/interview-scheduler/InterviewSchedulerPage'
 import SupportPage from '../pages/admin/support/SupportPage'
 import DocsPage from '../pages/admin/docs/DocsPage'
 
@@ -138,6 +139,14 @@ const router = createBrowserRouter([
         element: (
           <RoleBasedRoute allowedRoles={['HR', 'ADMIN']}>
             <HireAgentManagement />
+          </RoleBasedRoute>
+        )
+      },
+      {
+        path: '/hr/interview-scheduler',
+        element: (
+          <RoleBasedRoute allowedRoles={['HR', 'ADMIN']}>
+            <InterviewSchedulerPage />
           </RoleBasedRoute>
         )
       },

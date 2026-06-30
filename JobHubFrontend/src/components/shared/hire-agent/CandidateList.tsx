@@ -18,6 +18,12 @@ interface CandidateListProps {
   onRefresh: () => void;
 }
 
+// Helper to parse date string as local time ignoring timezone offset/Z shift
+const parseRawDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return dayjs();
+  return dayjs(dateStr);
+};
+
 export default function CandidateList({
   conversations,
   conversationsLoading,
@@ -117,7 +123,7 @@ export default function CandidateList({
                         }}
                       >
                         <CalendarOutlined />{' '}
-                        {dayjs(conv.interviewDate).format('DD/MM HH:mm')}
+                        {parseRawDate(conv.interviewDate).format('DD/MM HH:mm')}
                       </Text>
                     )}
                   </Space>

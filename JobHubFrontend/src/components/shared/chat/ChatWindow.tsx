@@ -1,5 +1,5 @@
 import { useRef, useState, Fragment } from 'react'
-import { Avatar, Button, Spin, Input, Popover, List } from 'antd'
+import { Avatar, Button, Spin, Input, Popover, List, Tooltip } from 'antd'
 import { message } from '../../../utils/antd'
 import { useNavigate } from 'react-router-dom'
 import type { IConversationDto, IMessageDto } from '../../../services/chat-service'
@@ -9,6 +9,14 @@ import { getJobsApi } from '../../../services/job-service'
 import { useAppSelector } from '../../../redux/hooks'
 import { POPULAR_EMOJIS, CANDIDATE_TEMPLATES, HR_TEMPLATES } from './chat-features'
 import { resolveChatUrl } from '../../../utils/url'
+
+const getDisplayContent = (text: string) => {
+  if (!text) return '';
+  if (text.startsWith('[HỆ THỐNG]')) return text.replace('[HỆ THỐNG]', '').trim();
+  if (text.startsWith('[SYSTEM]')) return text.replace('[SYSTEM]', '').trim();
+  if (text.startsWith('[AI]')) return text.replace('[AI]', '').trim();
+  return text;
+};
 
 const renderContentWithLinks = (text: string, isMe: boolean) => {
   if (!text) return null;
@@ -492,18 +500,62 @@ const ChatWindow = ({
                   messages.map((m) => {
                     const isMe = m.senderId.toLowerCase() === currentUserId.toLowerCase()
                     const profile = profiles[m.senderId] || { name: 'Người dùng', avatar: undefined }
+                    const isSystem = m.content?.startsWith('[HỆ THỐNG]') || m.content?.startsWith('[SYSTEM]');
+                    const isAi = m.content?.startsWith('[AI]') || isSystem;
+
+                    const displayAvatar = isAi 
+                      ? 'https://api.dicebear.com/7.x/bottts/svg?seed=JobHubAI&backgroundColor=e8e8ff' 
+                      : profile.avatar;
+                    const displayName = isAi ? 'Trợ lý AI' : profile.name;
                     
                     return (
                       <div key={m.id} className={`message-bubble ${isMe ? 'message-bubble--me' : 'message-bubble--other'}`}>
                         {!isMe && (
-                          <Avatar 
-                            shape="square"
-                            size={36} 
-                            src={profile.avatar} 
-                            className="message-bubble__avatar"
-                          >
-                            {profile.name?.[0]?.toUpperCase() || '?'}
-                          </Avatar>
+                          <div style={{ position: 'relative', marginRight: 8, display: 'inline-block', flexShrink: 0 }}>
+                            <Avatar 
+                              shape="square"
+                              size={36} 
+                              src={displayAvatar} 
+                              className="message-bubble__avatar"
+                              style={{ 
+                                background: 'transparent',
+                                border: isAi ? '1px solid #d3adf7' : 'none'
+                              }}
+                            >
+                              {displayName?.[0]?.toUpperCase() || '?'}
+                            </Avatar>
+                            {isAi && (
+                              <Tooltip title="Tài khoản Trợ lý AI đã được xác minh" placement="top">
+                                <span 
+                                  className="material-symbols-outlined" 
+                                  style={{ 
+                                    position: 'absolute', 
+                                    bottom: -4, 
+                                    right: -4, 
+                                    color: '#1890ff', 
+                                    background: '#fff', 
+                                    borderRadius: '50%', 
+                                    fontSize: 14,
+                                    fontWeight: 'bold',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                                    userSelect: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s ease, color 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.25)';
+                                    e.currentTarget.style.color = '#096dd9';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.color = '#1890ff';
+                                  }}
+                                >
+                                  verified
+                                </span>
+                              </Tooltip>
+                            )}
+                          </div>
                         )}
                         <div className="message-bubble__content-wrap">
                           <div className="message-bubble__text">
@@ -525,7 +577,7 @@ const ChatWindow = ({
                                 {resolveChatUrl(m.content).split('/').pop() || 'Tài liệu đính kèm'}
                               </a>
                             ) : (
-                              renderContentWithLinks(m.content, isMe)
+                              renderContentWithLinks(getDisplayContent(m.content), isMe)
                             )}
                           </div>
                           <div className="message-bubble__meta">

@@ -81,6 +81,17 @@ const ProfileDropdown = ({
             <span className="material-symbols-outlined nav-menu-icon">smart_toy</span>
             <span>AI Recruiter (Agent)</span>
           </div>
+          <div
+            className="ant-dropdown-menu-item"
+            onClick={() => {
+              navigate('/hr/interview-scheduler')
+              onClose()
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <span className="material-symbols-outlined nav-menu-icon">calendar_month</span>
+            <span>Quản lý lịch phỏng vấn</span>
+          </div>
           <div className="nav-dropdown-divider" />
         </>
       )}
