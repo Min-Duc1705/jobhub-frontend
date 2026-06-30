@@ -96,7 +96,6 @@ const JobApplicationsPage = () => {
 
   const [job, setJob] = useState<IJob | null>(null)
   const [applications, setApplications] = useState<IApplication[]>([])
-  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [jobLoading, setJobLoading] = useState(true)
   const [aiLoading, setAiLoading] = useState(false)
@@ -139,7 +138,6 @@ const JobApplicationsPage = () => {
   }, [jobId])
 
   const fetchApplications = async (
-    p: number,
     s: string,
     status: ApplicationStatus | '',
     sort: SortByFilter,
@@ -149,8 +147,8 @@ const JobApplicationsPage = () => {
     try {
       const sp = new URLSearchParams()
       sp.set('jobId', jobId)
-      sp.set('pageNumber', String(p))
-      sp.set('pageSize', String(PAGE_SIZE))
+      sp.set('pageNumber', '1')
+      sp.set('pageSize', '1000') // Fetch all candidates (max 1000) for global filtering/sorting
       
       const backendSort = (sort === 'scoreDesc' || sort === 'scoreAsc') ? 'createdDate' : sort
       sp.set('sortBy', backendSort)
@@ -160,7 +158,6 @@ const JobApplicationsPage = () => {
 
       const res = await getApplicationsApi(sp.toString())
       setApplications(res.data?.result ?? [])
-      setTotal(res.data?.meta?.total ?? 0)
     } catch {
       notification.error({ message: 'Không thể tải danh sách ứng viên', duration: 2 })
     } finally {
@@ -170,10 +167,10 @@ const JobApplicationsPage = () => {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => fetchApplications(page, search, statusFilter, sortBy), 350)
+    debounceRef.current = setTimeout(() => fetchApplications(search, statusFilter, sortBy), 350)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search, statusFilter, sortBy, jobId])
+  }, [search, statusFilter, sortBy, jobId])
 
   const handleUpdateStatus = async (id: string, status: ApplicationStatus, note?: string) => {
     try {
@@ -254,6 +251,10 @@ const JobApplicationsPage = () => {
     })
   }
 
+  // Calculate total and current page slice locally for global sorting/filtering
+  const total = filteredApps.length
+  const displayedApps = filteredApps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   return (
     <div className="jap-page">
       <div className="jap-container">
@@ -276,7 +277,7 @@ const JobApplicationsPage = () => {
           </Button>
           <Button
             icon={<ReloadOutlined />}
-            onClick={() => fetchApplications(page, search, statusFilter, sortBy)}
+            onClick={() => fetchApplications(search, statusFilter, sortBy)}
             style={{ borderRadius: 8 }}
           >
             Làm mới
@@ -329,7 +330,7 @@ const JobApplicationsPage = () => {
           />
         ) : (
           <div className="jap-list">
-            {filteredApps.map(app => (
+            {displayedApps.map(app => (
               <ApplicationCard
                 key={app.id}
                 application={app}
