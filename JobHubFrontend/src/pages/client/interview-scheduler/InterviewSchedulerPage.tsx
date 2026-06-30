@@ -813,7 +813,7 @@ export default function InterviewSchedulerPage() {
               if (!isGoogleSynced) {
                 try {
                   setLoading(true);
-                  const res = await getGoogleCalendarAuthUrlApi();
+                  const res = await getGoogleCalendarAuthUrlApi(window.location.origin);
                   if (res.data?.url) {
                     window.location.href = res.data.url;
                   } else {
